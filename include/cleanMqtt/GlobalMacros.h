@@ -1,0 +1,60 @@
+#ifndef INCLUDE_CLEANMQTT_GLOBALMACROS_H
+#define INCLUDE_CLEANMQTT_GLOBALMACROS_H
+
+#include <type_traits>
+
+namespace cleanMqtt
+{
+#define ENUM_FLAG_OPERATORS(enumName)\
+        constexpr enumName operator | (enumName lhs, enumName rhs)\
+        {\
+            using T = std::underlying_type_t <enumName>;\
+            return static_cast<enumName>(static_cast<T>(lhs) | static_cast<T>(rhs));\
+        };\
+\
+        constexpr enumName& operator |= (enumName & lhs, enumName rhs)\
+        {\
+            lhs = lhs | rhs;\
+            return lhs;\
+        };\
+\
+        constexpr enumName operator & (enumName lhs, enumName rhs)\
+        {\
+            using T = std::underlying_type_t <enumName>;\
+            return static_cast<enumName>(static_cast<T>(lhs) & static_cast<T>(rhs));\
+        };\
+
+#define DELETE_COPY_CONSTRUCTOR(typeName)\
+        typeName(const typeName& other) = delete;\
+
+#define DELETE_COPY_ASSIGNMENT(typeName)\
+        typeName& operator=(const typeName& other) = delete;\
+
+#define DELETE_MOVE_CONSTRUCTOR(typeName)\
+        typeName(typeName&& other) = delete;\
+
+#define DELETE_MOVE_ASSIGNMENT(typeName)\
+        typeName& operator=(typeName&& other) = delete;\
+
+#define DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(typeName)\
+        DELETE_COPY_CONSTRUCTOR(typeName)\
+        DELETE_COPY_ASSIGNMENT(typeName)\
+
+#define DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(typeName)\
+        DELETE_MOVE_CONSTRUCTOR(typeName)\
+        DELETE_MOVE_ASSIGNMENT(typeName)\
+
+#if defined(_WIN32) || defined(_WIN64)
+    #if defined(PUBLIC_API_EXPORT)
+        #define PUBLIC_API __declspec(dllexport)
+    #elif defined(PUBLIC_API_IMPORT)
+        #define PUBLIC_API c(dllimport)
+    #else
+        #define PUBLIC_API
+    #endif
+#else
+    #define PUBLIC_API
+#endif
+}
+
+#endif //INCLUDE_CLEANMQTT_GLOBALMACROS_H

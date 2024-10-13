@@ -1,0 +1,4 @@
+// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+// such as names of functions and macros.
+// For more information see https://go.microsoft.com/fwlink/?linkid=865984
+#define ENUM_FLAG_OPERATORS(enumName) constexpr enumName operator | (enumName lhs, enumName rhs) { using T = std::underlying_type_t <enumName>; return static_cast<enumName>(static_cast<T>(lhs) | static_cast<T>(rhs)); }; constexpr enumName & operator |= (enumName & lhs, enumName rhs) { lhs = lhs | rhs; return lhs; }; constexpr enumName operator & (enumName lhs, enumName rhs) { using T = std::underlying_type_t <enumName>; return static_cast<enumName>(static_cast<T>(lhs) & static_cast<T>(rhs)); };
