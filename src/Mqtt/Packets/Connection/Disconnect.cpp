@@ -8,7 +8,7 @@ namespace cleanMqtt
 		{
 			Disconnect::Disconnect(DisconnectVariableHeader&& varHeader) noexcept
 				: BasePacket(FixedHeaderFlags(k_DisconnectFixedHeaderFlags)),
-				variableHeader(std::move(varHeader))
+				m_variableHeader(std::move(varHeader))
 			{
 				setUpHeaders();
 			}
@@ -17,6 +17,12 @@ namespace cleanMqtt
 				: BasePacket(std::move(dataBuffer))
 			{
 				setUpHeaders();
+			}
+
+			Disconnect::Disconnect(Disconnect&& other) noexcept
+				: BasePacket{ std::move(other) },
+				m_variableHeader{ std::move(other.m_variableHeader) }
+			{
 			}
 
 			Disconnect::~Disconnect()
@@ -30,13 +36,13 @@ namespace cleanMqtt
 
 			const DisconnectVariableHeader& Disconnect::getVariableHeader() const
 			{
-				return variableHeader;
+				return m_variableHeader;
 			}
 
 			void Disconnect::setUpHeaders() noexcept
 			{
-				addDecodeHeader(&variableHeader);
-				addEncodeHeader(&variableHeader);
+				addDecodeHeader(&m_variableHeader);
+				addEncodeHeader(&m_variableHeader);
 			}
 		}
 	}

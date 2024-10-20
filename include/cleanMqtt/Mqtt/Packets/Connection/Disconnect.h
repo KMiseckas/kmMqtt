@@ -20,6 +20,7 @@ namespace cleanMqtt
 			public:
 				Disconnect(DisconnectVariableHeader&& varHeader) noexcept;
 				Disconnect(ByteBuffer&& dataBuffer) noexcept;
+				Disconnect(Disconnect&& other) noexcept;
 				~Disconnect() override;
 
 				PacketType getPacketType() const noexcept override;
@@ -29,7 +30,7 @@ namespace cleanMqtt
 				void setUpHeaders() noexcept;
 
 			private:
-				DisconnectVariableHeader variableHeader;
+				DisconnectVariableHeader m_variableHeader;
 			};
 		}
 	}

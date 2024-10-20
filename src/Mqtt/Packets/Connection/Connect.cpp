@@ -6,7 +6,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			Connect::Connect(ConnectVariableHeader&& variableHeader, ConnectPayloadHeader&& payloadHeader) noexcept 
+			Connect::Connect(ConnectVariableHeader&& variableHeader, ConnectPayloadHeader&& payloadHeader) noexcept
 				: BasePacket(FixedHeaderFlags(k_ConnectFixedHeaderFlags)),
 				m_variableHeader(std::move(variableHeader)),
 				m_payloadHeader(std::move(payloadHeader))
@@ -18,6 +18,13 @@ namespace cleanMqtt
 				: BasePacket(std::move(dataBuffer))
 			{
 				setUpHeaders();
+			}
+
+			Connect::Connect(Connect&& other) noexcept
+				: BasePacket{ std::move(other) },
+				m_variableHeader{ std::move(other.m_variableHeader) },
+				m_payloadHeader{ std::move(other.m_payloadHeader) }
+			{
 			}
 
 			Connect::~Connect()

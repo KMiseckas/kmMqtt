@@ -8,6 +8,9 @@
 #include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
 #include "cleanMqtt/Mqtt/Packets/Connection/Connect.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
+#include "cleanMqtt/Interfaces/ISendQueue.h"
+#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
+#include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
 
 #include <cstring>
 #include <memory>
@@ -21,12 +24,12 @@ namespace cleanMqtt
 	{
 		using LockGuard = std::lock_guard<std::mutex>;
 
-		using ConnectedEvent = events::Event<const packets::Connect&>;
-		using DisconnectedEvent = events::Event<const packets::ConnectAck&>;
+		using ConnectedEvent = events::Event<const packets::ConnectAck&>;
+		using DisconnectedEvent = events::Event<const packets::DisconnectReasonCode>;
 
 		class PUBLIC_API MqttClient
 		{
-			MqttClient(std::unique_ptr<interfaces::IWebSocket> socket);
+			MqttClient(std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue);
 			~MqttClient();
 
 			MqttClient(const MqttClient&) = delete;
@@ -35,18 +38,22 @@ namespace cleanMqtt
 			MqttClient& operator=(MqttClient&) = delete;
 			MqttClient& operator=(MqttClient&&) = delete;
 
-			void connect(ConnectArgs&& args);
+			bool connect(ConnectArgs&& args, const std::string& url);
 			void publish(const char* topic, const char* payloadMsg);
 			void subscribe(const char* topic);
 			void unSubscribe();
-			void disconnect();
+			void disconnect(DisconnectArgs&& args);
 			void tick(float deltaTime);
 
 			const ConnectedEvent& onConnectedEvent() const noexcept { return m_connectedEvent; }
 			const DisconnectedEvent& onDisconnectedEvent() const noexcept { return m_disconnectedEvent; }
 
+			inline ConnectionStatus getConnectionStatus() const noexcept;
+
 		private:
-			int sendPacket(const ByteBuffer& data);
+			void handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args = {});
+			void handleExternalDisconnect(const packets::Disconnect& packet);
+			int sendPacket(const packets::BasePacket& packet);
 
 			MqttConnectionInfo m_connectionInfo{ "CLIENT_ID" };
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
@@ -56,8 +63,10 @@ namespace cleanMqtt
 			ConnectedEvent m_connectedEvent;
 			DisconnectedEvent m_disconnectedEvent;
 
-			std::queue<std::function<void()>> m_queuedRequests;
+			std::unique_ptr<interfaces::ISendQueue> m_sendQueue{ nullptr };
 			std::queue<ByteBuffer*> m_queuedResponseData;
+
+			interfaces::SendBatchResult m_batchResultData;
 
 			std::mutex m_mutex;
 		};

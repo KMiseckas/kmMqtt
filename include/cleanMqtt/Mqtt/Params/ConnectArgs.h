@@ -11,6 +11,12 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		enum class PayloadFormatIndicator : std::uint8_t
+		{
+			BINARY = 0,
+			UTF8 = 1,
+		};
+
 		struct PUBLIC_API Will
 		{
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(Will)
@@ -28,8 +34,12 @@ namespace cleanMqtt
 				contentType{ std::move(other.contentType)},
 				responseTopic{ std::move(other.responseTopic)},
 				correlationData{std::move(other.correlationData)},
+				correlationDataSize{other.correlationDataSize},
 				willTopic{ std::move(other.willTopic)},
-				payload{std::move(other.payload)}
+				payloadFormat{other.payloadFormat},
+				payload{std::move(other.payload)},
+				payloadSize{other.payloadSize},
+				userProperties{std::move(other.userProperties)}
 			{
 				other.correlationData = nullptr;
 				other.payload = nullptr;
@@ -55,8 +65,12 @@ namespace cleanMqtt
 				contentType = std::move(other.contentType);
 				responseTopic = std::move(other.responseTopic);
 				correlationData = std::move(other.correlationData);
+				correlationDataSize = other.correlationDataSize;
 				willTopic = std::move(other.willTopic);
+				payloadFormat = other.payloadFormat;
 				payload = std::move(other.payload);
+				payloadSize = other.payloadSize;
+				userProperties = std::move(other.userProperties);
 
 				other.correlationData = nullptr;
 				other.payload = nullptr;
@@ -68,11 +82,15 @@ namespace cleanMqtt
 			bool retainWillMessage{ false };
 			std::uint32_t willDelayInterval{ 0U };
 			std::uint32_t messageExpiryInterval{ 0U };
-			std::string contentType{ "JSON" };
+			std::string contentType{};
 			std::string responseTopic;
 			std::unique_ptr<std::uint8_t*> correlationData{ nullptr };
+			std::uint16_t correlationDataSize{ 0U };
 			std::string willTopic;
+			PayloadFormatIndicator payloadFormat;
 			std::unique_ptr<std::uint8_t*> payload{ nullptr };
+			std::uint16_t payloadSize{ 0U };
+			std::map<std::string, std::string> userProperties;
 		};
 
 		struct PUBLIC_API ConnectArgs

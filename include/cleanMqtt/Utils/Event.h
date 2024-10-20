@@ -56,6 +56,12 @@ namespace cleanMqtt
 				}
 			}
 
+			void removeAll()
+			{
+				LockGuard lock(m_mutex);
+				m_callbacks.clear();
+			}
+
 			void operator()(Args... args) { invoke(args...); }
 			void operator+=(const Callback& callback) { add(callback); }
 			void operator-=(const Callback& callback) { remove(callback) }
