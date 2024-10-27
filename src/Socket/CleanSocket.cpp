@@ -1,5 +1,5 @@
 #include <cleanMqtt/Sockets/CleanSocket.h>
-#include <cleanMqtt/Interfaces/ILogger.h>
+#include <cleanMqtt/Logger/Log.h>
 
 namespace cleanMqtt
 {
@@ -21,7 +21,7 @@ namespace cleanMqtt
 			WSADATA data;
 			if (WSAStartup(MAKEWORD(2, 2), &data) != SUCCESS)
 			{
-				Log(LogLevel::Info, "Failed initialize.");
+				LogInfo("CleanSocket", "Failed initialize.");
 				fprintf(stderr, "Failed initialize.\n");
 				return false;
 			}

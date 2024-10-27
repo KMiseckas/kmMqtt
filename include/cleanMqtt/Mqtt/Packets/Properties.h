@@ -5,6 +5,7 @@
 #include <cleanMqtt/Mqtt/Packets/PropertyType.h>
 #include <cleanMqtt/Interfaces/ILogger.h>
 #include <cleanMqtt/Mqtt/Packets/DataTypes.h>
+#include <cleanMqtt/Mqtt/Packets/ErrorCodes.h>
 
 #include <cstdint>
 #include <memory>
@@ -78,7 +79,7 @@ namespace cleanMqtt
 
 						if (iter != m_properties.end())
 						{
-							Log(LogLevel::Error, "Properties", "Cannot add duplicate property.");
+							LogError("Properties", "Cannot add duplicate property.");
 							return false;
 						}
 					}
@@ -114,7 +115,7 @@ namespace cleanMqtt
 
 						if (iter != m_properties.end())
 						{
-							Log(LogLevel::Error, "Properties", "Cannot add duplicate property.");
+							LogError("Properties", "Cannot add duplicate property.");
 							return false;
 						}
 					}
@@ -183,7 +184,7 @@ namespace cleanMqtt
 					}
 				}
 
-				void decode(const ByteBuffer& buffer)
+				DecodeResult decode(const ByteBuffer& buffer)
 				{
 					//Decode properties combined length
 					const VariableByteInteger propertySizeBytes(buffer);
@@ -192,6 +193,16 @@ namespace cleanMqtt
 					const std::size_t startingBufferCursor = buffer.readCursor();
 					const std::size_t endBufferCursor = startingBufferCursor + m_propertiesSizeInBytes;
 
+					if (buffer.size() < endBufferCursor)
+					{
+						LogError("Properties", "Decoding properties would cause buffer overflow.");
+						return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET,
+							"Decoding properties would cause buffer overflow, buffer size: " + 
+							std::to_string(static_cast<std::size_t>(buffer.size())) + 
+							", Properties Decode End: " +
+							std::to_string(static_cast<std::size_t>(endBufferCursor)) };
+					}
+
 					//Decode properties one by one
 					while (buffer.readCursor() < endBufferCursor)
 					{
@@ -199,21 +210,31 @@ namespace cleanMqtt
 						PropertyType type{ static_cast<PropertyType>(buffer.readUint8()) };
 
 						//Property Data - Bytes based on property type
-						void* data = propertyDecodings::decode(buffer, type);
+						void* data{ propertyDecodings::decode(buffer, type) };
+						assert(data != nullptr);
 
 						if (!tryAddProperty(type, data))
 						{
-							Exception(LogLevel::Error, "Properties", std::runtime_error("Something went wrong! Failed to add decoded property to properties list."));
+							LogError("Properties", "Failed to add property to properties list due to it already existing.");
+							return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Duplicate property not allowed for property type: " + std::to_string(static_cast<std::uint8_t>(type)) };
 						}
 					}
 
-					if (buffer.readCursor() > endBufferCursor)
+					if (buffer.readCursor() != endBufferCursor)
 					{
-						Exception(
-							LogLevel::Fatal,
-							"Properties",
-							std::out_of_range("Decoded more data than excpected! Any subsequent decoding will be broken from this buffer!"));
+						if (buffer.readCursor() > endBufferCursor)
+						{
+							LogError("Properties", "Decoded more data than expected from properties! Any subsequent decoding will be broken from this buffer!");
+							return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET, "Properties size is smaller than the bytes of data decoded for properties part of header." };
+						}
+						else
+						{
+							LogError("Properties", "Decoded less data than expected from properties! Any subsequent decoding will be broken from this buffer!");
+							return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET, "Properties size is bigger than the bytes of data decoded for properties part of header." };
+						}
 					}
+
+					return DecodeResult{ DecodeErrorCode::NO_ERROR };
 				}
 
 			protected:
@@ -232,7 +253,7 @@ namespace cleanMqtt
 
 						if (iter != m_properties.end())
 						{
-							Log(LogLevel::Error, "Properties", "Cannot add duplicate property.");
+							LogError("Properties", "Cannot add duplicate property.");
 							return false;
 						}
 					}

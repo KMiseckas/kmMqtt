@@ -2,9 +2,14 @@
 #define INCLUDE_CLEANMQTT_GLOBALMACROS_H
 
 #include <type_traits>
+#include <mutex>
+#include <sstream>
+#include <iostream>
 
 namespace cleanMqtt
 {
+    using LockGuard = std::lock_guard<std::mutex>;
+
 #define ENUM_FLAG_OPERATORS(enumName)\
         constexpr enumName operator | (enumName lhs, enumName rhs)\
         {\

@@ -17,7 +17,7 @@ namespace cleanMqtt
 			public:
 				ConnectAckVariableHeader() noexcept;
 
-				void decode(const ByteBuffer& buffer) noexcept override;
+				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 
 				EncodedConnectAcknowledgeFlags flags;
 				ConnectReasonCode reasonCode;

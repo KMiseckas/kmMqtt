@@ -48,10 +48,6 @@ namespace cleanMqtt
 			LogLevel m_lowestLogLevel{ LogLevel::Info };
 		};
 	}
-	
-	void Log(const LogLevel logLvl, const char* const msg) noexcept;
-	void Log(const LogLevel logLvl, const char* const category, const char* const msg) noexcept;
-	void Exception(const LogLevel logLvl, const char* const category, const std::exception& e) noexcept(false);
 }
 
 #endif //INCLUDE_CLEANMQTT_INTERFACES_ILOGGER_H

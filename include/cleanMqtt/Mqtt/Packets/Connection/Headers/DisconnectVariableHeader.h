@@ -21,7 +21,7 @@ namespace cleanMqtt
 				void encode(ByteBuffer& buffer) const override;
 				std::size_t getEncodedBytesSize() const noexcept override;
 
-				void decode(const ByteBuffer& buffer) noexcept override;
+				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 
 				DisconnectReasonCode reasonCode;
 				Properties properties;

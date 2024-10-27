@@ -86,7 +86,7 @@ namespace cleanMqtt
 		{
 			while (!m_queuedRequests.empty())
 			{
-				auto result = m_queuedRequests.back()(false, 0);
+				auto result = m_queuedRequests.front()(false, 0);
 
 				if (!result.wasSent)
 				{

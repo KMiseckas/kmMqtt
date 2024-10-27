@@ -34,9 +34,21 @@ namespace cleanMqtt
 					}
 				}
 
-				void decode(const ByteBuffer& /*buffer*/) noexcept override
+				DecodeResult decode(const ByteBuffer& buffer) noexcept override
 				{
-					assert(false);
+					//Packet Type: MSB 4 bits
+					//Flags: LSB 4 bits
+					const std::uint8_t firstByte = buffer.readUint8();
+					packetType = static_cast<PacketType>(firstByte >> 4);
+					flags.overrideFlags(firstByte & 0b00001111);
+					remainingLength.decode(buffer);
+
+					if (getEncodedBytesSize() != buffer.size())
+					{
+						return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Fixed header flags & type + remaining length does not equal the buffer size received from socket." };
+					}
+
+					return DecodeResult{ DecodeErrorCode::NO_ERROR };
 				}
 
 				std::size_t getEncodedBytesSize() const noexcept

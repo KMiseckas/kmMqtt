@@ -2,7 +2,7 @@
 #define INTERFACE_CLEANMQTT_MQTT_PACKETS_FLAGS_H
 
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
-#include <cleanMqtt/Interfaces/ILogger.h>
+#include <cleanMqtt/Logger/Log.h>
 
 #include <type_traits>
 #include <cstdint>
@@ -39,7 +39,7 @@ namespace cleanMqtt
 				{
 					if (static_cast<std::size_t>(flagToSet) > MaxFlagSize)
 					{
-						Exception(LogLevel::Error, "Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
+						LogException("Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
 					}
 
 					const TSizeType bitmask = static_cast<TSizeType>(flagToSet);
@@ -53,7 +53,7 @@ namespace cleanMqtt
 				{
 					if (static_cast<std::size_t>(flagToSet) > MaxFlagSize)
 					{
-						Exception(LogLevel::Error, "Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
+						LogException("Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
 					}
 
 					const TSizeType bitmask = static_cast<TSizeType>(flagToSet);
@@ -61,7 +61,7 @@ namespace cleanMqtt
 					m_flags = val ? m_flags | bitmask : m_flags & ~bitmask;
 				}
 
-				void overrideFlags(TSizeType bitmask)
+				void overrideFlags(TSizeType bitmask) noexcept
 				{
 					m_flags = bitmask;
 				}

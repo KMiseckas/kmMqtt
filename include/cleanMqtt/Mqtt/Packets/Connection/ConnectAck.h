@@ -17,11 +17,14 @@ namespace cleanMqtt
 			
 			class ConnectAck : public BasePacket
 			{
+			public:
 				ConnectAck() noexcept;
 				ConnectAck(ByteBuffer&& dataBuffer) noexcept;
 				~ConnectAck() override;
 
 				PacketType getPacketType() const noexcept override;
+
+				const ConnectAckVariableHeader& getVariableHeader() const noexcept;
 
 			protected:
 				void setUpHeaders() noexcept;

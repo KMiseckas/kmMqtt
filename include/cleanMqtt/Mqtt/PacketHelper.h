@@ -19,12 +19,12 @@ namespace cleanMqtt
 
 			if (conArgs.will->payload != nullptr && conArgs.will->payloadSize <= 0)
 			{
-				Exception(LogLevel::Error, "MqttClient", std::runtime_error("Payload size must be bigger than 0! - Payload is included in the will, but payload size is 0."));
+				LogException("MqttClient", std::runtime_error("Payload size must be bigger than 0! - Payload is included in the will, but payload size is 0."));
 			}
 
 			if (conArgs.will->correlationData != nullptr && conArgs.will->correlationDataSize <= 0)
 			{
-				Exception(LogLevel::Error, "MqttClient", std::runtime_error("Correlatation data size must be bigger than 0! - Correlatation data is included in the will, but Correlatation data size is 0."));
+				LogException("MqttClient", std::runtime_error("Correlatation data size must be bigger than 0! - Correlatation data is included in the will, but Correlatation data size is 0."));
 			}
 
 			EncodedConnectFlags connectFlags;
@@ -36,7 +36,7 @@ namespace cleanMqtt
 			{
 				if (conArgs.will->willTopic.empty())
 				{
-					Exception(LogLevel::Error,
+					LogException(
 						"MqttClient",
 						std::runtime_error("Ignoring Will - Attempted to add a Will to the Connect packet, but Will Topic has not been set!"));
 				}

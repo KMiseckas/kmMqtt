@@ -180,7 +180,7 @@ namespace cleanMqtt
 
 					if (value > maxByteSize)
 					{
-						Exception(LogLevel::Error, "DataTypes", std::runtime_error("Cannot encode value larger than 268,435,455"));
+						LogException("DataTypes", std::runtime_error("Cannot encode value larger than 268,435,455"));
 					}
 
 					std::uint8_t encodedByte{ 0U };
@@ -220,7 +220,7 @@ namespace cleanMqtt
 
 						if (multiplier > (128 * 128 * 128))
 						{
-							throw std::exception("Could not decode malformed variable byte integer data.");
+							LogException("DataTypes", std::exception("Could not decode malformed variable byte integer data."));
 						}
 
 						multiplier *= 128;
@@ -258,7 +258,7 @@ namespace cleanMqtt
 				{
 					if (val.size() > 65535)
 					{
-						Exception(LogLevel::Error, "UTF8String", std::runtime_error("Construction from string failed. Cannot exceed size of 65535 (uint16_t)."));
+						LogException("UTF8String", std::runtime_error("Construction from string failed. Cannot exceed size of 65535 (uint16_t)."));
 					}
 
 					m_size = static_cast<std::uint16_t>(val.size());
@@ -324,7 +324,7 @@ namespace cleanMqtt
 				{
 					if (other.size() > 65535)
 					{
-						Exception(LogLevel::Error, "UTF8String", std::runtime_error("Construction from string failed. Cannot exceed size of 65535 (uint16_t)."));
+						LogException("UTF8String", std::runtime_error("Construction from string failed. Cannot exceed size of 65535 (uint16_t)."));
 					}
 
 					delete[] m_bytes;

@@ -10,11 +10,12 @@ project (
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")
 
 file(GLOB_RECURSE source_files "src/*.cpp")
 file(GLOB_RECURSE  "include/cleanMqtt/*.h")
 
-add_library (${PROJECT_NAME} ${source_files})
+add_library (${PROJECT_NAME} ${source_files} "include/cleanMqtt/Interfaces/IReceiveClientPacketHandler.h")
 target_include_directories( ${PROJECT_NAME} PUBLIC include)
 
 if(BUILD_SHARED_LIBS)
@@ -25,9 +26,21 @@ if(FORCE_ADD_PROPERTIES)
     target_compile_definitions(${PROJECT_NAME} PRIVATE FORCE_ADD_PROPERTIES)
 endif()
 
+if(ENABLE_LOGS)
+    set(LOG_LEVEL 2 CACHE STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
+    target_compile_definitions(${PROJECT_NAME} PRIVATE 
+    LOG_LEVEL=${LOG_LEVEL}
+    ENABLE_LOGS)
+endif()
+
+if(ENABLE_THROW_ON_FATAL_LOG)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_THROW_ON_FATAL_LOG)
+endif()
+
 if(ENABLE_WARNINGS_AS_ERRORS)
     if(MSVC)
         target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
+        target_compile_options(${PROJECT_NAME} PRIVATE /wd4003 /wd4005) #Ignore | Macro warning c4003 | c4005 Macro redefinition |
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()

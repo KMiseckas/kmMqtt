@@ -39,10 +39,14 @@ namespace cleanMqtt
 					properties.encodingSize();
 			}
 
-			void DisconnectVariableHeader::decode(const ByteBuffer& buffer) noexcept
+			DecodeResult DisconnectVariableHeader::decode(const ByteBuffer& buffer) noexcept
 			{
+				DecodeResult result;
+
 				reasonCode = static_cast<DisconnectReasonCode>(buffer.readUint8());
-				properties.decode(buffer);
+				result = std::move(properties.decode(buffer));
+
+				return result;
 			}
 		}
 	}

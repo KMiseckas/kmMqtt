@@ -11,11 +11,16 @@ namespace cleanMqtt
 				flags.setFlagValue(ConnectAcknowledgeFlags::RESERVED, 0);
 			}
 
-			void ConnectAckVariableHeader::decode(const ByteBuffer& buffer) noexcept
+			DecodeResult ConnectAckVariableHeader::decode(const ByteBuffer& buffer) noexcept
 			{
+				DecodeResult result;
+
 				flags.overrideFlags(buffer.readUint8());
 				reasonCode = static_cast<ConnectReasonCode>(buffer.readUint8());
-				properties.decode(buffer);
+
+				result = std::move(properties.decode(buffer));
+
+				return result;
 			}
 		}
 	}

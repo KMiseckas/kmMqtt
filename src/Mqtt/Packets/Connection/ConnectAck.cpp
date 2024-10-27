@@ -27,6 +27,11 @@ namespace cleanMqtt
 				return PacketType::CONNECT_ACKNOWLEDGE;
 			}
 
+			const ConnectAckVariableHeader& ConnectAck::getVariableHeader() const noexcept
+			{
+				return m_variableHeader;
+			}
+
 			void ConnectAck::setUpHeaders() noexcept
 			{
 				addDecodeHeader(&m_variableHeader);

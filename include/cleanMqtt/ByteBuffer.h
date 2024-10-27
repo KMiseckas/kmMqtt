@@ -2,7 +2,7 @@
 #define INCLUDE_CLEANMQTT_BYTEBUFFER_H
 
 #include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Interfaces/ILogger.h>
+#include <cleanMqtt/Logger/Log.h>
 #include <cstdint>
 #include <stdexcept>
 #include <exception>
@@ -14,13 +14,13 @@ namespace cleanMqtt
 #define BYTEBUFFER_HEADROOM_CHECK(spaceRequired) \
 		if (headroom() < spaceRequired)\
 		{\
-			Exception(LogLevel::Error, "ByteBuffer", std::out_of_range("The required size for encoding the bytes exceeds the headroom of buffer."));\
+			LogException("ByteBuffer", std::out_of_range("The required size for encoding the bytes exceeds the headroom of buffer."));\
 		}\
 
 #define BYTEBUFFER_READ_CHECK(readCursor) \
 		if (size() <= readCursor)\
 		{\
-			Exception(LogLevel::Error, "ByteBuffer", std::out_of_range("The buffer read is outside the bounds of buffer size."));\
+			LogException("ByteBuffer", std::out_of_range("The buffer read is outside the bounds of buffer size."));\
 		}\
 
 	}
@@ -135,13 +135,13 @@ namespace cleanMqtt
 		{
 			if (size == 0)
 			{
-				Log(LogLevel::Warning, "ByteBuffer", "Tried to append bytes with size 0.");
+				LogWarning("ByteBuffer", "Tried to append bytes with size 0.");
 				return *this;
 			}
 
 			if (bytes == nullptr)
 			{
-				Exception(LogLevel::Error, "ByteBuffer", std::runtime_error("Tried to append nullptr bytes with size above 0."));
+				LogException("ByteBuffer", std::runtime_error("Tried to append nullptr bytes with size above 0."));
 				return *this;
 			}
 

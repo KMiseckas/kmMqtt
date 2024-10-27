@@ -11,6 +11,8 @@
 #include "cleanMqtt/Interfaces/ISendQueue.h"
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
+#include "cleanMqtt/Interfaces/IReceiveClientPacketHandler.h"
+#include "cleanMqtt/Mqtt/ReceiveQueue.h"
 
 #include <cstring>
 #include <memory>
@@ -22,13 +24,12 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		using LockGuard = std::lock_guard<std::mutex>;
-
-		using ConnectedEvent = events::Event<const packets::ConnectAck&>;
+		using ConnectedEvent = events::Event<bool, int, const packets::ConnectAck&>;
 		using DisconnectedEvent = events::Event<const packets::DisconnectReasonCode>;
 
-		class PUBLIC_API MqttClient
+		class PUBLIC_API MqttClient : public interfaces::IReceiveClientPacketHandler
 		{
+			MqttClient() = delete;
 			MqttClient(std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue);
 			~MqttClient();
 
@@ -38,7 +39,7 @@ namespace cleanMqtt
 			MqttClient& operator=(MqttClient&) = delete;
 			MqttClient& operator=(MqttClient&&) = delete;
 
-			bool connect(ConnectArgs&& args, const std::string& url);
+			void connect(ConnectArgs&& args, const std::string& url);
 			void publish(const char* topic, const char* payloadMsg);
 			void subscribe(const char* topic);
 			void unSubscribe();
@@ -50,9 +51,27 @@ namespace cleanMqtt
 
 			inline ConnectionStatus getConnectionStatus() const noexcept;
 
+			//IReceiveClientPacketHandler overrides
+			void handleReceivedConnectAcknowledge(const packets::ConnectAck& packet) override;
+			void handleReceivedDisconnect(const packets::Disconnect& packet) override;
+			void handleReceivedPublish(const packets::Publish& packet) override;
+			void handleReceivedPublishComplete() override;
+			void handleReceivedPublishReceived() override;
+			void handleReceivedPublishReleased() override;
+			void handleReceivedSubscribeAcknowledge() override;
+			void handleReceivedUnsubscribeAcknowledge() override;
+			void handleReceivedPingResponse() override;
+
 		private:
 			void handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args = {});
 			void handleExternalDisconnect(const packets::Disconnect& packet);
+			void handleExternalDisconnect(int closeCode = -1, std::string reason = "");
+
+			void handleSocketConnectEvent(bool success);
+			void handleSocketDisconnectEvent();
+			void handleSocketPacketReceivedEvent(ByteBuffer&& buffer);
+			void handleSocketErrorEvent(int error);
+
 			int sendPacket(const packets::BasePacket& packet);
 
 			MqttConnectionInfo m_connectionInfo{ "CLIENT_ID" };
@@ -64,7 +83,7 @@ namespace cleanMqtt
 			DisconnectedEvent m_disconnectedEvent;
 
 			std::unique_ptr<interfaces::ISendQueue> m_sendQueue{ nullptr };
-			std::queue<ByteBuffer*> m_queuedResponseData;
+			std::unique_ptr<ReceiveQueue> m_receiveQueue{ nullptr };
 
 			interfaces::SendBatchResult m_batchResultData;
 

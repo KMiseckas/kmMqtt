@@ -7,6 +7,7 @@
 #include <cleanMqtt/Mqtt/Packets/FixedHeader.h>
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Interfaces/IEncodeHeader.h>
+#include <cleanMqtt/Mqtt/Packets/ErrorCodes.h>
 
 #include <cstdint>
 #include <vector>
@@ -36,7 +37,7 @@ namespace cleanMqtt
 				virtual PacketType getPacketType() const noexcept = 0;
 
 				void encode();
-				void decode();
+				DecodeResult decode();
 
 				const FixedHeader& getFixedHeader() const;
 				const ByteBuffer* getDataBuffer() const;
@@ -45,13 +46,13 @@ namespace cleanMqtt
 				std::size_t calculateFixedHeaderRemainingLength() const;
 
 				void addEncodeHeader(const interfaces::IEncodeHeader* header);
-				void addDecodeHeader(const interfaces::IDecodeHeader* header);
+				void addDecodeHeader(interfaces::IDecodeHeader* header);
 
 			private:
 				FixedHeader m_fixedHeader;
 
 				std::vector<const interfaces::IEncodeHeader*> m_otherEncodeHeaders;
-				std::vector<const interfaces::IDecodeHeader*> m_otherDecodeHeaders;
+				std::vector<interfaces::IDecodeHeader*> m_otherDecodeHeaders;
 				ByteBuffer* m_dataBuffer{ nullptr };
 			};
 		}
