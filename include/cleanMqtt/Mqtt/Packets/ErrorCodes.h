@@ -36,6 +36,24 @@ namespace cleanMqtt
 				{
 					return code == DecodeErrorCode::NO_ERROR;
 				}
+
+				DisconnectReasonCode getDisconnectReason() const noexcept
+				{
+					switch (code)
+					{
+					case DecodeErrorCode::PROTOCOL_ERROR:
+						return DisconnectReasonCode::PROTOCOL_ERROR;
+					case DecodeErrorCode::INTERNAL_ERROR:
+						return DisconnectReasonCode::IMPLEMENTATION_SPECIFIC_ERROR;
+					case DecodeErrorCode::MALFORMED_PACKET:
+						return DisconnectReasonCode::MALFORMED_PACKET;
+					case DecodeErrorCode::UNSPECIFIED_ERROR:
+					case DecodeErrorCode::NO_ERROR:
+						break;
+					}
+
+					return DisconnectReasonCode::UNSPECIFIED_ERROR;
+				}
 			};
 		}
 	}

@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")
 file(GLOB_RECURSE source_files "src/*.cpp")
 file(GLOB_RECURSE  "include/cleanMqtt/*.h")
 
-add_library (${PROJECT_NAME} ${source_files} "include/cleanMqtt/Interfaces/IReceiveClientPacketHandler.h")
+add_library (${PROJECT_NAME} ${source_files}  "include/cleanMqtt/Utils/Deferrer.h")
 target_include_directories( ${PROJECT_NAME} PUBLIC include)
 
 if(BUILD_SHARED_LIBS)

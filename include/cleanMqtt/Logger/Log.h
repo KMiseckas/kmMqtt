@@ -1,11 +1,15 @@
 #ifndef INCLUDE_CLEANMQTT_LOGGER_LOG_H
 #define INCLUDE_CLEANMQTT_LOGGER_LOG_H
 
+#include <cstring>
 #include <cstdint>
 #include <exception>
 
 namespace cleanMqtt
 {
+#define FORMAT_MSG(msg, ...)\
+
+
     void LogTrace(const char* msg, ...) noexcept;
     void LogTrace(const char* category, const char* msg, ...) noexcept;
 

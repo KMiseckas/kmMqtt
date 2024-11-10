@@ -3,56 +3,64 @@
 #include "cleanMqtt/Mqtt/Packets/PacketUtils.h"
 #include "cleanMqtt/Mqtt/Packets/ErrorCodes.h"
 
-#include <vector>
-
 namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		ReceiveQueue::ReceiveQueue(interfaces::IReceiveClientPacketHandler* packetHandler) noexcept
-			:m_handler{ packetHandler }
+		ReceiveQueue::ReceiveQueue() noexcept
 		{
-			assert(m_handler != nullptr);
 		}
 
 		ReceiveQueue::~ReceiveQueue()
 		{
-			m_handler = nullptr;
+			clear();
 		}
 
 		void ReceiveQueue::addToQueue(ByteBuffer&& byteBuffer)
 		{
-			LockGuard lockguard{ m_mutex };
+			LockGuard guard{ m_mutex };
 
-			m_queuedData.push(std::move(byteBuffer));
+			m_inQueueData.push(std::move(byteBuffer));
 		}
 
-		void ReceiveQueue::receiveAvailablePackets()
+		const packets::DecodeResult ReceiveQueue::receiveNextBatch()
 		{
-			LockGuard lockguard{ m_mutex };
+			packets::DecodeResult decodeResult;
+			decodeResult.code = packets::DecodeErrorCode::NO_ERROR;
+
+			m_mutex.lock();
+			if (m_inQueueData.empty())
+			{
+				m_mutex.unlock();
+				return decodeResult;
+			}
+
+			std::swap(m_inQueueData, m_inProgressData);
+			m_mutex.unlock();
 
 			packets::PacketType packetType{ packets::PacketType::RESERVED };
-			m_failedDecodeResults.clear();
-			packets::DecodeResult decodeResult;
 
-			while (!m_queuedData.empty())
+			while (!m_inProgressData.empty())
 			{
-				packetType = packets::checkPacketType(m_queuedData.front().bytes(), m_queuedData.front().size());
+				packetType = packets::checkPacketType(m_inProgressData.front().bytes(), m_inProgressData.front().size());
 				decodeResult.packetType = packetType;
 
 				switch (packetType)
 				{
 				case packets::PacketType::CONNECT_ACKNOWLEDGE:
 				{
-					packets::ConnectAck packet{ std::move(m_queuedData.front()) };
-					decodeResult = std::move(packet.decode());
+					packets::ConnectAck packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode();
 
-					if (tryAddFailedResult(std::move(decodeResult)))
+					if (!decodeResult.isSuccess())
 					{
-						break;
+						return decodeResult;
 					}
 
-					m_handler->handleReceivedConnectAcknowledge(packet);
+					if (m_conAckCallback != nullptr)
+					{
+						m_conAckCallback(packet);
+					}
 					break;
 				}
 				case packets::PacketType::PUBLISH:
@@ -81,41 +89,53 @@ namespace cleanMqtt
 					break;
 				case packets::PacketType::DISCONNECT:
 				{
-					packets::Disconnect packet{ std::move(m_queuedData.front()) };
-					decodeResult = std::move(packet.decode());
+					packets::Disconnect packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode();
 
-					if (tryAddFailedResult(std::move(decodeResult)))
+					if (!decodeResult.isSuccess())
 					{
-						break;
+						return decodeResult;
 					}
 
-					m_handler->handleReceivedDisconnect(packet);
+					if (m_DisconnectCallback != nullptr)
+					{
+						m_DisconnectCallback(packet);
+					}
 					break;
 				}
 				}
 
-				m_queuedData.pop();
-			}
-		}
-
-		void ReceiveQueue::clearQueue()
-		{
-			LockGuard lockguard{ m_mutex };
-
-			std::queue<ByteBuffer> emptyQueue;
-			m_queuedData.swap(emptyQueue);
-		}
-
-		inline bool ReceiveQueue::tryAddFailedResult(packets::DecodeResult&& result) noexcept
-		{
-			if (result.isSuccess())
-			{
-				return false;
+				m_inProgressData.pop();
 			}
 
-			m_failedDecodeResults.push_back(std::move(result));
+			return decodeResult;
+		}
 
-			return true;
+		void ReceiveQueue::clear() noexcept
+		{
+			std::queue<ByteBuffer> emptyQueueData;
+			std::queue<ByteBuffer> emptyProcessData;
+			m_inQueueData.swap(emptyQueueData);
+			m_inProgressData.swap(emptyProcessData);
+
+			m_conAckCallback = nullptr;
+			m_DisconnectCallback = nullptr;
+			m_pubCallback = nullptr;
+		}
+
+		void ReceiveQueue::setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept
+		{
+			m_conAckCallback = callback;
+		}
+
+		void ReceiveQueue::setDisconnectCallback(DisconnectCallback& callback) noexcept
+		{
+			m_DisconnectCallback = callback;
+		}
+
+		void ReceiveQueue::setPublishCallback(PubCallback& callback) noexcept
+		{
+			m_pubCallback = callback;
 		}
 	}
 }

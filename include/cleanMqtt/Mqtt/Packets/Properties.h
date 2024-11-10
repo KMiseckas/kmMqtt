@@ -67,11 +67,6 @@ namespace cleanMqtt
 					}
 #endif
 
-					//Property identifiers are actually Variable Byte Integers, but this library assumes they fit within 0U - 127U and encodes using a byte.
-					//MQTT spec 5.1 at time of writting has all property IDs below 127U.
-					//Rewrite to use variable byte integer if property IDs increase beyond 127U.
-					assert(static_cast<std::uint8_t>(type) < 127);
-
 					auto it = k_propertyTraits.find(type);
 					if (!it->second.allowDuplicates)
 					{
@@ -79,7 +74,7 @@ namespace cleanMqtt
 
 						if (iter != m_properties.end())
 						{
-							LogError("Properties", "Cannot add duplicate property.");
+							LogError("Properties", "Cannot add duplicate property. Property Type: %d", static_cast<std::uint16_t>(type));
 							return false;
 						}
 					}
@@ -103,11 +98,6 @@ namespace cleanMqtt
 					}
 #endif
 
-					//Property identifiers are actually Variable Byte Integers, but this library assumes they fit within 0U - 127U and encodes using a byte.
-					//MQTT spec 5.1 at time of writting has all property IDs below 127U.
-					//Rewrite to use variable byte integer if property IDs increase beyond 127U.
-					assert(static_cast<std::uint8_t>(type) < 127);
-
 					auto it = k_propertyTraits.find(type);
 					if (!it->second.allowDuplicates)
 					{
@@ -115,7 +105,7 @@ namespace cleanMqtt
 
 						if (iter != m_properties.end())
 						{
-							LogError("Properties", "Cannot add duplicate property.");
+							LogError("Properties", "Cannot add duplicate property. Property Type: %d", static_cast<std::uint16_t>(type));
 							return false;
 						}
 					}
@@ -195,7 +185,7 @@ namespace cleanMqtt
 
 					if (buffer.size() < endBufferCursor)
 					{
-						LogError("Properties", "Decoding properties would cause buffer overflow.");
+						LogError("Properties", "Decoding properties would cause buffer overflow. Buffer Size: %d, Properties Decode End: %d", buffer.size(), endBufferCursor);
 						return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET,
 							"Decoding properties would cause buffer overflow, buffer size: " + 
 							std::to_string(static_cast<std::size_t>(buffer.size())) + 
@@ -241,11 +231,6 @@ namespace cleanMqtt
 
 				bool tryAddProperty(PropertyType type, void* data)
 				{
-					//Property identifiers are actually Variable Byte Integers, but this library assumes they fit within 0U - 127U and encodes using a byte.
-					//MQTT spec 5.1 at time of writting has all property IDs below 127U.
-					//Rewrite to use variable byte integer if property IDs increase beyond 127U.
-					assert(static_cast<std::uint8_t>(type) < 127);
-
 					auto it = k_propertyTraits.find(type);
 					if (!it->second.allowDuplicates)
 					{
@@ -253,7 +238,7 @@ namespace cleanMqtt
 
 						if (iter != m_properties.end())
 						{
-							LogError("Properties", "Cannot add duplicate property.");
+							LogError("Properties", "Cannot add duplicate property. Property Type:", static_cast<std::uint16_t>(type));
 							return false;
 						}
 					}

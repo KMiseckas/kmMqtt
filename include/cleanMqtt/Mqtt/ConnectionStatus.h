@@ -9,9 +9,11 @@ namespace cleanMqtt
 	{
 		enum class ConnectionStatus : std::uint8_t
 		{
-			DISCONNECTED = 0U,
-			CONNECTED = 1U,
-			CONNECTING = 2U
+			DISCONNECTED,
+			CONNECTED,
+			CONNECTING,
+			RECONNECT,
+			RECONNECTING,
 		};
 	}
 }

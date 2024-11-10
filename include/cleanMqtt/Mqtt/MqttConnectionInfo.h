@@ -4,6 +4,7 @@
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Mqtt/MqttVersion.h>
 #include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
+#include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
 
 #include <string>
 #include <cstdint>
@@ -14,7 +15,11 @@ namespace cleanMqtt
 	{
 		struct PUBLIC_API MqttConnectionInfo
 		{
-			ConnectArgs connectArgs;
+			ConnectArgs connectArgs{ "CLIENT ID" };
+			ConnectAddress connectAddress;
+			ReconnectAddress reconnectAddress;
+
+			bool m_hasBeenConnected{ false };
 		};
 	}
 }

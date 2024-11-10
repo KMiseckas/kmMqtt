@@ -1,7 +1,9 @@
 #pragma once
 
+#include "cleanMqtt/GlobalMacros.h"
 #include <vector>
 #include <mutex>
+#include <functional>
 
 namespace cleanMqtt
 {
@@ -11,8 +13,10 @@ namespace cleanMqtt
 		class Event
 		{
 		public:
-			using LockGuard = std::lock_guard<std::mutex>;
-			using Callback = void(*)(Args...);
+			using Callback = std::function<void(Args...)>;
+
+			Event() noexcept = default;
+			virtual ~Event() {};
 
 			void add(const Callback& callback)
 			{
@@ -48,7 +52,7 @@ namespace cleanMqtt
 				}
 			}
 
-			void invoke(Args... args)
+			virtual void invoke(Args... args)
 			{
 				for (const auto& callback : m_callbacks)
 				{

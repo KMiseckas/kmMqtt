@@ -43,7 +43,14 @@ namespace cleanMqtt
 				WILDCARD_SUBSCRIPTION_AVAILABLE = 40U, //UINT8 - CONNACK
 				SUBSCRIPTION_IDENTIFIER_AVAILABLE = 41U, //UINT8 - CONNACK
 				SHARED_SUBSCRIPTION_AVAILABLE = 42U, //UINT8 - CONNACK
+
+				_COUNT
 			};
+
+			//Property identifiers are actually Variable Byte Integers, but this library assumes they fit within 0U - 127U and encodes using a byte.
+			//MQTT spec 5.1 at time of writting has all property IDs below 127U.
+			//Rewrite to use variable byte integer if property IDs increase beyond 127U.
+			static_assert(static_cast<std::uint16_t>(PropertyType::_COUNT) <= 127, "PropertyType values exceed 127, rewrite to use variable byte integer!");
 
 			enum class PropertyDataType : std::uint8_t
 			{

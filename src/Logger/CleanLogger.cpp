@@ -26,27 +26,27 @@ namespace cleanMqtt
 
 		void CleanLogger::Log(const LogLevel logLvl, const char* const category, const char* const msg) const noexcept
 		{
-			std::string logOutput;
+			std::string logOutput{"[CleanMqtt]"};
 
 			switch (logLvl)
 			{
 			case LogLevel::Trace:
-				logOutput.append("[TRACE]");
+				logOutput.append("[Trace]");
 				break;
 			case LogLevel::Debug:
-				logOutput.append("[DEBUG]");
+				logOutput.append("[Debug]");
 				break;
 			case LogLevel::Info:
-				logOutput.append("[INFO]");
+				logOutput.append("[Info]");
 				break;
 			case LogLevel::Warning:
-				logOutput.append("[WARNING]");
+				logOutput.append("[Warning]");
 				break;
 			case LogLevel::Error:
-				logOutput.append("[ERROR]");
+				logOutput.append("[Error]");
 				break;
 			case LogLevel::Fatal:
-				logOutput.append("[FATAL]");
+				logOutput.append("[Fatal]");
 				break;
 			}
 
