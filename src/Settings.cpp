@@ -4,6 +4,8 @@ namespace cleanMqtt
 {
 	namespace settings
 	{
+		interfaces::ILogger* m_logger{ nullptr };
+
 		const interfaces::ILogger* const getLogger()
 		{
 			return m_logger;
@@ -13,7 +15,7 @@ namespace cleanMqtt
 		{
 			if (deleteOld && m_logger != nullptr)
 			{
-				delete(m_logger);
+				delete m_logger;
 			}
 
 			m_logger = logger;

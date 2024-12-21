@@ -17,14 +17,17 @@ namespace cleanMqtt
 		{
 			const auto& conArgs = connectionInfo.connectArgs;
 
-			if (conArgs.will->payload != nullptr && conArgs.will->payloadSize <= 0)
+			if (conArgs.will != nullptr)
 			{
-				LogException("MqttClient", std::runtime_error("Payload size must be bigger than 0! - Payload is included in the will, but payload size is 0."));
-			}
+				if (conArgs.will->payload != nullptr && conArgs.will->payload->size() <= 0)
+				{
+					LogException("MqttClient", std::runtime_error("Payload size must be bigger than 0! - Payload is included in the will, but payload size is 0."));
+				}
 
-			if (conArgs.will->correlationData != nullptr && conArgs.will->correlationDataSize <= 0)
-			{
-				LogException("MqttClient", std::runtime_error("Correlatation data size must be bigger than 0! - Correlatation data is included in the will, but Correlatation data size is 0."));
+				if (conArgs.will->correlationData != nullptr && conArgs.will->correlationData->size() <= 0)
+				{
+					LogException("MqttClient", std::runtime_error("Correlatation data size must be bigger than 0! - Correlatation data is included in the will, but Correlatation data size is 0."));
+				}
 			}
 
 			EncodedConnectFlags connectFlags;
@@ -50,7 +53,7 @@ namespace cleanMqtt
 
 			Properties connectProperties;
 			connectProperties.tryAddProperty(PropertyType::SESSION_EXPIRY_INTERVAL, conArgs.sessionExpiryInterval, conArgs.sessionExpiryInterval > 0);
-			connectProperties.tryAddProperty(PropertyType::RECEIVE_MAXIMUM, conArgs.receiveMaximum);
+			connectProperties.tryAddProperty(PropertyType::RECEIVE_MAXIMUM, conArgs.receiveMaximum, conArgs.receiveMaximum > 0);
 			connectProperties.tryAddProperty(PropertyType::MAXIMUM_PACKET_SIZE, conArgs.maximumPacketSize, conArgs.maximumPacketSize >= 2);
 			connectProperties.tryAddProperty(PropertyType::TOPIC_ALIAS_MAXIMUM, conArgs.maximumTopicAliases, conArgs.maximumTopicAliases > 0);
 			connectProperties.tryAddProperty(PropertyType::REQUEST_RESPONSE_INFORMATION, conArgs.requestResponseInformation, conArgs.requestResponseInformation);
@@ -69,24 +72,27 @@ namespace cleanMqtt
 			std::move(connectProperties) };
 
 			Properties willProperties;
-			willProperties.tryAddProperty(PropertyType::WILL_DELAY_INTERVAL, conArgs.will->willDelayInterval, conArgs.will->willDelayInterval > 0);
-			willProperties.tryAddProperty(PropertyType::PAYLOAD_FORMAT_INDICATOR, conArgs.will->payloadFormat, conArgs.will->payloadFormat == PayloadFormatIndicator::UTF8);
-			willProperties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, conArgs.will->messageExpiryInterval, conArgs.will->messageExpiryInterval > 0);
-			willProperties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String{ conArgs.will->contentType }, !conArgs.will->contentType.empty());
-			willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, UTF8String{ conArgs.will->responseTopic }, !conArgs.will->responseTopic.empty());
-			willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, BinaryData{conArgs.will->correlationDataSize, *conArgs.will->correlationData}, conArgs.will->correlationData != nullptr);
-			
-			for (const auto& property : conArgs.will->userProperties)
+			if (conArgs.will != nullptr)
 			{
-				willProperties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				willProperties.tryAddProperty(PropertyType::WILL_DELAY_INTERVAL, conArgs.will->willDelayInterval, conArgs.will->willDelayInterval > 0);
+				willProperties.tryAddProperty(PropertyType::PAYLOAD_FORMAT_INDICATOR, conArgs.will->payloadFormat, conArgs.will->payloadFormat == PayloadFormatIndicator::UTF8);
+				willProperties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, conArgs.will->messageExpiryInterval, conArgs.will->messageExpiryInterval > 0);
+				willProperties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String{ conArgs.will->contentType }, !conArgs.will->contentType.empty());
+				willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, UTF8String{ conArgs.will->responseTopic }, !conArgs.will->responseTopic.empty());
+				willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() }, conArgs.will->correlationData != nullptr);
+
+				for (const auto& property : conArgs.will->userProperties)
+				{
+					willProperties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				}
 			}
 
 			ConnectPayloadHeader payloadHeader
 			{
 				UTF8String{conArgs.clientId},
 				std::move(willProperties),
-				UTF8String{conArgs.will->willTopic},
-				BinaryData{conArgs.will->payloadSize, *conArgs.will->payload},
+				UTF8String{conArgs.will == nullptr ? "" : conArgs.will->willTopic},
+				conArgs.will == nullptr ? BinaryData() : BinaryData{conArgs.will->payload->size(), conArgs.will->payload->bytes()},
 				UTF8String{conArgs.username},
 				BinaryData{static_cast<std::uint16_t>(conArgs.password.size()), reinterpret_cast<const std::uint8_t*>(conArgs.password.c_str())}
 			};

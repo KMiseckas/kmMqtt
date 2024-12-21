@@ -15,7 +15,7 @@ whether they are empty to force properties to always have a value when they reac
 May be useful if broker for some reason doesnt follow MQTT spec correctly and requires property 
 to not be empty, however ideally this should be toggled to `OFF` and broker fixed to follow specs." OFF)
 
-message(STATUS "Options:")
+message(STATUS "Mqtt Library Options:")
 message(STATUS "  BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 message(STATUS "  BUILD_UNIT_TESTS: ${BUILD_UNIT_TESTS}")
 message(STATUS "  ENABLE_TESTS: ${ENABLE_TESTS}")

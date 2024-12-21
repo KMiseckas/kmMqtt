@@ -30,7 +30,7 @@ namespace cleanMqtt
 				void setUpHeaders() noexcept;
 
 			private:
-				DisconnectVariableHeader m_variableHeader;
+				DisconnectVariableHeader* m_variableHeader{ nullptr };
 			};
 		}
 	}

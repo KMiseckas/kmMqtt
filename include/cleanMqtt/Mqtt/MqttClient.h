@@ -15,6 +15,8 @@
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
 #include "cleanMqtt/Mqtt/ReceiveQueue.h"
 #include <cleanMqtt/Utils/Deferrer.h>
+#include <cleanMqtt/Config.h>
+#include <cleanMqtt/Mqtt/DefaultSendQueue.h>
 
 #include <cstring>
 #include <memory>
@@ -32,15 +34,13 @@ namespace cleanMqtt
 
 		class PUBLIC_API MqttClient
 		{
+		public:
+			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
+			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
+
 			MqttClient() = delete;
-			MqttClient(std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue);
+			MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue = std::make_unique <DefaultSendQueue>());
 			~MqttClient();
-
-			MqttClient(const MqttClient&) = delete;
-			MqttClient(const MqttClient&&) = delete;
-
-			MqttClient& operator=(MqttClient&) = delete;
-			MqttClient& operator=(MqttClient&&) = delete;
 
 			void connect(ConnectArgs&& args, ConnectAddress&& address);
 			void publish(const char* topic, const char* payloadMsg);
@@ -55,7 +55,7 @@ namespace cleanMqtt
 			const DisconnectEvent& onDisconnectEvent() const noexcept { return m_disconnectEvent; }
 			const ReconnectEvent& onReconnectEvent() const noexcept { return m_reconnectEvent; }
 
-			inline ConnectionStatus getConnectionStatus() const noexcept;
+			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
 
 		private:
@@ -81,6 +81,15 @@ namespace cleanMqtt
 			//void handleReceivedUnsubscribeAcknowledge();
 			//void handleReceivedPingResponse();
 
+			void tickCheckTimeOut();
+			void tickSendPackets();
+			void tickReceivePackets();
+
+			void handleFailedReconnect(const packets::ConnectAck& packet);
+			void handleFailedConnect(const packets::ConnectAck& packet);
+			void handleTimeOutConnect();
+			void handleTimeOutReconnect();
+
 			int sendPacket(const packets::BasePacket& packet);
 
 			MqttConnectionInfo m_connectionInfo;
@@ -88,7 +97,7 @@ namespace cleanMqtt
 
 			std::unique_ptr<interfaces::IWebSocket> m_socket{ nullptr };
 
-			events::Deferrer m_deferrer;
+			events::Deferrer m_eventDeferrer;
 			ConnectEvent m_connectEvent;
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
@@ -100,6 +109,8 @@ namespace cleanMqtt
 
 			std::mutex m_mutex;
 			std::mutex m_receiverMutex;
+
+			Config m_config;
 
 			//TODO create session STATE object (COnnectionInfo + SendQueue + ReceiveQueue)
 		};

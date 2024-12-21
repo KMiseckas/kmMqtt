@@ -23,19 +23,19 @@ namespace cleanMqtt
 		{
 			Address() = default;
 
-			static Address createIp4(const char* ip) noexcept
+			static Address createIp4(const char* ip, const char* port) noexcept
 			{
-				return Address(ip, LocatorType::IP4);
+				return Address(ip, port, LocatorType::IP4);
 			}
 
-			static Address createIp6(const char* ip) noexcept
+			static Address createIp6(const char* ip, const char* port) noexcept
 			{
-				return Address(ip, LocatorType::IP6);
+				return Address(ip, port, LocatorType::IP6);
 			}
 
-			static Address createURL(const char* url) noexcept
+			static Address createURL(const char* hostname, const char* port) noexcept
 			{
-				return Address(url, LocatorType::HOSTNAME);
+				return Address(hostname, port, LocatorType::HOSTNAME);
 			}
 
 			static std::vector<Address> toAddress(const char* targetAddress)
@@ -46,38 +46,93 @@ namespace cleanMqtt
 				for (const std::string& token : tokens)
 				{
 					const std::regex ipv4Regex(R"((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d{1,5}))?)");
-					const std::regex ipv6Regex_1(R"(([a-fA-F0-9:]+)(?::(\d{1,5}))?)");
-					const std::regex ipv6Regex_2(R"(\[([a-fA-F0-9:]+)\](?::(\d{1,5}))?)");
+					const std::regex ipv6Regex(R"(\[([a-fA-F0-9:]+)\](?::(\d{1,5}))?)");
 
+					std::smatch result;
 
-					if (std::regex_match(token, ipv4Regex))
+					if (std::regex_match(token, result, ipv4Regex))
 					{
-						Address address{ token.c_str(), LocatorType::IP4 };
+						if (result.size() < 3)
+						{
+							return addresses;
+						}
+
+						Address address{ result[1].str().c_str(), result[2].str().c_str(), LocatorType::IP4};
 						addresses.push_back(address);
 					}
-					else if (std::regex_match(token, ipv6Regex_1) || std::regex_match(token, ipv6Regex_2))
+					else if (std::regex_match(token, result, ipv6Regex))
 					{
-						Address address{ token.c_str(), LocatorType::IP6 };
+						if (result.size() < 3)
+						{
+							return addresses;
+						}
+
+						Address address{ result[1].str().c_str(), result[2].str().c_str(), LocatorType::IP6 };
 						addresses.push_back(address);
 					}
 					else
 					{
-						Address address{ token.c_str(), LocatorType::HOSTNAME };
-						addresses.push_back(address);
+						std::string hostname;
+						std::string port;
+
+						if (tryParseHostnameAddress(token, hostname, port))
+						{
+							Address address{ hostname.c_str(), port.c_str(), LocatorType::HOSTNAME };
+							addresses.push_back(address);
+						}
 					}
 				}
 
 				return addresses;
 			}
 
-			inline LocatorType locatorType() noexcept
+			static bool tryParseHostnameAddress(const std::string& url, std::string& hostname, std::string& port)
+			{
+				static constexpr const char* schemeSeperator{ "://" };
+				static constexpr std::size_t schemeSeperatorLen{ 3 };
+
+				hostname = "";
+				port = "";
+
+				std::size_t schemeEnd = url.find(schemeSeperator);
+				if (schemeEnd == std::string::npos)
+				{
+					//No scheme
+					schemeEnd = 0;
+				}
+
+				std::size_t hostStart = schemeEnd == 0 ? 0 : schemeEnd + schemeSeperatorLen;
+				std::size_t portStart = url.find(':', hostStart);
+				std::size_t pathStart = url.find('/', hostStart);
+
+				if (portStart != std::string::npos && (pathStart == std::string::npos || portStart < pathStart))
+				{
+					hostname = url.substr(hostStart, portStart - hostStart);
+					std::size_t portEnd = (pathStart != std::string::npos) ? pathStart : url.size();
+
+					port = url.substr(portStart + 1, portEnd - portStart - 1);
+				}
+				else
+				{
+					return false;
+				}
+
+				return true;
+			}
+
+			inline LocatorType locatorType() const noexcept
 			{
 				return m_locatorType;
 			}
 
-			inline const std::string& value() noexcept
+			inline const std::string& hostname() const noexcept
 			{
-				return m_value;
+				return m_hostname;
+			}
+
+			inline const std::string& port() const noexcept
+			{
+				return m_port;
 			}
 
 			bool operator==(const Address& other) const
@@ -92,24 +147,27 @@ namespace cleanMqtt
 					return false;
 				}
 
-				return other.m_value == m_value;
+				return other.m_hostname == m_hostname && other.m_port == m_port;
 			}
 
 		private:
-			Address(const char* val, LocatorType type) noexcept
-				: m_value{ val }, m_locatorType{ type }
+			Address(const char* val, const char* port, LocatorType type) noexcept
+				: m_hostname{ val },
+				m_port{ port },
+				m_locatorType {type}
 			{
 			}
 
 			LocatorType m_locatorType{ LocatorType::UNKNOWN };
-			std::string m_value{ "" };
+			std::string m_hostname{ "" };
+			std::string m_port{ "" };
 		};
 
 		struct ConnectAddress
 		{
 			ConnectAddress() noexcept
 			{
-				primaryAddress = Address::createURL("");
+				primaryAddress = Address::createURL("", "80");
 			}
 
 			ConnectAddress(Address primary) noexcept

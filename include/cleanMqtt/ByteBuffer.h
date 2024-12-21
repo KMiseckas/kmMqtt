@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <exception>
+#include <bitset>
 
 namespace cleanMqtt
 {
@@ -181,6 +182,19 @@ namespace cleanMqtt
 		std::size_t readCursor() const noexcept
 		{
 			return m_readCursor;
+		}
+
+		std::string toString() const
+		{
+			std::string result{ "" };
+
+			for (size_t i = 0; i < m_size; ++i)
+			{
+				result += std::bitset<8>(m_bytes[i]).to_string();
+				result += " ";
+			}
+
+			return result;
 		}
 
 	private:

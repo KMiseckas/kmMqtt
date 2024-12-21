@@ -43,7 +43,7 @@ namespace cleanMqtt
 					flags.overrideFlags(firstByte & 0b00001111);
 					remainingLength.decode(buffer);
 
-					if (getEncodedBytesSize() != buffer.size())
+					if (remainingLength.uint32Value() + getEncodedBytesSize() != buffer.size())
 					{
 						return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Fixed header flags & type + remaining length does not equal the buffer size received from socket." };
 					}

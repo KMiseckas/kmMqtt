@@ -21,8 +21,6 @@ namespace cleanMqtt
 
 		struct PUBLIC_API SendBatchResult
 		{
-			SendBatchResult() noexcept;
-
 			std::size_t packetsSent{ 0U };
 			std::size_t packetsAttemptedToSend{ 0U };
 			std::size_t totalBytesSent{ 0U };
@@ -48,10 +46,10 @@ namespace cleanMqtt
 		{
 		public:
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(ISendQueue)
-			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ISendQueue)
+				DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ISendQueue)
 
-			ISendQueue() noexcept;
-			virtual ~ISendQueue();
+			ISendQueue() noexcept {};
+			virtual ~ISendQueue() {};
 
 			virtual void addToQueue(std::function<SendResultData(bool, std::size_t)> packetSendJob, const mqtt::packets::PacketType type) = 0;
 			virtual void sendNextBatch(SendBatchResult& outResult) = 0;

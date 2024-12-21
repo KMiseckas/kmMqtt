@@ -29,7 +29,7 @@ namespace cleanMqtt
 			protected:
 				void setUpHeaders() noexcept;
 
-				ConnectAckVariableHeader m_variableHeader;
+				ConnectAckVariableHeader* m_variableHeader{ nullptr };
 			};
 		}
 	}

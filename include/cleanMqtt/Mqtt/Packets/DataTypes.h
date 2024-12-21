@@ -26,8 +26,6 @@ namespace cleanMqtt
 			struct BinaryData : public MqttDataType
 			{
 			public:
-				DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(BinaryData)
-
 				~BinaryData()
 				{
 					delete[] m_bytes;
@@ -56,6 +54,16 @@ namespace cleanMqtt
 					other.m_size = 0U;
 				}
 
+				BinaryData(const BinaryData& other) noexcept
+					: m_size(other.m_size)
+				{
+					if (m_size > 0)
+					{
+						m_bytes = new std::uint8_t[m_size];
+						std::memcpy(m_bytes, other.m_bytes, m_size);
+					}
+				}
+
 				BinaryData& operator=(BinaryData&& other) noexcept
 				{
 					if (this == &other)
@@ -68,6 +76,24 @@ namespace cleanMqtt
 
 					other.m_bytes = nullptr;
 					other.m_size = 0U;
+
+					return *this;
+				}
+
+				BinaryData& operator=(const BinaryData& other) noexcept
+				{
+					if (this == &other)
+					{
+						return *this;
+					}
+
+					m_size = other.m_size;
+
+					if (m_size > 0)
+					{
+						m_bytes = new std::uint8_t[m_size];
+						std::memcpy(m_bytes, other.m_bytes, m_size);
+					}
 
 					return *this;
 				}
@@ -163,7 +189,7 @@ namespace cleanMqtt
 
 				void decode(const ByteBuffer& buffer)
 				{
-					decodeBytes(buffer.bytes());
+					decodeBytes(buffer.bytes() + buffer.readCursor());
 					buffer.incrementReadCursor(m_size);
 				}
 

@@ -32,7 +32,10 @@ namespace cleanMqtt
 				{
 					for (const auto& pair : m_properties)
 					{
-						delete pair.second;
+						if (pair.second != nullptr)
+						{
+							delete pair.second;
+						}
 					}
 					m_properties.clear();
 				}

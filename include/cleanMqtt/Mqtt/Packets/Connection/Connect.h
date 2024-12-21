@@ -32,8 +32,8 @@ namespace cleanMqtt
 				void setUpHeaders() noexcept;
 
 			private:
-				ConnectVariableHeader m_variableHeader;
-				ConnectPayloadHeader m_payloadHeader;
+				ConnectVariableHeader* m_variableHeader{ nullptr };
+				ConnectPayloadHeader* m_payloadHeader{ nullptr };
 			};
 		}
 	}

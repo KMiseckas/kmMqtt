@@ -20,6 +20,8 @@ namespace cleanMqtt
 			ReconnectAddress reconnectAddress;
 
 			bool m_hasBeenConnected{ false };
+			
+			std::chrono::steady_clock::time_point connectionStartTime;
 		};
 	}
 }

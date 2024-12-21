@@ -20,6 +20,7 @@ namespace cleanMqtt
 
 			ConnectAck::~ConnectAck()
 			{
+				delete m_variableHeader;
 			}
 
 			PacketType ConnectAck::getPacketType() const noexcept
@@ -29,12 +30,17 @@ namespace cleanMqtt
 
 			const ConnectAckVariableHeader& ConnectAck::getVariableHeader() const noexcept
 			{
-				return m_variableHeader;
+				return *m_variableHeader;
 			}
 
 			void ConnectAck::setUpHeaders() noexcept
 			{
-				addDecodeHeader(&m_variableHeader);
+				if (m_variableHeader == nullptr)
+				{
+					m_variableHeader = new ConnectAckVariableHeader();
+				}
+
+				addDecodeHeader(m_variableHeader);
 			}
 		}
 	}

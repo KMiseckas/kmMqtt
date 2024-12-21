@@ -10,14 +10,15 @@ namespace cleanMqtt
 	namespace mqtt
 	{
 		using namespace cleanMqtt::mqtt::packets;
+		using Milliseconds = std::chrono::milliseconds;
 
-		MqttClient::MqttClient(std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue)
-			: m_socket{ std::move(socket) }, m_sendQueue{ std::move(sendQueue) }
+		MqttClient::MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue)
+			: m_config{ config }, m_socket { std::move(socket) }, m_sendQueue{ std::move(sendQueue) }
 		{
 			assert(m_socket != nullptr);
 			assert(m_sendQueue != nullptr);
 
-			m_socket->setOnConnectCallback([this](bool success) { handleSocketConnectEvent(success); });
+			m_socket->setOnConnectCallback([this](bool success){handleSocketConnectEvent(success);});
 			m_socket->setOnDisconnectCallback([this]() { handleSocketDisconnectEvent(); });
 			m_socket->setOnPacketRecvdCallback([this](ByteBuffer&& buffer) { handleSocketPacketReceivedEvent(std::move(buffer)); });
 			m_socket->setOnErrorCallback([this](std::uint16_t error) { handleSocketErrorEvent(error); });
@@ -35,6 +36,18 @@ namespace cleanMqtt
 		{
 			LockGuard guard{ m_mutex };
 
+			if (address.primaryAddress.hostname().empty())
+			{
+				LogWarning("MqttClient", "Cannot connect() without primary address.");
+				return;
+			}
+
+			if (args.clientId.empty())
+			{
+				LogWarning("MqttClient", "Cannot connect() without client ID argument.");
+				return;
+			}
+
 			if (m_connectionStatus == ConnectionStatus::CONNECTED || m_connectionStatus == ConnectionStatus::CONNECTING)
 			{
 				LogWarning("MqttClient", "Cannot connect() again while already connected or attempting to connect.");
@@ -45,8 +58,9 @@ namespace cleanMqtt
 
 			LogDebug("MqttClient", "Starting MQTT connection proccess.");
 			LogInfo("MqttClient",
-				"URL: %s\nUsername: %s\nClientId: %s\nVersion: %d\nProtocol Name: %s",
-				address.primaryAddress.value().c_str(),
+				"Hostname: %s\n\tPort: %s\n\tUsername: %s\n\tClientId: %s\n\tVersion: %d\n\tProtocol Name: %s",
+				address.primaryAddress.hostname().c_str(),
+				address.primaryAddress.port().c_str(),
 				args.username.c_str(),
 				args.clientId.c_str(),
 				static_cast<std::uint8_t>(args.version),
@@ -59,7 +73,9 @@ namespace cleanMqtt
 			m_connectionInfo.reconnectAddress.reset(m_connectionInfo.connectAddress);
 
 			LogInfo("MqttClient", "Socket attempting to connect.");
-			m_socket->connect(m_connectionInfo.connectAddress.primaryAddress.value());
+			m_socket->connect(m_connectionInfo.connectAddress.primaryAddress.hostname(), m_connectionInfo.connectAddress.primaryAddress.port());
+
+			m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
 		}
 
 		void MqttClient::publish(const char* topic, const char* payloadMsg)
@@ -129,7 +145,7 @@ namespace cleanMqtt
 
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 
-			m_deferrer.clear();
+			m_eventDeferrer.clear();
 			m_connectEvent.removeAll();
 			m_disconnectEvent.removeAll();
 
@@ -144,57 +160,26 @@ namespace cleanMqtt
 
 			LockGuard guard{ m_mutex };
 
-			if (m_socket->isConnected())
+			tickCheckTimeOut();
+
+			if (m_connectionStatus != ConnectionStatus::DISCONNECTED)
 			{
-				//Send queued encoded packets.
-				m_sendQueue->sendNextBatch(m_batchResultData);
-
-#if ENABLE_LOGS && LOG_LEVEL == INFO
-				if (m_batchResultData.packetsSent > 0)
+				if (m_socket->isConnected())
 				{
-					LogInfo("MqttClient", "Packets Sent: %d\nPackets Expected to send: %d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
-				}
-#endif
-
-				//Check for potential issues
-				if (m_batchResultData.packetsSent != m_batchResultData.packetsAttemptedToSend)
-				{
-					LogWarning("MqttClient",
-						"Failed to send all packets from the previous batch of packets queued for sending.\nPackets Sent: %d\nPackets Expected: %d",
-						m_batchResultData.packetsSent,
-						m_batchResultData.packetsAttemptedToSend);
-				}
-
-				//If result from sending action was specified as unrecoverable, then log error and start disconnect.
-				if (!m_batchResultData.isRecoverable)
-				{
-					DisconnectArgs args;
-					args.disconnectReasonText = "Hit unrecoverable error: " + m_batchResultData.unrecoverableReasonStr;
-					args.clearQueue = true;
-
-					handleInternalDisconnect(packets::DisconnectReasonCode::UNSPECIFIED_ERROR, args);
-				}
-
-				//Check, decode, and handle received packets.
-				const DecodeResult result = m_receiveQueue.receiveNextBatch();
-				if (!result.isSuccess())
-				{
-					DisconnectArgs args{ false, true };
-					args.disconnectReasonText = result.reason;
-
-					LogInfo("MqttClient", "Failed to decode received packet. Packet Type: %d, Reason: %s", static_cast<std::uint8_t>(result.packetType), result.reason.c_str());
-					handleInternalDisconnect(result.getDisconnectReason(), args);
+					tickSendPackets();
+					tickReceivePackets();
 				}
 			}
-			else
+
+			if (m_socket != nullptr && m_socket->isConnected())
 			{
-				handleExternalDisconnect(m_socket->getLastCloseCode(), m_socket->getLastCloseReason());
+				m_socket->tick();
 			}
 
-			m_deferrer.invokeEvents();
+			m_eventDeferrer.invokeEvents();
 		}
 
-		inline ConnectionStatus MqttClient::getConnectionStatus() const noexcept
+		ConnectionStatus MqttClient::getConnectionStatus() const noexcept
 		{
 			return m_connectionStatus;
 		}
@@ -216,13 +201,17 @@ namespace cleanMqtt
 
 				if (m_connectionStatus == ConnectionStatus::RECONNECTING)
 				{
-					LogDebug("MqttClient", "Reconnection complete to broker: %s", m_connectionInfo.reconnectAddress.primaryAddress.value().c_str());
-					deferEvent(m_deferrer, m_reconnectEvent, ReconnectionStatus::SUCCEEDED, 0, packet);
+					LogDebug("MqttClient", "Reconnection complete to broker: %s Port: %s",
+						m_connectionInfo.reconnectAddress.primaryAddress.hostname().c_str(),
+						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
+					deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::SUCCEEDED, 0, packet);
 				}
 				else
 				{
-					LogDebug("MqttClient", "Client connected to broker: %s", m_connectionInfo.connectAddress.primaryAddress.value().c_str());
-					deferEvent(m_deferrer, m_connectEvent, true, 0, packet);
+					LogDebug("MqttClient", "Client connected to broker: %s Port: %s",
+						m_connectionInfo.connectAddress.primaryAddress.hostname().c_str(),
+						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
+					deferEvent(m_eventDeferrer, m_connectEvent, true, 0, packet);
 				}
 
 				//TODO read mqtt5 spec for properties of Connect Ack (relating to publishing, subscribing and reconnection).
@@ -233,47 +222,11 @@ namespace cleanMqtt
 
 				if (m_connectionStatus == ConnectionStatus::RECONNECTING)
 				{
-					LogDebug("MqttClient", "Client could not reconnect. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
-					m_socket->close();
-					m_receiveQueue.clear();
-
-					if (m_connectionInfo.reconnectAddress.tryCycleToNextPrimaryAddress())
-					{
-						reconnect();
-					}
-					else
-					{
-						m_sendQueue->clearQueue();
-						m_connectionStatus = ConnectionStatus::DISCONNECTED;
-						deferEvent(m_deferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, packet);
-
-						if (m_connectionInfo.m_hasBeenConnected)
-						{
-							deferEvent(m_deferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
-						}
-					}
+					handleFailedReconnect(packet);
 				}
 				else
 				{
-					m_connectionStatus = ConnectionStatus::DISCONNECTED;
-					LogDebug("MqttClient", "Client could not connect to broker. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
-
-					m_socket->close();
-					m_receiveQueue.clear();
-
-					const bool brokerRedirectionStarted = tryStartBrokerRedirection(
-						static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode),
-						packet.getVariableHeader().properties);
-
-					if (brokerRedirectionStarted)
-					{
-						return;
-					}
-
-					m_sendQueue->clearQueue();
-					m_connectionInfo.m_hasBeenConnected = false;
-
-					deferEvent(m_deferrer, m_connectEvent, false, 0, packet);
+					handleFailedConnect(packet);
 				}
 
 				//TODO read mqtt5 spec for properties of Connect Ack (relating to publishing, subscribing and reconnection).
@@ -287,6 +240,156 @@ namespace cleanMqtt
 
 		void MqttClient::handleReceivedPublish(const packets::Publish& /*packet*/)
 		{
+		}
+
+		void MqttClient::tickCheckTimeOut()
+		{
+			if (m_connectionStatus == ConnectionStatus::CONNECTING || m_connectionStatus == ConnectionStatus::RECONNECTING)
+			{
+				const auto elapsed = std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now() - m_connectionInfo.connectionStartTime).count();
+
+				if (elapsed >= m_config.connectTimeOutMS)
+				{
+					if (m_connectionStatus == ConnectionStatus::RECONNECTING)
+					{
+						handleTimeOutReconnect();
+					}
+					else
+					{
+						handleTimeOutConnect();
+					}
+				}
+			}
+		}
+
+		void MqttClient::tickSendPackets()
+		{
+			//Send queued encoded packets.
+			m_sendQueue->sendNextBatch(m_batchResultData);
+
+#if ENABLE_LOGS && LOG_LEVEL == INFO
+			if (m_batchResultData.packetsSent > 0)
+			{
+				LogInfo("MqttClient", "Packets Sent: %d\n\tPackets Expected to send: %d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
+			}
+#endif
+
+			//Check for potential issues
+			if (m_batchResultData.packetsSent != m_batchResultData.packetsAttemptedToSend)
+			{
+				LogWarning("MqttClient",
+					"Failed to send all packets from the previous batch of packets queued for sending.\n\tPackets Sent: %d\n\tPackets Expected: %d",
+					m_batchResultData.packetsSent,
+					m_batchResultData.packetsAttemptedToSend);
+			}
+
+			//If result from sending action was specified as unrecoverable, then log error and start disconnect.
+			if (!m_batchResultData.isRecoverable)
+			{
+				DisconnectArgs args;
+				args.disconnectReasonText = "Hit unrecoverable error: " + m_batchResultData.unrecoverableReasonStr;
+				args.clearQueue = true;
+
+				handleInternalDisconnect(packets::DisconnectReasonCode::UNSPECIFIED_ERROR, args);
+			}
+		}
+
+		void MqttClient::tickReceivePackets()
+		{
+			//Check, decode, and handle received packets.
+			const DecodeResult result = m_receiveQueue.receiveNextBatch();
+			if (!result.isSuccess())
+			{
+				DisconnectArgs args{ false, true };
+				args.disconnectReasonText = result.reason;
+
+				LogInfo("MqttClient", "Failed to decode received packet. Packet Type: %d, Reason: %s", static_cast<std::uint8_t>(result.packetType), result.reason.c_str());
+				handleInternalDisconnect(result.getDisconnectReason(), args);
+			}
+		}
+
+		void MqttClient::handleFailedReconnect(const packets::ConnectAck& packet)
+		{
+			LogDebug("MqttClient", "Client could not reconnect. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
+			m_socket->close();
+			m_receiveQueue.clear();
+
+			if (m_connectionInfo.reconnectAddress.tryCycleToNextPrimaryAddress())
+			{
+				reconnect();
+			}
+			else
+			{
+				m_sendQueue->clearQueue();
+				m_connectionStatus = ConnectionStatus::DISCONNECTED;
+				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, packet);
+
+				if (m_connectionInfo.m_hasBeenConnected)
+				{
+					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
+				}
+			}
+		}
+
+		void MqttClient::handleFailedConnect(const packets::ConnectAck& packet)
+		{
+			m_connectionStatus = ConnectionStatus::DISCONNECTED;
+			LogDebug("MqttClient", "Client could not connect to broker. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
+
+			m_socket->close();
+			m_receiveQueue.clear();
+
+			const bool brokerRedirectionStarted = tryStartBrokerRedirection(
+				static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode),
+				packet.getVariableHeader().properties);
+
+			if (brokerRedirectionStarted)
+			{
+				return;
+			}
+
+			m_sendQueue->clearQueue();
+			m_connectionInfo.m_hasBeenConnected = false;
+
+			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, packet);
+		}
+
+		void MqttClient::handleTimeOutConnect()
+		{
+			m_connectionStatus = ConnectionStatus::DISCONNECTED;
+			LogDebug("MqttClient", "Client could not connect to broker. Connection timed out");
+
+			m_socket->setOnDisconnectCallback(nullptr);
+			m_socket->close();
+			m_receiveQueue.clear();
+			m_sendQueue->clearQueue();
+			m_connectionInfo.m_hasBeenConnected = false;
+
+			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, {});
+		}
+
+		void MqttClient::handleTimeOutReconnect()
+		{
+			LogDebug("MqttClient", "Client could not reconnect. Connection timed out.");
+			m_socket->setOnDisconnectCallback(nullptr);
+			m_socket->close();
+			m_receiveQueue.clear();
+
+			if (m_connectionInfo.reconnectAddress.tryCycleToNextPrimaryAddress())
+			{
+				reconnect();
+			}
+			else
+			{
+				m_sendQueue->clearQueue();
+				m_connectionStatus = ConnectionStatus::DISCONNECTED;
+				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, {});
+
+				if (m_connectionInfo.m_hasBeenConnected)
+				{
+					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
+				}
+			}
 		}
 
 		bool MqttClient::tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const packets::Properties& properties) noexcept
@@ -352,22 +455,25 @@ namespace cleanMqtt
 
 		void MqttClient::reconnect()
 		{
-			deferEvent(m_deferrer, m_reconnectEvent, ReconnectionStatus::RECONNECTING, 0, packets::ConnectAck{});
+			deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::RECONNECTING, 0, packets::ConnectAck{});
 
 			m_connectionStatus = ConnectionStatus::RECONNECTING;
 			m_receiveQueue.clear();
 
 			LogDebug("MqttClient", "Starting MQTT re-connection proccess.");
 			LogInfo("MqttClient",
-				"URL: %s\nUsername: %s\nClientId: %s\nVersion: %d\nProtocol Name: %s",
-				m_connectionInfo.reconnectAddress.primaryAddress.value().c_str(),
+				"Hostname: %s\n\tPort: %s\n\tUsername: %s\n\tClientId: %s\n\tVersion: %d\n\tProtocol Name: %s",
+				m_connectionInfo.reconnectAddress.primaryAddress.hostname().c_str(),
+				m_connectionInfo.reconnectAddress.primaryAddress.port().c_str(),
 				m_connectionInfo.connectArgs.username.c_str(),
 				m_connectionInfo.connectArgs.clientId.c_str(),
 				static_cast<std::uint8_t>(m_connectionInfo.connectArgs.version),
 				m_connectionInfo.connectArgs.protocolName.c_str());
 
 			LogInfo("MqttClient", "Socket attempting to connect.");
-			m_socket->connect(m_connectionInfo.reconnectAddress.primaryAddress.value());
+			m_socket->connect(m_connectionInfo.reconnectAddress.primaryAddress.hostname(), m_connectionInfo.reconnectAddress.primaryAddress.port());
+
+			m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
 		}
 
 		void MqttClient::handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args)
@@ -375,7 +481,10 @@ namespace cleanMqtt
 			LogInfo("MqttClient", "Starting internal disconnect: %s", args.disconnectReasonText.c_str());
 
 			//Bypass send queue and send packet ASAP to not wait for next tick before performing disconnect.
-			sendPacket(createDisconnectPacket(m_connectionInfo, args, reason));
+			Disconnect packet{ createDisconnectPacket(m_connectionInfo, args, reason) };
+			packet.encode();
+
+			sendPacket(packet);
 
 			if (args.clearQueue)
 			{
@@ -383,11 +492,12 @@ namespace cleanMqtt
 			}
 
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
+			m_socket->setOnDisconnectCallback(nullptr);
 			m_socket->close();
 
 			m_connectionInfo.m_hasBeenConnected = false;
 
-			deferEvent(m_deferrer, m_disconnectEvent, reason);
+			deferEvent(m_eventDeferrer, m_disconnectEvent, reason);
 		}
 
 		void MqttClient::handleExternalDisconnect(const packets::Disconnect& packet)
@@ -409,6 +519,7 @@ namespace cleanMqtt
 				LogDebug("MqttClient", "Disconnect Reason String: %s", reasonText->getString().c_str());
 			}
 
+			m_socket->setOnDisconnectCallback(nullptr);
 			m_socket->close();
 			m_receiveQueue.clear();
 
@@ -421,13 +532,13 @@ namespace cleanMqtt
 			m_connectionInfo.m_hasBeenConnected = false;
 			m_sendQueue->clearQueue();
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
-			deferEvent(m_deferrer, m_disconnectEvent, packet.getVariableHeader().reasonCode);
+			deferEvent(m_eventDeferrer, m_disconnectEvent, packet.getVariableHeader().reasonCode);
 		}
 
 		void MqttClient::handleExternalDisconnect(int closeCode, std::string reason)
 		{
 			LogInfo("MqttClient",
-				"Starting external disconnect from socket error code: %d, reason %s",
+				"Starting external disconnect from socket error code: %d reason: %s",
 				closeCode,
 				reason.c_str());
 
@@ -442,7 +553,7 @@ namespace cleanMqtt
 
 			m_connectionInfo.m_hasBeenConnected = false;
 
-			deferEvent(m_deferrer, m_disconnectEvent, packets::DisconnectReasonCode::UNSPECIFIED_ERROR);
+			deferEvent(m_eventDeferrer, m_disconnectEvent, packets::DisconnectReasonCode::UNSPECIFIED_ERROR);
 		}
 
 		int MqttClient::sendPacket(const packets::BasePacket& packet)
@@ -457,6 +568,7 @@ namespace cleanMqtt
 			{
 				if (m_socket->send(*bufferPtr) == true)
 				{
+					LogTrace("MqttClient", "Packet sent:\n\tBytes: %s.", bufferPtr->toString().c_str());
 					return 0;
 				}
 
@@ -487,7 +599,7 @@ namespace cleanMqtt
 
 				m_sendQueue->addToQueue([this](bool enforceMaxSendSize = false, std::size_t allowedSize = std::numeric_limits<std::size_t>::max())
 					{
-						Connect packet{ std::move(createConnectPacket(m_connectionInfo)) };
+						Connect packet{ createConnectPacket(m_connectionInfo) };
 						packet.encode();
 
 						const std::size_t packetSize{ packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value() };
@@ -501,7 +613,7 @@ namespace cleanMqtt
 							}
 						}
 
-						int sendResult = sendPacket(packet) == 0;
+						int sendResult = sendPacket(packet);
 
 						return interfaces::SendResultData{
 							packetSize,
@@ -523,14 +635,16 @@ namespace cleanMqtt
 				}
 				else
 				{
-					deferEvent(m_deferrer, m_connectEvent, false, m_socket->getLastError(), packets::ConnectAck{});
+					//TODO maybe try reconnect to other addresses if provided rather than straight disconnect?
+
+					deferEvent(m_eventDeferrer, m_connectEvent, false, m_socket->getLastError(), packets::ConnectAck{});
 				}
 			}
 		}
 
 		void MqttClient::handleSocketDisconnectEvent()
 		{
-			
+			handleExternalDisconnect(m_socket->getLastError(), m_socket->getLastCloseReason());
 		}
 
 		void MqttClient::handleSocketPacketReceivedEvent(ByteBuffer&& buffer)

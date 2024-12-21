@@ -17,9 +17,11 @@ namespace cleanMqtt
 		class PUBLIC_API IWebSocket
 		{
 		public:
-			virtual ~IWebSocket();
+			virtual ~IWebSocket()
+			{
+			};
 
-			virtual void connect(const std::string& url) = 0;
+			virtual bool connect(const std::string& hostname, const std::string& port = "80") = 0;
 			virtual bool send(const ByteBuffer& data) = 0;
 			virtual void close() = 0;
 			virtual void tick() = 0;
@@ -29,10 +31,10 @@ namespace cleanMqtt
 			virtual int getLastCloseCode() const noexcept = 0;
 			virtual const char* getLastCloseReason() const noexcept = 0;
 
-			virtual void setOnConnectCallback(const OnConnectCallback& callback) noexcept = 0;
-			virtual void setOnDisconnectCallback(const OnDisconnectCallback& callback) noexcept = 0;
-			virtual void setOnPacketRecvdCallback(const OnPacketRecvdCallback& callback) noexcept = 0;
-			virtual void setOnErrorCallback(const OnErrorCallback& callback) noexcept = 0;
+			virtual void setOnConnectCallback(OnConnectCallback callback) noexcept = 0;
+			virtual void setOnDisconnectCallback(OnDisconnectCallback callback) noexcept = 0;
+			virtual void setOnPacketRecvdCallback(OnPacketRecvdCallback callback) noexcept = 0;
+			virtual void setOnErrorCallback(OnErrorCallback callback) noexcept = 0;
 		};
 	}
 }

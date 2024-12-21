@@ -42,6 +42,8 @@ namespace cleanMqtt
 
 			while (!m_inProgressData.empty())
 			{
+				LogTrace("ReceiveQueue", "Received packet data, Binary data: %s", m_inProgressData.front().toString().c_str());
+
 				packetType = packets::checkPacketType(m_inProgressData.front().bytes(), m_inProgressData.front().size());
 				decodeResult.packetType = packetType;
 

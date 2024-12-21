@@ -10,11 +10,6 @@ namespace cleanMqtt
 		const interfaces::ILogger* const getLogger();
 
 		void setLogger(interfaces::ILogger* logger, bool deleteOld = true);
-
-		namespace
-		{
-			interfaces::ILogger* m_logger{ nullptr };
-		}
 	}
 }
 

@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")
 file(GLOB_RECURSE source_files "src/*.cpp")
 file(GLOB_RECURSE  "include/cleanMqtt/*.h")
 
-add_library (${PROJECT_NAME} ${source_files}  "include/cleanMqtt/Utils/Deferrer.h")
+add_library (${PROJECT_NAME} ${source_files})
 target_include_directories( ${PROJECT_NAME} PUBLIC include)
 
 if(BUILD_SHARED_LIBS)
@@ -27,7 +27,7 @@ if(FORCE_ADD_PROPERTIES)
 endif()
 
 if(ENABLE_LOGS)
-    set(LOG_LEVEL 2 CACHE STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
+    set(LOG_LEVEL 0 STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
     target_compile_definitions(${PROJECT_NAME} PRIVATE 
     LOG_LEVEL=${LOG_LEVEL}
     ENABLE_LOGS)

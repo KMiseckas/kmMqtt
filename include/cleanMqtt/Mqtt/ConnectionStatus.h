@@ -7,7 +7,7 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		enum class ConnectionStatus : std::uint8_t
+		enum class PUBLIC_API ConnectionStatus : std::uint8_t
 		{
 			DISCONNECTED,
 			CONNECTED,
