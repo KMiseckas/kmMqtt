@@ -40,12 +40,25 @@ namespace cleanMqtt
 
 			packets::PacketType packetType{ packets::PacketType::RESERVED };
 
+			LogTrace("ReceiveQueue", "Processing queue of %d received packets.", m_inProgressData.size());
+
 			while (!m_inProgressData.empty())
 			{
-				LogTrace("ReceiveQueue", "Received packet data, Binary data: %s", m_inProgressData.front().toString().c_str());
-
 				packetType = packets::checkPacketType(m_inProgressData.front().bytes(), m_inProgressData.front().size());
 				decodeResult.packetType = packetType;
+
+				LogInfo("ReceiveQueue", "Processing next MQTT packet.");
+
+				if (packetType >= packets::PacketType::_COUNT)
+				{
+					LogTrace("ReceiveQueue", "Binary Buffer: %s", m_inProgressData.front().toString().c_str());
+					LogError("ReceiveQueue", "Could not determine packet type, the packet has packet type value that's outside the range of allowed packet types. PacketType: %d",
+						static_cast<std::uint8_t>(packetType));
+					decodeResult.code = packets::DecodeErrorCode::PROTOCOL_ERROR;
+				}
+
+				LogInfo("ReceiveQueue", "Type: %s", mqtt::packets::k_packetTypeName[static_cast<std::uint8_t>(packetType)]);
+				LogTrace("ReceiveQueue", "Binary Buffer: %s", m_inProgressData.front().toString().c_str());
 
 				switch (packetType)
 				{
@@ -56,6 +69,7 @@ namespace cleanMqtt
 
 					if (!decodeResult.isSuccess())
 					{
+						LogInfo("ReceiveQueue", "Failed to decode packet.");
 						return decodeResult;
 					}
 
@@ -108,8 +122,11 @@ namespace cleanMqtt
 				}
 
 				m_inProgressData.pop();
+
+				LogInfo("ReceiveQueue", "Succesfully decoded packet.");
 			}
 
+			LogTrace("ReceiveQueue", "All received packets proccessed.");
 			return decodeResult;
 		}
 

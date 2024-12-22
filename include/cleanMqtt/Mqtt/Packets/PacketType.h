@@ -27,6 +27,27 @@ namespace cleanMqtt
 				PING_RESPONSE = 13U,
 				DISCONNECT = 14U,
 				AUTH = 15U,
+				_COUNT,
+			};
+
+			constexpr const char* k_packetTypeName[static_cast<std::uint8_t>(PacketType::_COUNT)]
+			{
+				"RESERVED",
+				"CONNECT",
+				"CONNECT_ACKNOWLEDGE",
+				"PUBLISH",
+				"PUBLISH_ACKNOWLEDGE",
+				"PUBLISH_RECEIVED",
+				"PUBLISH_RELEASED",
+				"PUBLISH_COMPLETE",
+				"SUBSCRIBE",
+				"SUBSCRIBE_ACKNOWLEDGE",
+				"UNSUBSCRIBE",
+				"UNSUBSCRIBE_ACKNOWLEDGE",
+				"PING_REQUQEST",
+				"PING_RESPONSE",
+				"DISCONNECT",
+				"AUTH",
 			};
 		}
 	}

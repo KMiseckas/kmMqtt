@@ -1,4 +1,5 @@
 #include "cleanMqtt/Mqtt/DefaultSendQueue.h"
+#include <cleanMqtt/Logger/Log.h>
 
 namespace cleanMqtt
 {
@@ -37,16 +38,21 @@ namespace cleanMqtt
 
 			m_currentLocalRetry = 0;
 
-			while (m_currentLocalRetry <= 3)
+			while (m_currentLocalRetry < maxLocalRetries)
 			{
 				++m_currentLocalRetry;
 
 				if (!trySendBatch(outResult, m_lastSendData))
 				{
+					LogInfo("SendQueue", "Failed to proccess and send an outgoing packet. Reason: %d.", static_cast<std::uint8_t>(m_lastSendData.noSendReason));
+
 					if (m_lastSendData.noSendReason == interfaces::NoSendReason::SOCKET_SEND_ERROR)
 					{
+						//Can retry same packet a few times before registering as a concrete fail for the overall send queue.
 						if (m_currentLocalRetry == maxLocalRetries)
 						{
+							LogInfo("SendQueue", "Attempting to retry failed packet. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
+
 							outResult.socketError = m_lastSendData.sendError;
 							++m_sendBatchRetryCount;
 							m_lastRetryTime = std::chrono::steady_clock::now();
@@ -69,6 +75,8 @@ namespace cleanMqtt
 
 			if (m_sendBatchRetryCount >= k_maxSendBatchRetries)
 			{
+				LogInfo("SendQueue", "Failed send queue processing.");
+
 				static constexpr char* rsnStr{ "Reached max consecutive failed retries." };
 
 				outResult.isRecoverable = false;
@@ -84,6 +92,14 @@ namespace cleanMqtt
 
 		bool DefaultSendQueue::trySendBatch(interfaces::SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult)
 		{
+			if (m_queuedRequests.size() <= 0)
+			{
+				//Early successful return, no packets to proccess for sending.
+				return true;
+			}
+
+			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_queuedRequests.size());
+
 			while (!m_queuedRequests.empty())
 			{
 				auto result = m_queuedRequests.front()(false, 0);
@@ -99,6 +115,8 @@ namespace cleanMqtt
 				outResult.packetsSent += 1;
 				outResult.totalBytesSent += result.packetSize;
 			}
+
+			LogTrace("SendQueue", "Finished processing outgoing packets.");
 
 			return true;
 		}

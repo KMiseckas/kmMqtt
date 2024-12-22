@@ -39,11 +39,11 @@ public:
 		char addressBuffer[512]{ "" };
 		char usernameBuffer[512]{ "" };
 		char passwordBuffer[512]{ "" };
-		char clientIdBuffer[512]{ "" };
-		int cleanStartSelectedOption{ 0 };
+		char clientIdBuffer[512]{ "Client ID" };
+		int cleanStartSelectedOption{ 1 };
 		bool showingAdvancedConnectOptions{ false };
 
-		int keepAliveSec{ 0U };
+		int keepAliveSec{ 60U };
 		int expiryInterval{ 0U };
 		int receiveMaximum{ 0U };
 		int maxTopicAliases{ 0U };

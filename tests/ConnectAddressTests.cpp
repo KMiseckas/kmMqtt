@@ -13,10 +13,10 @@ static constexpr const char* varName =  "[" #hostname "]:" #port; \
 static constexpr const char* varName##_hostname = #hostname; \
 static constexpr const char* varName##_port = #port; \
 
-#define URL_VAR(varName, hostname, port, path) \
-static constexpr const char* varName =  hostname ":" #port #path; \
+#define URL_VAR(varName, schema, hostname, port, path) \
+static constexpr const char* varName =  schema "://" hostname ":" port path; \
 static constexpr const char* varName##_hostname = hostname; \
-static constexpr const char* varName##_port = #port; \
+static constexpr const char* varName##_port = port; \
 
 TEST_SUITE("ConnectAddress Tests")
 {
@@ -28,7 +28,7 @@ TEST_SUITE("ConnectAddress Tests")
 		IP4_VAR(k_ipv4_1, 27.0.0.34, 65);
 		IP6_VAR(k_ipv6_1, 2001:0db8:0000:0000:0000:8a2e:0370:7334, 123);
 		IP6_VAR(k_ipv6_2, 2002:0db8:0000:0000:0000:8a2e:0370:7334, 200);
-		URL_VAR(k_url_1, "wss://www.url.com", 34, /path/ );
+		URL_VAR(k_url_1, "wss", "www.url.com", "34", "/path/");
 	}
 
 	TEST_CASE("toAddress parsing")

@@ -260,7 +260,7 @@ namespace cleanMqtt
 			std::unique_ptr<packets::BinaryData> extendedAuthenticationData{nullptr};
 			MqttVersion version{ MqttVersion::MQTT_5_0 };
 			std::string protocolName{ "MQTT" };
-			std::uint16_t keepAliveInSec{ 0U };
+			std::uint16_t keepAliveInSec{ 60U };
 			std::uint32_t sessionExpiryInterval{ 0U };
 			std::uint16_t receiveMaximum{ 0U };
 			std::uint32_t maximumPacketSize{ 0U };
