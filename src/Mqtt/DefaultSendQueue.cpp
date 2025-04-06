@@ -13,7 +13,7 @@ namespace cleanMqtt
 		{
 		}
 
-		void DefaultSendQueue::addToQueue(std::function<interfaces::SendResultData(bool, std::size_t)> packetSendJob, const mqtt::packets::PacketType /*type*/)
+		void DefaultSendQueue::addToQueue(interfaces::PacketSendJob packetSendJob, const mqtt::packets::PacketType /*type*/)
 		{
 			m_queuedRequests.push(std::move(packetSendJob));
 		}

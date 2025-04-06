@@ -7,6 +7,7 @@
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
+#include "cleanMqtt/Mqtt/Packets/Ping/PingResp.h"
 
 #include <queue>
 #include <mutex>
@@ -21,12 +22,12 @@ namespace cleanMqtt
 		using ConAckCallback = std::function<void(const packets::ConnectAck&)>;
 		using DisconnectCallback = std::function<void(const packets::Disconnect&)>;
 		using PubCallback = std::function<void(const packets::Publish&)>;
-		/*using PubCompCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using PubRecvCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using PubRelCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using SubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using UnSubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using PingResCallback = void (MqttClient::*)(const packets::ConnectAck&);*/
+		//using PubCompCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		//using PubRecvCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		//using PubRelCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		//using SubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		//using UnSubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		using PingRespCallback = std::function<void(const packets::PingResp&)>;
 
 		class ReceiveQueue
 		{
@@ -49,7 +50,7 @@ namespace cleanMqtt
 			//void setPublishReleasedCallback() noexcept;
 			//void setSubscribeAcknowledgeCallback() noexcept;
 			//void setUnsubscribeAcknowledgeCallback() noexcept;
-			//void setPingResponseCallback() noexcept;
+			void setPingResponseCallback(PingRespCallback& callback) noexcept;
 
 		private:
 			bool tryAddFailedResult(packets::DecodeResult&& result) noexcept;
@@ -61,6 +62,7 @@ namespace cleanMqtt
 			ConAckCallback m_conAckCallback;
 			DisconnectCallback m_DisconnectCallback;
 			PubCallback m_pubCallback;
+			PingRespCallback m_pingRespCallback;
 
 			std::mutex m_mutex;
 		};

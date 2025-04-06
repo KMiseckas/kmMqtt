@@ -15,13 +15,22 @@ namespace cleanMqtt
 	{
 		struct PUBLIC_API MqttConnectionInfo
 		{
+			using TimePoint = std::chrono::steady_clock::time_point;
+			using Seconds = std::chrono::seconds;
+			using Milliseconds = std::chrono::milliseconds;
+
 			ConnectArgs connectArgs{ "CLIENT ID" };
 			ConnectAddress connectAddress;
 			ReconnectAddress reconnectAddress;
 
-			bool m_hasBeenConnected{ false };
+			bool hasBeenConnected{ false };
+			bool awaitingPingResponse{ false };
 			
-			std::chrono::steady_clock::time_point connectionStartTime;
+			TimePoint connectionStartTime;
+			TimePoint lastControlPacketTime;
+			TimePoint lastPingReqSentTime;
+
+			Seconds pingInterval{ 0U };
 		};
 	}
 }

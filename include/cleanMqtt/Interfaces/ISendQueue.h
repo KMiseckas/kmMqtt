@@ -42,16 +42,18 @@ namespace cleanMqtt
 			int sendError{ 0 };
 		};
 
+		using PacketSendJob = std::function<interfaces::SendResultData(bool, std::size_t)>;
+
 		class PUBLIC_API ISendQueue
 		{
 		public:
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(ISendQueue)
-				DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ISendQueue)
+			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ISendQueue)
 
 			ISendQueue() noexcept {};
 			virtual ~ISendQueue() {};
 
-			virtual void addToQueue(std::function<SendResultData(bool, std::size_t)> packetSendJob, const mqtt::packets::PacketType type) = 0;
+			virtual void addToQueue(PacketSendJob packetSendJob, const mqtt::packets::PacketType type) = 0;
 			virtual void sendNextBatch(SendBatchResult& outResult) = 0;
 			virtual void clearQueue() noexcept = 0;
 		};

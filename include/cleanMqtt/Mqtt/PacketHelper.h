@@ -5,7 +5,9 @@
 #include <cleanMqtt/Mqtt/Packets/Connection/Connect.h>
 #include <cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h>
 #include <cleanMqtt/Mqtt/Packets/Connection/Disconnect.h>
-#include "cleanMqtt/Mqtt/Params/DisconnectArgs.h"
+#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <cleanMqtt/Mqtt/Packets/Ping/PingReq.h>
+#include <cleanMqtt/Mqtt/Packets/Ping/PingResp.h>
 
 namespace cleanMqtt
 {
@@ -117,6 +119,16 @@ namespace cleanMqtt
 			packets::Disconnect disconnectPacket{ std::move(header) };
 
 			return disconnectPacket;
+		}
+
+		PingReq createPingRequestPacket()
+		{
+			return packets::PingReq{};
+		}
+
+		PingResp createPingResponsePacket()
+		{
+			return packets::PingResp{};
 		}
 	}
 }

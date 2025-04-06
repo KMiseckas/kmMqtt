@@ -73,6 +73,7 @@ namespace cleanMqtt
 			m_connectionInfo.reconnectAddress.reset(m_connectionInfo.connectAddress);
 
 			LogInfo("MqttClient", "Socket attempting to connect.");
+
 			m_socket->connect(m_connectionInfo.connectAddress.primaryAddress.hostname(), m_connectionInfo.connectAddress.primaryAddress.port());
 
 			m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
@@ -88,7 +89,9 @@ namespace cleanMqtt
 				return;
 			}
 
-			//TODO
+			LogTrace("MqttClient", "Started publish(): Topic: %s, Msg: %s", topic, payloadMsg);
+
+			
 
 			(void)topic;
 			(void)payloadMsg;
@@ -104,12 +107,14 @@ namespace cleanMqtt
 				return;
 			}
 
+			LogTrace("MqttClient", "Started subscribe: Subscribing to %s", topic);
+
 			//TODO
 
 			(void)topic;
 		}
 
-		void MqttClient::unSubscribe()
+		void MqttClient::unSubscribe(const char* topic)
 		{
 			LockGuard guard{ m_mutex };
 
@@ -118,6 +123,8 @@ namespace cleanMqtt
 				LogWarning("MqttClient", "Client not connected, cannot unSubscribe()!");
 				return;
 			}
+
+			LogTrace("MqttClient", "Started un-subscribe: Unsubscribing from %s", topic);
 
 			//TODO
 		}
@@ -168,6 +175,7 @@ namespace cleanMqtt
 				{
 					tickSendPackets();
 					tickReceivePackets();
+					tickCheckKeepAlive();
 				}
 			}
 
@@ -191,14 +199,9 @@ namespace cleanMqtt
 
 		void MqttClient::handleReceivedConnectAcknowledge(const ConnectAck& packet)
 		{
-			//Connection succeeded for any ConnectReasonCode < 128U, report back as connection success, else start failure proccess.
+			//Connection counts as succeeded for any ConnectReasonCode < 128U so report back as connection success, else start failure proccess.
 			if (packet.getVariableHeader().reasonCode < packets::ConnectReasonCode::UNSPECIFIED_ERROR)
 			{
-				m_connectionStatus = ConnectionStatus::CONNECTED;
-				m_connectionInfo.m_hasBeenConnected = true;
-
-				m_connectionInfo.reconnectAddress.reset(m_connectionInfo.connectAddress);
-
 				if (m_connectionStatus == ConnectionStatus::RECONNECTING)
 				{
 					LogDebug("MqttClient", "Reconnection complete to broker: %s Port: %s",
@@ -214,7 +217,26 @@ namespace cleanMqtt
 					deferEvent(m_eventDeferrer, m_connectEvent, true, 0, packet);
 				}
 
-				//TODO read mqtt5 spec for properties of Connect Ack (relating to publishing, subscribing and reconnection).
+				m_connectionStatus = ConnectionStatus::CONNECTED;
+				m_connectionInfo.hasBeenConnected = true;
+
+				m_connectionInfo.reconnectAddress.reset(m_connectionInfo.connectAddress);
+
+				//Handle properties received from the server.
+				const std::uint16_t* serverKeepAlive;
+				if (packet.getVariableHeader().properties.tryGetProperty<std::uint16_t>(PropertyType::SERVER_KEEP_ALIVE, serverKeepAlive))
+				{
+					m_connectionInfo.connectArgs.keepAliveInSec = *serverKeepAlive;
+				}
+
+				//Set-up ping interval
+				m_connectionInfo.pingInterval = MqttConnectionInfo::Seconds{ m_connectionInfo.connectArgs.keepAliveInSec };
+				if (m_config.pingAlways && m_connectionInfo.connectArgs.keepAliveInSec <= 0)
+				{
+					m_connectionInfo.pingInterval = std::chrono::duration_cast<MqttConnectionInfo::Seconds>(MqttConnectionInfo::Milliseconds{ m_config.defaultPingInterval });
+				}
+
+				//TODO read mqtt5 spec for rest of properties of Connect Ack (relating to publishing, subscribing and reconnection).
 			}
 			else
 			{
@@ -242,11 +264,18 @@ namespace cleanMqtt
 		{
 		}
 
+		void MqttClient::handleReceivedPingResponse(const packets::PingResp& packet)
+		{
+			(void)packet;
+
+			m_connectionInfo.awaitingPingResponse = false;
+		}
+
 		void MqttClient::tickCheckTimeOut()
 		{
 			if (m_connectionStatus == ConnectionStatus::CONNECTING || m_connectionStatus == ConnectionStatus::RECONNECTING)
 			{
-				const auto elapsed = std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now() - m_connectionInfo.connectionStartTime).count();
+				const auto elapsed{ std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now() - m_connectionInfo.connectionStartTime).count() };
 
 				if (elapsed >= m_config.connectTimeOutMS)
 				{
@@ -262,17 +291,82 @@ namespace cleanMqtt
 			}
 		}
 
+		void MqttClient::tickCheckKeepAlive()
+		{
+			if (m_connectionStatus == ConnectionStatus::CONNECTED)
+			{
+				if (m_connectionInfo.connectArgs.keepAliveInSec == 0 && !m_config.pingAlways)
+				{
+					return;
+				}
+
+				if (m_connectionInfo.awaitingPingResponse)
+				{
+					const auto elapsedTimeSincePingReq{ std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now() - m_connectionInfo.lastPingReqSentTime).count() };
+
+					if (elapsedTimeSincePingReq > m_config.pingTimeOutMS)
+					{
+						DisconnectArgs args;
+						args.clearQueue = true;
+						args.disconnectReasonText = "Failed ping: Did not receive PingResp packet.";
+
+						handleInternalDisconnect(DisconnectReasonCode::UNSPECIFIED_ERROR, args);
+					}
+
+					return;
+				}
+
+				MqttConnectionInfo::Milliseconds elapsedTimeSinceControlPacket;
+
+				if (m_config.pingAlways)
+				{
+					elapsedTimeSinceControlPacket = std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now() - m_connectionInfo.lastPingReqSentTime);
+				}
+				else
+				{
+					elapsedTimeSinceControlPacket = std::chrono::duration_cast<Milliseconds>(std::chrono::steady_clock::now() - m_connectionInfo.lastControlPacketTime);
+				}
+
+				if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval)
+				{
+					m_sendQueue->addToQueue([this](bool enforceMaxSendSize = false, std::size_t allowedSize = std::numeric_limits<std::size_t>::max())
+						{
+							PingReq packet{ createPingRequestPacket() };
+							packet.encode();
+
+							const std::size_t packetSize{ PACKET_SIZE_POST_ENCODE(packet) };
+
+							CHECK_ENFORCE_MAX_PACKET_SIZE(enforceMaxSendSize, packetSize, allowedSize);
+
+							int sendResult{ sendPacket(packet) };
+
+							if (sendResult == 0)
+							{
+								m_connectionInfo.lastPingReqSentTime = std::chrono::steady_clock::now();
+								m_connectionInfo.awaitingPingResponse = true;
+							}
+
+							return interfaces::SendResultData{
+								packetSize,
+								sendResult == 0,
+								sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
+								sendResult };
+						}, PacketType::CONNECT);
+				}
+			}
+		}
+
 		void MqttClient::tickSendPackets()
 		{
 			//Send queued encoded packets.
 			m_sendQueue->sendNextBatch(m_batchResultData);
 
-#if ENABLE_LOGS && LOG_LEVEL == INFO
 			if (m_batchResultData.packetsSent > 0)
 			{
-				LogInfo("MqttClient", "Packets Sent: %d\n\tPackets Expected to send: %d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
+				m_connectionInfo.lastControlPacketTime = std::chrono::steady_clock::now();
+
+				LogInfo("MqttClient", "Packets Sent: %d\tPackets Expected to Send: %d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
 			}
-#endif
 
 			//Check for potential issues
 			if (m_batchResultData.packetsSent != m_batchResultData.packetsAttemptedToSend)
@@ -324,7 +418,7 @@ namespace cleanMqtt
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
 				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, packet);
 
-				if (m_connectionInfo.m_hasBeenConnected)
+				if (m_connectionInfo.hasBeenConnected)
 				{
 					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
 				}
@@ -349,7 +443,7 @@ namespace cleanMqtt
 			}
 
 			m_sendQueue->clearQueue();
-			m_connectionInfo.m_hasBeenConnected = false;
+			m_connectionInfo.hasBeenConnected = false;
 
 			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, packet);
 		}
@@ -363,7 +457,7 @@ namespace cleanMqtt
 			m_socket->close();
 			m_receiveQueue.clear();
 			m_sendQueue->clearQueue();
-			m_connectionInfo.m_hasBeenConnected = false;
+			m_connectionInfo.hasBeenConnected = false;
 
 			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, {});
 		}
@@ -385,7 +479,7 @@ namespace cleanMqtt
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
 				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, {});
 
-				if (m_connectionInfo.m_hasBeenConnected)
+				if (m_connectionInfo.hasBeenConnected)
 				{
 					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
 				}
@@ -495,7 +589,7 @@ namespace cleanMqtt
 			m_socket->setOnDisconnectCallback(nullptr);
 			m_socket->close();
 
-			m_connectionInfo.m_hasBeenConnected = false;
+			m_connectionInfo.hasBeenConnected = false;
 
 			deferEvent(m_eventDeferrer, m_disconnectEvent, reason);
 		}
@@ -529,7 +623,7 @@ namespace cleanMqtt
 				return;
 			}
 
-			m_connectionInfo.m_hasBeenConnected = false;
+			m_connectionInfo.hasBeenConnected = false;
 			m_sendQueue->clearQueue();
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 			deferEvent(m_eventDeferrer, m_disconnectEvent, packet.getVariableHeader().reasonCode);
@@ -542,16 +636,11 @@ namespace cleanMqtt
 				closeCode,
 				reason.c_str());
 
-			if (m_connectionStatus != ConnectionStatus::CONNECTED)
-			{
-				return;
-			}
-
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 			m_socket->close();
 			m_sendQueue->clearQueue();
 
-			m_connectionInfo.m_hasBeenConnected = false;
+			m_connectionInfo.hasBeenConnected = false;
 
 			deferEvent(m_eventDeferrer, m_disconnectEvent, packets::DisconnectReasonCode::UNSPECIFIED_ERROR);
 		}
@@ -592,26 +681,21 @@ namespace cleanMqtt
 				ConAckCallback conAckCallback = std::bind(&MqttClient::handleReceivedConnectAcknowledge, this, std::placeholders::_1);
 				DisconnectCallback disconnectCallback = std::bind(&MqttClient::handleReceivedDisconnect, this, std::placeholders::_1);
 				PubCallback pubCallback = std::bind(&MqttClient::handleReceivedPublish, this, std::placeholders::_1);
+				PingRespCallback pingRespCallback = std::bind(&MqttClient::handleReceivedPingResponse, this, std::placeholders::_1);
 
 				m_receiveQueue.setConnectAcknowledgeCallback(conAckCallback);
 				m_receiveQueue.setDisconnectCallback(disconnectCallback);
 				m_receiveQueue.setPublishCallback(pubCallback);
+				m_receiveQueue.setPingResponseCallback(pingRespCallback);
 
 				m_sendQueue->addToQueue([this](bool enforceMaxSendSize = false, std::size_t allowedSize = std::numeric_limits<std::size_t>::max())
 					{
 						Connect packet{ createConnectPacket(m_connectionInfo) };
 						packet.encode();
 
-						const std::size_t packetSize{ packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value() };
+						const std::size_t packetSize{ PACKET_SIZE_POST_ENCODE(packet) };
 
-						if (enforceMaxSendSize == true) 
-						{
-							if (packetSize > allowedSize) 
-							{
-								LogInfo("", "Enforced max send size for queued packet.");
-								return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, 0 };
-							}
-						}
+						CHECK_ENFORCE_MAX_PACKET_SIZE(enforceMaxSendSize, packetSize, allowedSize);
 
 						int sendResult = sendPacket(packet);
 

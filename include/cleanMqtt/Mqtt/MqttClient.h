@@ -45,7 +45,7 @@ namespace cleanMqtt
 			void connect(ConnectArgs&& args, ConnectAddress&& address);
 			void publish(const char* topic, const char* payloadMsg);
 			void subscribe(const char* topic);
-			void unSubscribe();
+			void unSubscribe(const char* topic);
 			void disconnect(DisconnectArgs&& args);
 			void shutdown() noexcept;
 
@@ -79,9 +79,10 @@ namespace cleanMqtt
 			//void handleReceivedPublishReleased();
 			//void handleReceivedSubscribeAcknowledge();
 			//void handleReceivedUnsubscribeAcknowledge();
-			//void handleReceivedPingResponse();
+			void handleReceivedPingResponse(const packets::PingResp& packet);
 
 			void tickCheckTimeOut();
+			void tickCheckKeepAlive();
 			void tickSendPackets();
 			void tickReceivePackets();
 
@@ -114,5 +115,19 @@ namespace cleanMqtt
 
 			//TODO create session STATE object (COnnectionInfo + SendQueue + ReceiveQueue)
 		};
+
+#define PACKET_SIZE_POST_ENCODE(packet)\
+packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value()\
+
+#define CHECK_ENFORCE_MAX_PACKET_SIZE(shouldEnforce, packetSize, allowedSize)\
+		if (shouldEnforce == true)\
+		{\
+			if (packetSize > allowedSize)\
+			{\
+				LogInfo("", "Enforced max send size for queued packet.");\
+				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, 0 };\
+			}\
+		}\
+
 	}
 }

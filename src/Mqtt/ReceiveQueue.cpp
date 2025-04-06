@@ -7,6 +7,22 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+#define HANDLE_RECEIVED_PACKET(PacketType, callback)\
+packets::PacketType packet{ std::move(m_inProgressData.front()) };\
+decodeResult = packet.decode();\
+\
+if (!decodeResult.isSuccess())\
+{\
+	LogInfo("ReceiveQueue", "Failed to decode packet.");\
+	return decodeResult;\
+}\
+\
+if (callback != nullptr)\
+{\
+	callback(packet);\
+}\
+
+
 		ReceiveQueue::ReceiveQueue() noexcept
 		{
 		}
@@ -64,19 +80,7 @@ namespace cleanMqtt
 				{
 				case packets::PacketType::CONNECT_ACKNOWLEDGE:
 				{
-					packets::ConnectAck packet{ std::move(m_inProgressData.front()) };
-					decodeResult = packet.decode();
-
-					if (!decodeResult.isSuccess())
-					{
-						LogInfo("ReceiveQueue", "Failed to decode packet.");
-						return decodeResult;
-					}
-
-					if (m_conAckCallback != nullptr)
-					{
-						m_conAckCallback(packet);
-					}
+					HANDLE_RECEIVED_PACKET(ConnectAck, m_conAckCallback);
 					break;
 				}
 				case packets::PacketType::PUBLISH:
@@ -101,22 +105,13 @@ namespace cleanMqtt
 					//TODO
 					break;
 				case packets::PacketType::PING_RESPONSE:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(PingResp, m_pingRespCallback);
 					break;
+				}
 				case packets::PacketType::DISCONNECT:
 				{
-					packets::Disconnect packet{ std::move(m_inProgressData.front()) };
-					decodeResult = packet.decode();
-
-					if (!decodeResult.isSuccess())
-					{
-						return decodeResult;
-					}
-
-					if (m_DisconnectCallback != nullptr)
-					{
-						m_DisconnectCallback(packet);
-					}
+					HANDLE_RECEIVED_PACKET(Disconnect, m_DisconnectCallback);
 					break;
 				}
 				}
@@ -140,6 +135,7 @@ namespace cleanMqtt
 			m_conAckCallback = nullptr;
 			m_DisconnectCallback = nullptr;
 			m_pubCallback = nullptr;
+			m_pingRespCallback = nullptr;
 		}
 
 		void ReceiveQueue::setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept
@@ -155,6 +151,11 @@ namespace cleanMqtt
 		void ReceiveQueue::setPublishCallback(PubCallback& callback) noexcept
 		{
 			m_pubCallback = callback;
+		}
+
+		void ReceiveQueue::setPingResponseCallback(PingRespCallback& callback) noexcept
+		{
+			m_pingRespCallback = callback;
 		}
 	}
 }
