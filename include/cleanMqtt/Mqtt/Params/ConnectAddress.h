@@ -2,6 +2,7 @@
 #define INTERFACE_CLEANMQTT_MQTT_PARAMS_CONNECTADRESS_H
 
 #include "cleanMqtt/Utils/Utils.h"
+#include <cleanMqtt/Mqtt/Enums/LocatorType.h>
 #include <string>
 #include <cstdint>
 #include <vector>
@@ -11,14 +12,6 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		enum class LocatorType : std::uint8_t
-		{
-			UNKNOWN = 0U,
-			IP4,
-			IP6,
-			HOSTNAME
-		};
-
 		struct Address
 		{
 			Address() = default;

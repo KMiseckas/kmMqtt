@@ -1,7 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_MQTT_PACKETS_CONNECT_CONNECTFLAGS_H
 #define INCLUDE_CLEANMQTT_MQTT_PACKETS_CONNECT_CONNECTFLAGS_H
 
-#include <cleanMqtt/Mqtt/Qos.h>
+#include <cleanMqtt/Mqtt/Enums/Qos.h>
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Mqtt/Packets/Flags.h>
 

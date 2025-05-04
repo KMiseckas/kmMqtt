@@ -13,7 +13,7 @@ namespace cleanMqtt
 		class IDecodeHeader
 		{
 		public:
-			virtual DecodeResult decode(const ByteBuffer& buffer) noexcept = 0;
+			virtual DecodeResult decode(const ByteBuffer& buffer) = 0;
 		};
 	}
 }

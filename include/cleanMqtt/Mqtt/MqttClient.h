@@ -3,9 +3,10 @@
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Utils/Event.h>
+#include <cleanMqtt/Mqtt/ClientError.h>
 #include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
-#include <cleanMqtt/Mqtt/ConnectionStatus.h>
-#include <cleanMqtt/Mqtt/ReconnectionStatus.h>
+#include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
+#include <cleanMqtt/Mqtt/Enums/ReconnectionStatus.h>
 #include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
 #include "cleanMqtt/Mqtt/Packets/Connection/Connect.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
@@ -17,6 +18,8 @@
 #include <cleanMqtt/Utils/Deferrer.h>
 #include <cleanMqtt/Config.h>
 #include <cleanMqtt/Mqtt/DefaultSendQueue.h>
+#include <cleanMqtt/Mqtt/TopicAliases.h>
+#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 
 #include <cstring>
 #include <memory>
@@ -31,6 +34,7 @@ namespace cleanMqtt
 		using ConnectEvent = events::Event<bool, int, const packets::ConnectAck&>;
 		using ReconnectEvent = events::Event<ReconnectionStatus, int, const packets::ConnectAck&>;
 		using DisconnectEvent = events::Event<const packets::DisconnectReasonCode>;
+		using PublishEvent = events::Event<std::string, const packets::BinaryData*, const packets::Publish&>;
 
 		class PUBLIC_API MqttClient
 		{
@@ -42,18 +46,19 @@ namespace cleanMqtt
 			MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue = std::make_unique <DefaultSendQueue>());
 			~MqttClient();
 
-			void connect(ConnectArgs&& args, ConnectAddress&& address);
-			void publish(const char* topic, const char* payloadMsg);
-			void subscribe(const char* topic);
-			void unSubscribe(const char* topic);
-			void disconnect(DisconnectArgs&& args);
-			void shutdown() noexcept;
+			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
+			ClientError publish(const char* topic, const ByteBuffer&& payload, const PublishOptions&& options) noexcept;
+			ClientError subscribe(const char* topic) noexcept;
+			ClientError unSubscribe(const char* topic) noexcept;
+			ClientError disconnect(DisconnectArgs&& args) noexcept;
+			ClientError shutdown() noexcept;
 
-			void tick(float deltaTime);
+			ClientError tick(float deltaTime) noexcept;
 
 			const ConnectEvent& onConnectEvent() const noexcept { return m_connectEvent; }
 			const DisconnectEvent& onDisconnectEvent() const noexcept { return m_disconnectEvent; }
 			const ReconnectEvent& onReconnectEvent() const noexcept { return m_reconnectEvent; }
+			const PublishEvent& onPublishEvent() const noexcept { return m_publishEvent; }
 
 			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
@@ -62,7 +67,7 @@ namespace cleanMqtt
 			bool tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const packets::Properties& properties) noexcept;
 			void reconnect();
 
-			void handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args = {});
+			void handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args = {}) noexcept;
 			void handleExternalDisconnect(const packets::Disconnect& packet);
 			void handleExternalDisconnect(int closeCode = -1, std::string reason = "");
 
@@ -102,10 +107,12 @@ namespace cleanMqtt
 			ConnectEvent m_connectEvent;
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
+			PublishEvent m_publishEvent;
 
 			std::unique_ptr<interfaces::ISendQueue> m_sendQueue{ nullptr };
 			ReceiveQueue m_receiveQueue;
 
+			TopicAliases m_topicAliases;
 			interfaces::SendBatchResult m_batchResultData;
 
 			std::mutex m_mutex;
@@ -125,7 +132,7 @@ packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainin
 			if (packetSize > allowedSize)\
 			{\
 				LogInfo("", "Enforced max send size for queued packet.");\
-				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, 0 };\
+				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, -1};\
 			}\
 		}\
 

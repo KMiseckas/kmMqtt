@@ -144,20 +144,9 @@ namespace
 	}
 #endif //LOG_LEVEL <= ERROR
 
-#ifdef ENABLE_THROW_ON_FATAL_LOG
 	void LogException(const char* category, const std::exception& e) noexcept(false)
 	{
 		settings::getLogger()->Log(LogLevel::Fatal, category, e.what());
 		throw e;
 	}
-#elif ENABLE_LOGS && LOG_LEVEL <= ERROR
-	void LogException(const char* category, const std::exception& e) noexcept(false)
-	{
-		settings::getLogger()->Log(LogLevel::Fatal, category, e.what());
-	}
-#else
-	void LogException(const char* /*category*/, const std::exception& /*e*/) noexcept(false)
-	{
-	}
-#endif//ENABLE_THROW_ON_FATAL_LOG
 }

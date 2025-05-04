@@ -25,10 +25,10 @@ namespace adapter
 		WinWebsocketAdapter();
 		~WinWebsocketAdapter() override;
 
-		bool connect(const std::string& hostname, const std::string& port = "80") override;
-		bool send(const ByteBuffer& data) override;
-		void close() override;
-		void tick() override;
+		bool connect(const std::string& hostname, const std::string& port = "80") noexcept override;
+		bool send(const ByteBuffer& data) noexcept override;
+		bool close() noexcept override;
+		void tick() noexcept override;
 
 		bool isConnected() const noexcept override;
 		int getLastError() const noexcept override;
@@ -65,8 +65,8 @@ namespace adapter
 
 		WSAEVENT m_event{};
 
-		SOCKET m_socket;
-		bool m_connected;
+		SOCKET m_socket{};
+		bool m_connected{ false };
 
 		OnConnectCallback m_onConnectCallback;
 		OnDisconnectCallback m_onDisconnectCallback;

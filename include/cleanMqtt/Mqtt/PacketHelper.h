@@ -19,19 +19,6 @@ namespace cleanMqtt
 		{
 			const auto& conArgs = connectionInfo.connectArgs;
 
-			if (conArgs.will != nullptr)
-			{
-				if (conArgs.will->payload != nullptr && conArgs.will->payload->size() <= 0)
-				{
-					LogException("MqttClient", std::runtime_error("Payload size must be bigger than 0! - Payload is included in the will, but payload size is 0."));
-				}
-
-				if (conArgs.will->correlationData != nullptr && conArgs.will->correlationData->size() <= 0)
-				{
-					LogException("MqttClient", std::runtime_error("Correlatation data size must be bigger than 0! - Correlatation data is included in the will, but Correlatation data size is 0."));
-				}
-			}
-
 			EncodedConnectFlags connectFlags;
 			connectFlags.setFlagValue(ConnectFlags::CLEAN_START, conArgs.cleanStart);
 			connectFlags.setFlagValue(ConnectFlags::PASSWORD, !conArgs.password.empty());
@@ -39,18 +26,11 @@ namespace cleanMqtt
 
 			if (conArgs.will != nullptr)
 			{
-				if (conArgs.will->willTopic.empty())
-				{
-					LogException(
-						"MqttClient",
-						std::runtime_error("Ignoring Will - Attempted to add a Will to the Connect packet, but Will Topic has not been set!"));
-				}
-				else
-				{
-					connectFlags.setFlagValue(ConnectFlags::WILL_FLAG, true);
-					connectFlags.setFlagValue(ConnectFlags::WILL_QOS, static_cast<std::uint8_t>(conArgs.will->willQos));
-					connectFlags.setFlagValue(ConnectFlags::WILL_RETAIN, conArgs.will->retainWillMessage);
-				}
+				assert(!conArgs.will->willTopic.empty());
+
+				connectFlags.setFlagValue(ConnectFlags::WILL_FLAG, true);
+				connectFlags.setFlagValue(ConnectFlags::WILL_QOS, static_cast<std::uint8_t>(conArgs.will->willQos));
+				connectFlags.setFlagValue(ConnectFlags::WILL_RETAIN, conArgs.will->retainWillMessage);
 			}
 
 			Properties connectProperties;
@@ -81,7 +61,7 @@ namespace cleanMqtt
 				willProperties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, conArgs.will->messageExpiryInterval, conArgs.will->messageExpiryInterval > 0);
 				willProperties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String{ conArgs.will->contentType }, !conArgs.will->contentType.empty());
 				willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, UTF8String{ conArgs.will->responseTopic }, !conArgs.will->responseTopic.empty());
-				willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() }, conArgs.will->correlationData != nullptr);
+				willProperties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() }, conArgs.will->correlationData != nullptr);
 
 				for (const auto& property : conArgs.will->userProperties)
 				{
@@ -129,6 +109,30 @@ namespace cleanMqtt
 		PingResp createPingResponsePacket()
 		{
 			return packets::PingResp{};
+		}
+
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* /*topic*/, const ByteBuffer&& /*payload*/, const PublishOptions& options)
+		{
+			if (options.topicAlias > connectionInfo.maxServerTopicAlias)
+			{
+				LogException(
+					"MqttClient",
+					std::runtime_error("Topic alias exceeds `max server topic alias` received from broker."));
+			}
+
+			PublishVariableHeader varHeader;
+			PublishPayloadHeader payloadHeader;
+
+			packets::Properties properties;
+			properties.tryAddProperty(packets::PropertyType::PAYLOAD_FORMAT_INDICATOR, options.payloadFormatIndicator);
+			properties.tryAddProperty(packets::PropertyType::MESSAGE_EXPIRY_INTERVAL, options.messageExpiryInterval, options.addMessageExpiryInterval);
+			properties.tryAddProperty(packets::PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
+			properties.tryAddProperty(packets::PropertyType::RESPONSE_TOPIC, options.responseTopic, !options.responseTopic.empty());
+			properties.tryAddProperty(packets::PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, options.correlationData != nullptr && !options.responseTopic.empty());
+
+			EncodedPublishFlags flags{ false, options.qos, options.retain };
+
+			return packets::Publish{std::move(payloadHeader), std::move(varHeader), flags };
 		}
 	}
 }

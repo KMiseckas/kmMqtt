@@ -4,7 +4,7 @@
 #include <cleanMqtt/Interfaces/IEncodeHeader.h>
 #include <cleanMqtt/Mqtt/Packets/Connection/Flags/ConnectFlags.h>
 #include <cleanMqtt/Mqtt/Packets/Properties.h>
-#include <cleanMqtt/Mqtt/MqttVersion.h>
+#include <cleanMqtt/Mqtt/Enums/MqttVersion.h>
 #include <cstdint>
 
 namespace cleanMqtt

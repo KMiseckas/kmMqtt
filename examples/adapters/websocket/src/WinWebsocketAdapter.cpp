@@ -5,6 +5,7 @@ namespace adapter
 	WinWebsocketAdapter::WinWebsocketAdapter()
 		: m_socket(INVALID_SOCKET), m_event(WSA_INVALID_EVENT)
 	{
+        m_connected = false;
 	}
 
 	WinWebsocketAdapter::~WinWebsocketAdapter()
@@ -13,7 +14,7 @@ namespace adapter
 		WSACleanup();
 	}
 
-	bool WinWebsocketAdapter::connect(const std::string& hostname, const std::string& port)
+	bool WinWebsocketAdapter::connect(const std::string& hostname, const std::string& port) noexcept
 	{
         logInfo("Starting connect().");
         WSADATA wsaData;
@@ -91,7 +92,7 @@ namespace adapter
         return true;
 	}
 
-    bool WinWebsocketAdapter::send(const ByteBuffer& data)
+    bool WinWebsocketAdapter::send(const ByteBuffer& data) noexcept
     {
         if (!m_connected || m_socket == INVALID_SOCKET) 
         {
@@ -113,7 +114,7 @@ namespace adapter
         return true;
     }
 
-    void WinWebsocketAdapter::close()
+    bool WinWebsocketAdapter::close() noexcept
     {
         if (m_socket != INVALID_SOCKET) 
         {
@@ -130,9 +131,10 @@ namespace adapter
         WSACleanup();
 
         m_connected = false;
+        return true;
     }
 
-    void WinWebsocketAdapter::tick()
+    void WinWebsocketAdapter::tick() noexcept
     {
         if (WSAWaitForMultipleEvents(1, &m_event, FALSE, 0, FALSE) == WSA_WAIT_TIMEOUT)
         {

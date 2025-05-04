@@ -20,6 +20,12 @@ namespace cleanMqtt
 				INTERNAL_ERROR
 			};
 
+			enum class EncodeErrorCode : std::uint8_t
+			{
+				NO_ERROR = 0U,
+				INTERNAL_ERROR
+			};
+
 			struct DecodeResult
 			{
 				DecodeResult() = default;
@@ -53,6 +59,24 @@ namespace cleanMqtt
 					}
 
 					return DisconnectReasonCode::UNSPECIFIED_ERROR;
+				}
+			};
+
+			struct EncodeResult
+			{
+				EncodeResult() = default;
+				EncodeResult(EncodeErrorCode errorCode, std::string errorReason = "") noexcept
+					: code{ errorCode }, reason{ errorReason }
+				{
+				}
+
+				PacketType packetType{ PacketType::RESERVED };
+				EncodeErrorCode code{ EncodeErrorCode::NO_ERROR };
+				std::string reason;
+
+				inline bool isSuccess() const noexcept
+				{
+					return code == EncodeErrorCode::NO_ERROR;
 				}
 			};
 		}

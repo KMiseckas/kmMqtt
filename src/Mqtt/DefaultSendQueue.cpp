@@ -53,14 +53,15 @@ namespace cleanMqtt
 						{
 							LogInfo("SendQueue", "Attempting to retry failed packet. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
 
-							outResult.socketError = m_lastSendData.sendError;
+							outResult.socketError = m_lastSendData.socketError;
 							++m_sendBatchRetryCount;
 							m_lastRetryTime = std::chrono::steady_clock::now();
 						}
 
 						continue;
 					}
-					else if (m_lastSendData.noSendReason == interfaces::NoSendReason::OVER_MAX_PACKET_SIZE)
+					else if (m_lastSendData.noSendReason == interfaces::NoSendReason::OVER_MAX_PACKET_SIZE ||
+						m_lastSendData.noSendReason == interfaces::NoSendReason::INTERNAL_ERROR)
 					{
 						m_sendBatchRetryCount = 0;
 						break;

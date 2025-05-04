@@ -2,7 +2,7 @@
 #define INCLUDE_CLEANMQTT_MQTT_MQTTCONNECTIONINFO_H
 
 #include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Mqtt/MqttVersion.h>
+#include <cleanMqtt/Mqtt/Enums/MqttVersion.h>
 #include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
 #include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
 
@@ -31,6 +31,8 @@ namespace cleanMqtt
 			TimePoint lastPingReqSentTime;
 
 			Seconds pingInterval{ 0U };
+			std::uint16_t maxServerTopicAlias{ 0U };
+			bool isRetainAvailable{ true };
 		};
 	}
 }

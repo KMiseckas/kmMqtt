@@ -34,57 +34,87 @@ namespace cleanMqtt
 				delete m_dataBuffer;
 			}
 
-			void BasePacket::encode()
+			EncodeResult BasePacket::encode()
 			{
+				EncodeResult result;
+				result.packetType = getPacketType();
+
 				delete m_dataBuffer;
 
 				m_fixedHeader.packetType = getPacketType();
 				m_fixedHeader.remainingLength = static_cast<std::uint32_t>(calculateFixedHeaderRemainingLength());
 				const std::size_t bufferCapacity = m_fixedHeader.getEncodedBytesSize() + static_cast<std::size_t>(m_fixedHeader.remainingLength.uint32Value());
 
-				if (bufferCapacity < 2)
+				try
 				{
-					LogException("BasePacket", std::runtime_error("Not enough packet data. Cannot encode packet with less than 2 bytes of data."));
+					if (bufferCapacity < 2)
+					{
+						LogException("BasePacket", std::runtime_error("Not enough packet data. Cannot encode packet with less than 2 bytes of data."));
+					}
+
+					m_dataBuffer = new ByteBuffer(bufferCapacity);
+
+					m_fixedHeader.encode(*m_dataBuffer);
+					for (const interfaces::IEncodeHeader* header : m_otherEncodeHeaders)
+					{
+						header->encode(*m_dataBuffer);
+					}
+				}
+				catch (const std::exception& e)
+				{
+					result.code = EncodeErrorCode::INTERNAL_ERROR;
+					result.reason = e.what();
 				}
 
-				m_dataBuffer = new ByteBuffer(bufferCapacity);
-
-				m_fixedHeader.encode(*m_dataBuffer);
-				for (const interfaces::IEncodeHeader* header : m_otherEncodeHeaders)
-				{
-					header->encode(*m_dataBuffer);
-				}
+				return result;
 			}
 
 			DecodeResult BasePacket::decode()
 			{
+				DecodeResult result;
+				result.packetType = getPacketType();
+
 				if (m_dataBuffer == nullptr)
 				{
-					LogException("Connect", std::runtime_error("Cannot decode packet. Is `nullptr` for data buffer."));
-					return DecodeResult{ DecodeErrorCode::INTERNAL_ERROR, "Null ref buffer in packet." };
+					LogError("BasePacket", "Cannot decode packet. Is `nullptr` for data buffer.");
+					result.code = DecodeErrorCode::INTERNAL_ERROR;
+					result.reason = "Null ref buffer in packet.";
+					return result;
 				}
 
 				if (m_dataBuffer->size() < 2)
 				{
-					LogException("Connect", std::runtime_error("Cannot decode packet with less than 2 bytes of data."));
-					return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET, "Received packet data is less than 2 bytes." };
+					LogError("BasePacket", "Cannot decode packet with less than 2 bytes of data.");
+					result.code = DecodeErrorCode::MALFORMED_PACKET;
+					result.reason = "Received packet data is less than 2 bytes.";
+					return result;
 				}
 
-				DecodeResult result{ m_fixedHeader.decode(*m_dataBuffer) };
-
-				if (result.isSuccess())
+				try
 				{
-					for (interfaces::IDecodeHeader* header : m_otherDecodeHeaders)
-					{
-						result = std::move(header->decode(*m_dataBuffer));
+					result = std::move(m_fixedHeader.decode(*m_dataBuffer));
 
-						if (!result.isSuccess())
+					if (result.isSuccess())
+					{
+						for (interfaces::IDecodeHeader* header : m_otherDecodeHeaders)
 						{
-							return result;
+							result = std::move(header->decode(*m_dataBuffer));
+
+							if (!result.isSuccess())
+							{
+								result.packetType = getPacketType();
+								return result;
+							}
 						}
 					}
 				}
+				catch(const std::exception& e)
+				{
+					result.code = DecodeErrorCode::INTERNAL_ERROR;
+					result.reason = e.what();
+				}
 
+				result.packetType = getPacketType();
 				return result;
 			}
 
@@ -108,6 +138,11 @@ namespace cleanMqtt
 				}
 
 				return remainingLength;
+			}
+
+			void BasePacket::onFixedHeaderDecoded() const
+			{
+				//Do nothing by default.
 			}
 
 			void BasePacket::addEncodeHeader(const interfaces::IEncodeHeader* header)

@@ -2,7 +2,7 @@
 #define INTERFACE_CLEANMQTT_MQTT_PACKETS_PUBLISH_FLAGS_PUBLISHFLAGS_H
 
 #include <cleanMqtt/Mqtt/Packets/FixedHeaderFlags.h>
-#include <cleanMqtt/Mqtt/Qos.h>
+#include <cleanMqtt/Mqtt/Enums/Qos.h>
 #include <cleanMqtt/GlobalMacros.h>
 
 #include <cstdint>

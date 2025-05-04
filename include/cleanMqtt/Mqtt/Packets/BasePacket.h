@@ -36,7 +36,7 @@ namespace cleanMqtt
 
 				virtual PacketType getPacketType() const noexcept = 0;
 
-				void encode();
+				EncodeResult encode();
 				DecodeResult decode();
 
 				const FixedHeader& getFixedHeader() const;
@@ -44,6 +44,8 @@ namespace cleanMqtt
 
 			protected:
 				std::size_t calculateFixedHeaderRemainingLength() const;
+
+				virtual void onFixedHeaderDecoded() const;
 
 				void addEncodeHeader(const interfaces::IEncodeHeader* header);
 				void addDecodeHeader(interfaces::IDecodeHeader* header);

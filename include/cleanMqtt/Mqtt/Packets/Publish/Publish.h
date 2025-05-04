@@ -15,14 +15,22 @@ namespace cleanMqtt
 			class Publish : public BasePacket
 			{
 			public:
-				Publish(const char* topic, const char* msg, const EncodedPublishFlags& flags) noexcept;
+				Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept;
+				Publish(ByteBuffer&& dataBuffer) noexcept;
+				Publish(Publish&& other) noexcept;
 				~Publish() override;
 
 				PacketType getPacketType() const noexcept override;
 
+				const PublishVariableHeader& getVariableHeader() const;
+				const PublishPayloadHeader& getPayloadHeader() const;
+
 			protected:
-				PublishVariableHeader m_variableHeader;
-				PublishPayloadHeader m_payloadHeader;
+				void setUpHeaders() noexcept;
+				void onFixedHeaderDecoded() const override;
+
+				PublishVariableHeader* m_variableHeader{ nullptr };
+				PublishPayloadHeader* m_payloadHeader{ nullptr };
 			};
 		}
 	}

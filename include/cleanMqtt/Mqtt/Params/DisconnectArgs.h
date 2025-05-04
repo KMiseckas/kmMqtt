@@ -2,6 +2,7 @@
 #define INCLUDE_CLEANMQTT_MQTT_PARAMS_DISCONNECTARGS_H
 
 #include <cleanMqtt/GlobalMacros.h>
+#include <cleanMqtt/Mqtt/Enums/PayloadFormatIndicator.h>
 #include <string>
 #include <memory>
 #include <map>

@@ -2,23 +2,18 @@
 #define INCLUDE_CLEANMQTT_MQTT_PARAMS_CONNECTARGS_H
 
 #include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Mqtt/Qos.h>
+#include <cleanMqtt/Mqtt/Enums/Qos.h>
+#include <cleanMqtt/Mqtt/Enums/MqttVersion.h>
+#include <cleanMqtt/Mqtt/Packets/DataTypes.h>
+#include <cleanMqtt/Mqtt/Enums/PayloadFormatIndicator.h>
 #include <string>
 #include <memory>
 #include <map>
-#include <cleanMqtt/Mqtt/MqttVersion.h>
-#include <cleanMqtt/Mqtt/Packets/DataTypes.h>
 
 namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		enum class PayloadFormatIndicator : std::uint8_t
-		{
-			BINARY = 0,
-			UTF8 = 1,
-		};
-
 		struct PUBLIC_API Will
 		{
 			Will(const std::string& topic) noexcept

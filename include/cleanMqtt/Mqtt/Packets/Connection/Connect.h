@@ -29,9 +29,9 @@ namespace cleanMqtt
 				const ConnectVariableHeader& getVariableHeader() const;
 				const ConnectPayloadHeader& getPayloadHeader() const;
 
+			private:
 				void setUpHeaders() noexcept;
 
-			private:
 				ConnectVariableHeader* m_variableHeader{ nullptr };
 				ConnectPayloadHeader* m_payloadHeader{ nullptr };
 			};

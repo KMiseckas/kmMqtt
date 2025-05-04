@@ -27,9 +27,9 @@ if(FORCE_ADD_PROPERTIES)
 endif()
 
 if(ENABLE_LOGS)
-    set(LOG_LEVEL 0 STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
+    set(LOG_LEVEL_TARGET 0 STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
     target_compile_definitions(${PROJECT_NAME} PRIVATE 
-    LOG_LEVEL=${LOG_LEVEL}
+    LOG_LEVEL=${LOG_LEVEL_TARGET}
     ENABLE_LOGS)
 endif()
 

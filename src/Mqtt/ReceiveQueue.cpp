@@ -84,8 +84,10 @@ if (callback != nullptr)\
 					break;
 				}
 				case packets::PacketType::PUBLISH:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(Publish, m_pubCallback);
 					break;
+				}
 				case packets::PacketType::PUBLISH_ACKNOWLEDGE:
 					//TODO
 					break;

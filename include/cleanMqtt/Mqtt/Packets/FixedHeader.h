@@ -34,7 +34,7 @@ namespace cleanMqtt
 					}
 				}
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override
+				DecodeResult decode(const ByteBuffer& buffer) override
 				{
 					//Packet Type: MSB 4 bits
 					//Flags: LSB 4 bits

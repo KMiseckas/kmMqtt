@@ -21,10 +21,10 @@ namespace cleanMqtt
 			{
 			};
 
-			virtual bool connect(const std::string& hostname, const std::string& port = "80") = 0;
-			virtual bool send(const ByteBuffer& data) = 0;
-			virtual void close() = 0;
-			virtual void tick() = 0;
+			virtual bool connect(const std::string& hostname, const std::string& port = "80") noexcept = 0;
+			virtual bool send(const ByteBuffer& data) noexcept = 0;
+			virtual bool close() noexcept = 0;
+			virtual void tick() noexcept = 0;
 
 			virtual bool isConnected() const noexcept = 0;
 			virtual int getLastError() const noexcept = 0;

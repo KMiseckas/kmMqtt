@@ -17,6 +17,7 @@ namespace cleanMqtt
 			NONE,
 			SOCKET_SEND_ERROR,
 			OVER_MAX_PACKET_SIZE,
+			INTERNAL_ERROR
 		};
 
 		struct PUBLIC_API SendBatchResult
@@ -32,14 +33,14 @@ namespace cleanMqtt
 		struct PUBLIC_API SendResultData
 		{
 			SendResultData(std::size_t size, bool sent, NoSendReason reason, int error = 0) noexcept
-				: packetSize{ size }, wasSent{ sent }, noSendReason{ reason }, sendError{ error }
+				: packetSize{ size }, wasSent{ sent }, noSendReason{ reason }, socketError{ error }
 			{
 			}
 
 			std::size_t packetSize{ 0U };
 			bool wasSent{ false };
 			NoSendReason noSendReason{ NoSendReason::NONE };
-			int sendError{ 0 };
+			int socketError{ 0 };
 		};
 
 		using PacketSendJob = std::function<interfaces::SendResultData(bool, std::size_t)>;
