@@ -13,7 +13,7 @@ namespace cleanMqtt
 				: topicName{ topicName },
 				packetIdentifier{ packetId },
 				properties{ std::move(properties) },
-				m_Qos{ publishQOS }
+				qos{ publishQOS }
 			{
 			}
 
@@ -24,7 +24,7 @@ namespace cleanMqtt
 				topicName.decode(buffer);
 
 				result = std::move(properties.decode(buffer));
-				if (m_Qos >= Qos::QOS_1) packetIdentifier = buffer.readUInt16();
+				if (qos >= Qos::QOS_1) packetIdentifier = buffer.readUInt16();
 				properties.decode(buffer);
 
 				return result;
@@ -38,22 +38,17 @@ namespace cleanMqtt
                 assert(topicNameStr.find("*", 0) == topicNameStr.npos);
 
                 topicName.encode(buffer);
-                if(m_Qos >= Qos::QOS_1) buffer.append(packetIdentifier);
+                if(qos >= Qos::QOS_1) buffer.append(packetIdentifier);
                 if(properties.size() > 0) properties.encode(buffer);
             }
 
 			std::size_t PublishVariableHeader::getEncodedBytesSize() const noexcept
 			{
 				auto size{ topicName.encodingSize() };
-				if (m_Qos >= Qos::QOS_1) size += sizeof(packetIdentifier);
+				if (qos >= Qos::QOS_1) size += sizeof(packetIdentifier);
 				if (properties.size() > 0) size += properties.encodingSize();
 
 				return size;
-			}
-
-			void PublishVariableHeader::setQos(const Qos qos) noexcept
-			{
-				m_Qos = qos;
 			}
         }
     }

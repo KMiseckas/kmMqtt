@@ -16,10 +16,12 @@
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
 #include "cleanMqtt/Mqtt/ReceiveQueue.h"
 #include <cleanMqtt/Utils/Deferrer.h>
+#include <cleanMqtt/Utils/PacketIdPool.h>
 #include <cleanMqtt/Config.h>
 #include <cleanMqtt/Mqtt/DefaultSendQueue.h>
 #include <cleanMqtt/Mqtt/TopicAliases.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
+
 
 #include <cstring>
 #include <memory>
@@ -47,7 +49,7 @@ namespace cleanMqtt
 			~MqttClient();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
-			ClientError publish(const char* topic, const ByteBuffer&& payload, const PublishOptions&& options) noexcept;
+			ClientError publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
 			ClientError subscribe(const char* topic) noexcept;
 			ClientError unSubscribe(const char* topic) noexcept;
 			ClientError disconnect(DisconnectArgs&& args) noexcept;
@@ -119,22 +121,9 @@ namespace cleanMqtt
 			std::mutex m_receiverMutex;
 
 			Config m_config;
+			PacketIdPool m_packetIdPool;
 
 			//TODO create session STATE object (COnnectionInfo + SendQueue + ReceiveQueue)
 		};
-
-#define PACKET_SIZE_POST_ENCODE(packet)\
-packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value()\
-
-#define CHECK_ENFORCE_MAX_PACKET_SIZE(shouldEnforce, packetSize, allowedSize)\
-		if (shouldEnforce == true)\
-		{\
-			if (packetSize > allowedSize)\
-			{\
-				LogInfo("", "Enforced max send size for queued packet.");\
-				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, -1};\
-			}\
-		}\
-
 	}
 }

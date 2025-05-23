@@ -13,16 +13,16 @@ namespace cleanMqtt
 		{
 		}
 
-		void DefaultSendQueue::addToQueue(interfaces::PacketSendJob packetSendJob, const mqtt::packets::PacketType /*type*/)
+		void DefaultSendQueue::addToQueue(interfaces::PacketSendJobPtr packetSendJob)
 		{
-			m_queuedRequests.push(std::move(packetSendJob));
+			m_queuedJobs.push(std::move(packetSendJob));
 		}
 
 		void DefaultSendQueue::sendNextBatch(interfaces::SendBatchResult& outResult)
 		{
 			outResult.packetsSent = 0;
 			outResult.totalBytesSent = 0;
-			outResult.packetsAttemptedToSend = m_queuedRequests.size();
+			outResult.packetsAttemptedToSend = m_queuedJobs.size();
 			outResult.isRecoverable = true;
 			outResult.socketError = NO_SOCKET_ERROR;
 
@@ -49,10 +49,10 @@ namespace cleanMqtt
 					if (m_lastSendData.noSendReason == interfaces::NoSendReason::SOCKET_SEND_ERROR)
 					{
 						//Can retry same packet a few times before registering as a concrete fail for the overall send queue.
+						LogInfo("SendQueue", "Attempting to retry failed packet. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
+
 						if (m_currentLocalRetry == maxLocalRetries)
 						{
-							LogInfo("SendQueue", "Attempting to retry failed packet. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
-
 							outResult.socketError = m_lastSendData.socketError;
 							++m_sendBatchRetryCount;
 							m_lastRetryTime = std::chrono::steady_clock::now();
@@ -64,7 +64,9 @@ namespace cleanMqtt
 						m_lastSendData.noSendReason == interfaces::NoSendReason::INTERNAL_ERROR)
 					{
 						m_sendBatchRetryCount = 0;
-						break;
+						outResult.isRecoverable = false;
+						outResult.unrecoverableReasonStr = m_lastSendData.noSendReason == interfaces::NoSendReason::INTERNAL_ERROR ? "Internal error." : "Over max packet size.";
+						return;
 					}
 
 					break;
@@ -87,23 +89,23 @@ namespace cleanMqtt
 
 		void DefaultSendQueue::clearQueue() noexcept
 		{
-			std::queue< std::function<interfaces::SendResultData(bool, std::size_t)>> empty;
-			m_queuedRequests.swap(empty);
+			std::queue<interfaces::PacketSendJobPtr> empty;
+			m_queuedJobs.swap(empty);
 		}
 
 		bool DefaultSendQueue::trySendBatch(interfaces::SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult)
 		{
-			if (m_queuedRequests.size() <= 0)
+			if (m_queuedJobs.size() <= 0)
 			{
 				//Early successful return, no packets to proccess for sending.
 				return true;
 			}
 
-			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_queuedRequests.size());
+			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_queuedJobs.size());
 
-			while (!m_queuedRequests.empty())
+			while (!m_queuedJobs.empty())
 			{
-				auto result = m_queuedRequests.front()(false, 0);
+				auto result = m_queuedJobs.front()->send();
 
 				if (!result.wasSent)
 				{
@@ -111,7 +113,7 @@ namespace cleanMqtt
 					return false;
 				}
 
-				m_queuedRequests.pop();
+				m_queuedJobs.pop();
 
 				outResult.packetsSent += 1;
 				outResult.totalBytesSent += result.packetSize;

@@ -16,7 +16,7 @@ namespace cleanMqtt
 			DefaultSendQueue() noexcept;
 			virtual ~DefaultSendQueue();
 
-			void addToQueue(std::function<interfaces::SendResultData(bool, std::size_t)> packetSendJob, const mqtt::packets::PacketType type) override;
+			void addToQueue(interfaces::PacketSendJobPtr packetSendJob) override;
 			void sendNextBatch(interfaces::SendBatchResult& outResult) override;
 			void clearQueue() noexcept override;
 			bool trySendBatch(interfaces::SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult);
@@ -31,7 +31,7 @@ namespace cleanMqtt
 			const std::chrono::milliseconds k_retryDelayMs{ 1000 };
 			std::chrono::steady_clock::time_point m_lastRetryTime;
 
-			std::queue<std::function<interfaces::SendResultData(bool, std::size_t)>> m_queuedRequests;
+			std::queue<interfaces::PacketSendJobPtr> m_queuedJobs;
 		};
 	}
 }

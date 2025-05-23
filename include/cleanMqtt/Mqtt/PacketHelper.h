@@ -2,12 +2,15 @@
 #define INCLUDE_CLEANMQTT_MQTT_PACKETHELPER_H
 
 #include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
+#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
+#include <cleanMqtt/Utils/PacketIdPool.h>
 #include <cleanMqtt/Mqtt/Packets/Connection/Connect.h>
 #include <cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h>
 #include <cleanMqtt/Mqtt/Packets/Connection/Disconnect.h>
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
 #include <cleanMqtt/Mqtt/Packets/Ping/PingReq.h>
 #include <cleanMqtt/Mqtt/Packets/Ping/PingResp.h>
+#include <cleanMqtt/Mqtt/Packets/Publish/Publish.h>
 
 namespace cleanMqtt
 {
@@ -111,14 +114,9 @@ namespace cleanMqtt
 			return packets::PingResp{};
 		}
 
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* /*topic*/, const ByteBuffer&& /*payload*/, const PublishOptions& options)
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, ByteBuffer&& payload, PublishOptions& options, PacketID packetId = 0)
 		{
-			if (options.topicAlias > connectionInfo.maxServerTopicAlias)
-			{
-				LogException(
-					"MqttClient",
-					std::runtime_error("Topic alias exceeds `max server topic alias` received from broker."));
-			}
+			(void)connectionInfo;
 
 			PublishVariableHeader varHeader;
 			PublishPayloadHeader payloadHeader;
@@ -129,6 +127,18 @@ namespace cleanMqtt
 			properties.tryAddProperty(packets::PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
 			properties.tryAddProperty(packets::PropertyType::RESPONSE_TOPIC, options.responseTopic, !options.responseTopic.empty());
 			properties.tryAddProperty(packets::PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, options.correlationData != nullptr && !options.responseTopic.empty());
+
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+			}
+
+			varHeader.properties = std::move(properties);
+			varHeader.packetIdentifier = packetId;
+			varHeader.qos = options.qos;
+			varHeader.topicName = topic;
+
+			payloadHeader.payload = std::move(payload);
 
 			EncodedPublishFlags flags{ false, options.qos, options.retain };
 

@@ -24,14 +24,11 @@ namespace cleanMqtt
 				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 				void encode(ByteBuffer& buffer) const override;
 				std::size_t getEncodedBytesSize() const noexcept override;
-				void setQos(const Qos qos) noexcept;
 
 				UTF8String topicName{ "" };
 				std::uint16_t packetIdentifier{ 0U };
 				Properties properties;
-
-			protected:
-				Qos m_Qos{ Qos::QOS_0 };
+				Qos qos{ Qos::QOS_0 };
 			};
 		}
 	}

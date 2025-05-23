@@ -4,6 +4,9 @@
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <functional>
+#include <cleanMqtt/Mqtt/Send Queue Jobs/SendConnectJob.h>
+#include <cleanMqtt/Mqtt/Send Queue Jobs/SendPublishJob.h>
+#include <cleanMqtt/Mqtt/Send Queue Jobs/SendPingJob.h>
 
 namespace cleanMqtt
 {
@@ -35,6 +38,8 @@ namespace cleanMqtt
 		ClientError MqttClient::connect(ConnectArgs&& args, ConnectAddress&& address) noexcept
 		{
 			LockGuard guard{ m_mutex };
+
+			LogDebug("MqttClient", "Starting MQTT connection proccess.");
 
 			if (m_connectionStatus == ConnectionStatus::CONNECTED || m_connectionStatus == ConnectionStatus::CONNECTING)
 			{
@@ -77,7 +82,6 @@ namespace cleanMqtt
 
 			m_receiveQueue.clear();
 
-			LogDebug("MqttClient", "Starting MQTT connection proccess.");
 			LogInfo("MqttClient",
 				"Hostname: %s\n\tPort: %s\n\tUsername: %s\n\tClientId: %s\n\tVersion: %d\n\tProtocol Name: %s",
 				address.primaryAddress.hostname().c_str(),
@@ -110,9 +114,11 @@ namespace cleanMqtt
 			return ClientErrorCode::No_Error;
 		}
 
-		ClientError MqttClient::publish(const char* topic, const ByteBuffer&& payload, const PublishOptions&& /*options*/) noexcept
+		ClientError MqttClient::publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept
 		{
 			LockGuard guard{ m_mutex };
+
+			LogTrace("MqttClient", "Started publish(): Topic: %s", topic);
 
 			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
@@ -120,7 +126,21 @@ namespace cleanMqtt
 				return { ClientErrorCode::Not_Connected, "Client not connected, cannot publish()!" };
 			}
 
-			LogTrace("MqttClient", "Started publish(): Topic: %s, Msg: %s", topic, payload.toString().c_str());
+			if (options.topicAlias > m_connectionInfo.maxServerTopicAlias)
+			{
+				LogError( "MqttClient", "Topic alias exceeds `max server topic alias` received from broker.");
+			}
+
+			m_sendQueue->addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
+				[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+				&m_packetIdPool,
+				topic,
+				std::move(payload),
+				std::move(options),
+				m_config.enforceMaxPacketSizeOnSend,
+				m_config.maxAllowedPacketSize));
+
+			LogTrace("MqttClient", "Publish packet send request queued, to be resolved on next tick.");
 
 			return ClientErrorCode::No_Error;
 		}
@@ -447,38 +467,9 @@ namespace cleanMqtt
 
 				if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval)
 				{
-					m_sendQueue->addToQueue([this](bool enforceMaxSendSize = false, std::size_t allowedSize = std::numeric_limits<std::size_t>::max())
-						{
-							PingReq packet{ createPingRequestPacket() };
-							EncodeResult result{ packet.encode() };
-
-							if (!result.isSuccess())
-							{
-								return interfaces::SendResultData{
-								0,
-								false,
-								interfaces::NoSendReason::INTERNAL_ERROR,
-								0 };
-							}
-
-							const std::size_t packetSize{ PACKET_SIZE_POST_ENCODE(packet) };
-
-							CHECK_ENFORCE_MAX_PACKET_SIZE(enforceMaxSendSize, packetSize, allowedSize);
-
-							int sendResult{ sendPacket(packet) };
-
-							if (sendResult == 0)
-							{
-								m_connectionInfo.lastPingReqSentTime = std::chrono::steady_clock::now();
-								m_connectionInfo.awaitingPingResponse = true;
-							}
-
-							return interfaces::SendResultData{
-								packetSize,
-								sendResult == 0,
-								sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
-								sendResult };
-						}, PacketType::CONNECT);
+					m_sendQueue->addToQueue(std::make_unique<SendPingJob>(&m_connectionInfo,
+						[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+						m_config.enforceMaxPacketSizeOnSend, m_config.maxAllowedPacketSize));
 				}
 			}
 		}
@@ -826,33 +817,20 @@ namespace cleanMqtt
 			{
 				LogDebug("MqttClient", "Socket connected!");
 
-				ConAckCallback conAckCallback = std::bind(&MqttClient::handleReceivedConnectAcknowledge, this, std::placeholders::_1);
-				DisconnectCallback disconnectCallback = std::bind(&MqttClient::handleReceivedDisconnect, this, std::placeholders::_1);
-				PubCallback pubCallback = std::bind(&MqttClient::handleReceivedPublish, this, std::placeholders::_1);
-				PingRespCallback pingRespCallback = std::bind(&MqttClient::handleReceivedPingResponse, this, std::placeholders::_1);
+				ConAckCallback conAckCallback{ std::bind(&MqttClient::handleReceivedConnectAcknowledge, this, std::placeholders::_1) };
+				DisconnectCallback disconnectCallback{std::bind(&MqttClient::handleReceivedDisconnect, this, std::placeholders::_1) };
+				PubCallback pubCallback{ std::bind(&MqttClient::handleReceivedPublish, this, std::placeholders::_1) };
+				PingRespCallback pingRespCallback{ std::bind(&MqttClient::handleReceivedPingResponse, this, std::placeholders::_1) };
 
 				m_receiveQueue.setConnectAcknowledgeCallback(conAckCallback);
 				m_receiveQueue.setDisconnectCallback(disconnectCallback);
 				m_receiveQueue.setPublishCallback(pubCallback);
 				m_receiveQueue.setPingResponseCallback(pingRespCallback);
 
-				m_sendQueue->addToQueue([this](bool enforceMaxSendSize = false, std::size_t allowedSize = std::numeric_limits<std::size_t>::max())
-					{
-						Connect packet{ createConnectPacket(m_connectionInfo) };
-						packet.encode();
-
-						const std::size_t packetSize{ PACKET_SIZE_POST_ENCODE(packet) };
-
-						CHECK_ENFORCE_MAX_PACKET_SIZE(enforceMaxSendSize, packetSize, allowedSize);
-
-						int sendResult = sendPacket(packet);
-
-						return interfaces::SendResultData{
-							packetSize,
-							sendResult == 0,
-							sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
-							sendResult };
-					}, PacketType::CONNECT);
+				m_sendQueue->addToQueue(std::make_unique<SendConnectJob>(&m_connectionInfo,
+					[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+					m_config.enforceMaxPacketSizeOnSend,
+					m_config.maxAllowedPacketSize));
 
 				LogTrace("MqttClient", "Connect packet send request queued, to be resolved on next tick.");
 			}

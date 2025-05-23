@@ -71,7 +71,7 @@ namespace cleanMqtt
 
 			void Publish::onFixedHeaderDecoded() const
 			{
-				m_variableHeader->setQos(static_cast<Qos>(getFixedHeader().flags.getFlagValue(static_cast<std::uint8_t>(PublishFlags::QOS))));
+				m_variableHeader->qos = static_cast<Qos>(getFixedHeader().flags.getFlagValue(static_cast<std::uint8_t>(PublishFlags::QOS)));
 			}
 		}
 	}
