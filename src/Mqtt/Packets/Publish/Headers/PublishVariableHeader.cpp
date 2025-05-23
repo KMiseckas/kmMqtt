@@ -6,6 +6,10 @@ namespace cleanMqtt
     {
         namespace packets
         {
+			PublishVariableHeader::PublishVariableHeader() noexcept
+			{
+			}
+
 			PublishVariableHeader::PublishVariableHeader(const char* topicName,
 				std::uint16_t packetId,
 				Properties&& properties,

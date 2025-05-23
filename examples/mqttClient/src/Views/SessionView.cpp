@@ -367,7 +367,7 @@ void SessionView::drawConnectAdvancedArgs()
 		m_model->connectArgs.extendedAuthenticationData = std::move(
 			std::make_unique<cleanMqtt::mqtt::packets::BinaryData>(
 				cleanMqtt::mqtt::packets::BinaryData(
-					std::strlen(UIData.extendedAuthData),
+					static_cast<std::uint16_t>(std::strlen(UIData.extendedAuthData)),
 					(const uint8_t*)UIData.extendedAuthData)));
 	}
 

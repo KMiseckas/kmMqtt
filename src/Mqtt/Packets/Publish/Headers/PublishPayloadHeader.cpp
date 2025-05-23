@@ -6,6 +6,10 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
+			PublishPayloadHeader::PublishPayloadHeader() noexcept
+			{
+			}
+
 			PublishPayloadHeader::PublishPayloadHeader(BinaryData&& payload) noexcept
 				: payload{std::move(payload)}
 			{

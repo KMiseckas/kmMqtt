@@ -2,11 +2,11 @@
 
 #include <iostream>
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <functional>
 #include <cleanMqtt/Mqtt/Send Queue Jobs/SendConnectJob.h>
 #include <cleanMqtt/Mqtt/Send Queue Jobs/SendPublishJob.h>
 #include <cleanMqtt/Mqtt/Send Queue Jobs/SendPingJob.h>
+#include <cleanMqtt/Mqtt/PacketHelper.h>
 
 namespace cleanMqtt
 {

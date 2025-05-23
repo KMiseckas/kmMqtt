@@ -22,7 +22,6 @@
 #include <cleanMqtt/Mqtt/TopicAliases.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 
-
 #include <cstring>
 #include <memory>
 #include <queue>
