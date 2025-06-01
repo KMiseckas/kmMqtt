@@ -49,6 +49,15 @@ namespace cleanMqtt
 				"DISCONNECT",
 				"AUTH",
 			};
+
+			static inline const char* packetTypeToString(PacketType packetType)
+			{
+				if (packetType < PacketType::_COUNT)
+				{
+					return k_packetTypeName[static_cast<std::uint8_t>(packetType)];
+				}
+				return "UNKNOWN";
+			}
 		}
 	}
 }

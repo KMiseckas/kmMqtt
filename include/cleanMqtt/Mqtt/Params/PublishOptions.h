@@ -15,10 +15,42 @@ namespace cleanMqtt
 	{
 		struct PUBLIC_API PublishOptions
 		{
-			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(PublishOptions)
-
 			PublishOptions() noexcept
 			{
+			}
+
+			PublishOptions(const PublishOptions& other)
+				: correlationData{ std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes()) },
+				responseTopic{ other.responseTopic },
+				topicAlias{ other.topicAlias },
+				messageExpiryInterval{ other.messageExpiryInterval },
+				addMessageExpiryInterval{ other.addMessageExpiryInterval },
+				payloadFormatIndicator{ other.payloadFormatIndicator },
+				retain{ other.retain },
+				qos{ other.qos },
+				userProperties{ other.userProperties }
+			{
+				
+			}
+
+			PublishOptions& operator=(const PublishOptions& other)
+			{
+				if (this == &other)
+				{
+					return* this;
+				}
+
+				correlationData = std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+				responseTopic = responseTopic;
+				topicAlias = other.topicAlias;
+				messageExpiryInterval = other.messageExpiryInterval;
+				addMessageExpiryInterval = other.addMessageExpiryInterval;
+				payloadFormatIndicator = other.payloadFormatIndicator;
+				retain = other.retain;
+				qos = other.qos;
+				userProperties = other.userProperties;
+
+				return *this;
 			}
 
 			PublishOptions(PublishOptions&& other) noexcept

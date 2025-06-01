@@ -22,7 +22,7 @@ namespace cleanMqtt
 		Disconnect createDisconnectPacket(const MqttConnectionInfo& connectionInfo, const DisconnectArgs& args, DisconnectReasonCode reason) noexcept;
 		PingReq createPingRequestPacket() noexcept;
 		PingResp createPingResponsePacket() noexcept;
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, ByteBuffer&& payload, PublishOptions& options, PacketID packetId = 0) noexcept;
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, PublishOptions& options, PacketID packetId = 0) noexcept;
 	}
 }
 

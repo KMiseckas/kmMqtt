@@ -3,9 +3,9 @@
 #include <iostream>
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
 #include <functional>
-#include <cleanMqtt/Mqtt/Send Queue Jobs/SendConnectJob.h>
-#include <cleanMqtt/Mqtt/Send Queue Jobs/SendPublishJob.h>
-#include <cleanMqtt/Mqtt/Send Queue Jobs/SendPingJob.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SendConnectJob.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SendPublishJob.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SendPingJob.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 
 namespace cleanMqtt
@@ -13,13 +13,11 @@ namespace cleanMqtt
 	namespace mqtt
 	{
 		using namespace cleanMqtt::mqtt::packets;
-		using Milliseconds = std::chrono::milliseconds;
 
-		MqttClient::MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue)
-			: m_config{ config }, m_socket { std::move(socket) }, m_sendQueue{ std::move(sendQueue) }
+		MqttClient::MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket)
+			: m_config{ config }, m_socket { std::move(socket) }
 		{
 			assert(m_socket != nullptr);
-			assert(m_sendQueue != nullptr);
 
 			m_socket->setOnConnectCallback([this](bool success){handleSocketConnectEvent(success);});
 			m_socket->setOnDisconnectCallback([this]() { handleSocketDisconnectEvent(); });
@@ -32,7 +30,6 @@ namespace cleanMqtt
 			shutdown();
 
 			m_socket = nullptr;
-			m_sendQueue = nullptr;
 		}
 
 		ClientError MqttClient::connect(ConnectArgs&& args, ConnectAddress&& address) noexcept
@@ -131,16 +128,35 @@ namespace cleanMqtt
 				LogError( "MqttClient", "Topic alias exceeds `max server topic alias` received from broker.");
 			}
 
-			m_sendQueue->addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
+			PacketID packetId{ 0U };
+			if (options.qos >= mqtt::Qos::QOS_1)
+			{
+				packetId = m_packetIdPool.getId();
+
+				LogTrace("MqttClient", "Packet ID: %d", packetId);
+
+				ByteBuffer payloadCopy{ payload.size() };
+				payloadCopy.append(payload);
+				PublishMessageData msgData{ topic, std::move(payloadCopy), options };
+
+				const auto error{ m_connectionInfo.sessionState.addMessage(packetId, std::move(msgData)) };
+				if (error != ClientErrorCode::No_Error)
+				{
+					return { error, "Failed to add message to session state." };
+				}
+			}
+
+			m_sendQueue.addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
 				[this](const packets::BasePacket& packet) {return sendPacket(packet); },
 				&m_packetIdPool,
+				packetId,
 				topic,
 				std::move(payload),
 				std::move(options),
 				m_config.enforceMaxPacketSizeOnSend,
 				m_config.maxAllowedPacketSize));
 
-			LogTrace("MqttClient", "Publish packet send request queued, to be resolved on next tick.");
+			LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
 
 			return ClientErrorCode::No_Error;
 		}
@@ -206,27 +222,26 @@ namespace cleanMqtt
 			}
 
 			assert(m_socket != nullptr);
-			assert(m_sendQueue != nullptr);
 
 			LogInfo("MqttClient", "Client shutdown.");
 
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 
 			m_eventDeferrer.clear();
+			m_sendPacketErrorEvent.removeAll();
 			m_connectEvent.removeAll();
 			m_disconnectEvent.removeAll();
 			m_publishEvent.removeAll();
 
 			m_socket->close();
-			m_sendQueue->clearQueue();
+			m_sendQueue.clearQueue();
 			m_receiveQueue.clear();
 
 			return ClientErrorCode::No_Error;
 		}
 
-		ClientError MqttClient::tick(float /*deltaTime*/) noexcept
+		void MqttClient::tick(float /*deltaTime*/) noexcept
 		{
-			assert(m_sendQueue != nullptr);
 			assert(m_socket != nullptr);
 
 			LockGuard guard{ m_mutex };
@@ -240,6 +255,7 @@ namespace cleanMqtt
 					tickSendPackets();
 					tickReceivePackets();
 					tickCheckKeepAlive();
+					tickPendingPublishMessageRetries();
 				}
 			}
 
@@ -249,8 +265,6 @@ namespace cleanMqtt
 			}
 
 			m_eventDeferrer.invokeEvents();
-
-			return ClientErrorCode::No_Error;
 		}
 
 		ConnectionStatus MqttClient::getConnectionStatus() const noexcept
@@ -296,10 +310,10 @@ namespace cleanMqtt
 				}
 
 				//Set-up ping interval
-				m_connectionInfo.pingInterval = MqttConnectionInfo::Seconds{ m_connectionInfo.connectArgs.keepAliveInSec };
+				m_connectionInfo.pingInterval = Seconds{ m_connectionInfo.connectArgs.keepAliveInSec };
 				if (m_config.pingAlways && m_connectionInfo.connectArgs.keepAliveInSec <= 0)
 				{
-					m_connectionInfo.pingInterval = std::chrono::duration_cast<MqttConnectionInfo::Seconds>(MqttConnectionInfo::Milliseconds{ m_config.defaultPingInterval });
+					m_connectionInfo.pingInterval = std::chrono::duration_cast<Seconds>(Milliseconds{ m_config.defaultPingInterval });
 				}
 
 				//Set-up max server topic alias
@@ -315,6 +329,11 @@ namespace cleanMqtt
 				{
 					m_connectionInfo.isRetainAvailable = *retainAvailable == 1;
 				}
+
+				m_connectionInfo.sessionState = SessionState{ m_connectionInfo.connectArgs.clientId.c_str(),
+					m_connectionInfo.connectArgs.sessionExpiryInterval,
+					m_config.retryPublishIntervalMS,
+					nullptr };
 
 				//TODO read mqtt5 spec for rest of properties of Connect Ack (relating to publishing, subscribing and reconnection).
 			}
@@ -454,7 +473,7 @@ namespace cleanMqtt
 					return;
 				}
 
-				MqttConnectionInfo::Milliseconds elapsedTimeSinceControlPacket;
+				Milliseconds elapsedTimeSinceControlPacket;
 
 				if (m_config.pingAlways)
 				{
@@ -467,7 +486,7 @@ namespace cleanMqtt
 
 				if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval)
 				{
-					m_sendQueue->addToQueue(std::make_unique<SendPingJob>(&m_connectionInfo,
+					m_sendQueue.addToQueue(std::make_unique<SendPingJob>(&m_connectionInfo,
 						[this](const packets::BasePacket& packet) {return sendPacket(packet); },
 						m_config.enforceMaxPacketSizeOnSend, m_config.maxAllowedPacketSize));
 				}
@@ -477,7 +496,7 @@ namespace cleanMqtt
 		void MqttClient::tickSendPackets()
 		{
 			//Send queued encoded packets.
-			m_sendQueue->sendNextBatch(m_batchResultData);
+			m_sendQueue.sendNextBatch(m_batchResultData);
 
 			if (m_batchResultData.packetsSent > 0)
 			{
@@ -499,9 +518,11 @@ namespace cleanMqtt
 			if (!m_batchResultData.isRecoverable)
 			{
 				DisconnectArgs args;
-				args.disconnectReasonText = "Hit unrecoverable error: " + m_batchResultData.unrecoverableReasonStr;
+				args.disconnectReasonText = "Hit unrecoverable error in sending packet: " + m_batchResultData.unrecoverableReasonStr + 
+					", Encode result: " + m_batchResultData.lastSendResult.encodeResult.reason;
 				args.clearQueue = true;
 
+				deferEvent(m_eventDeferrer, m_sendPacketErrorEvent, m_batchResultData.lastSendResult);
 				handleInternalDisconnect(packets::DisconnectReasonCode::UNSPECIFIED_ERROR, args);
 			}
 		}
@@ -520,6 +541,53 @@ namespace cleanMqtt
 			}
 		}
 
+		void MqttClient::tickPendingPublishMessageRetries()
+		{
+			const auto& msgs = m_connectionInfo.sessionState.messages();
+
+			for(const auto& msg : msgs)
+			{
+				if (msg.nextRetryTime < std::chrono::steady_clock::now())
+				{
+					packets::PacketType type{ msg.getRetryPacketType() };
+
+					LogTrace("MqttClient", "Retrying message: Type: %s, Packet ID: %d, Topic: %s",
+						packets::packetTypeToString(type),
+						msg.data.packetID,
+						msg.data.publishMsgData.topic);
+
+					if (type == packets::PacketType::PUBLISH)
+					{
+						PublishOptions options{ msg.data.publishMsgData.options };
+						ByteBuffer payloadCopy{ msg.data.publishMsgData.payload.size()};
+						payloadCopy.append(msg.data.publishMsgData.payload);
+
+						m_sendQueue.addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
+							[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+							&m_packetIdPool,
+							msg.data.packetID,
+							msg.data.publishMsgData.topic,
+							std::move(payloadCopy),
+							std::move(options),
+							m_config.enforceMaxPacketSizeOnSend,
+							m_config.maxAllowedPacketSize));
+					}
+					else if (type == packets::PacketType::PUBLISH_RECEIVED)
+					{
+						//TODO handle retrying PUBLISH_RECEIVED packet.
+					}
+					else if(type == packets::PacketType::PUBLISH_RELEASED)
+					{
+						//TODO handle retrying PUBLISH_RELEASED packet.
+					}
+				}
+				else
+				{
+					break; //Messages are sorted in a way that next retry time will be higher anyway, so if we hit one that is not ready to be retried, we can stop checking the rest.
+				}
+			}
+		}
+
 		void MqttClient::handleFailedReconnect(const packets::ConnectAck& packet)
 		{
 			LogDebug("MqttClient", "Client could not reconnect. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
@@ -532,7 +600,7 @@ namespace cleanMqtt
 			}
 			else
 			{
-				m_sendQueue->clearQueue();
+				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
 				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, packet);
 
@@ -560,7 +628,7 @@ namespace cleanMqtt
 				return;
 			}
 
-			m_sendQueue->clearQueue();
+			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
 			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, packet);
@@ -574,7 +642,7 @@ namespace cleanMqtt
 			m_socket->setOnDisconnectCallback(nullptr);
 			m_socket->close();
 			m_receiveQueue.clear();
-			m_sendQueue->clearQueue();
+			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
 			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, {});
@@ -593,7 +661,7 @@ namespace cleanMqtt
 			}
 			else
 			{
-				m_sendQueue->clearQueue();
+				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
 				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, {});
 
@@ -708,9 +776,10 @@ namespace cleanMqtt
 				LogWarning("MqttClient", "Failed to encode disconnect packet during internal disconnect. Skipping sending to broker.");
 			}
 
+			//TODO add graceful disconnect handling, e.g. wait for all packets to be sent before closing socket. Means we cant just clear the queue here.
 			if (args.clearQueue)
 			{
-				m_sendQueue->clearQueue();
+				m_sendQueue.clearQueue();
 			}
 
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
@@ -760,7 +829,7 @@ namespace cleanMqtt
 			}
 
 			m_connectionInfo.hasBeenConnected = false;
-			m_sendQueue->clearQueue();
+			m_sendQueue.clearQueue();
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 			m_topicAliases = TopicAliases();
 
@@ -776,7 +845,7 @@ namespace cleanMqtt
 
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 			m_socket->close();
-			m_sendQueue->clearQueue();
+			m_sendQueue.clearQueue();
 
 			m_connectionInfo.hasBeenConnected = false;
 			m_topicAliases = TopicAliases();
@@ -827,7 +896,7 @@ namespace cleanMqtt
 				m_receiveQueue.setPublishCallback(pubCallback);
 				m_receiveQueue.setPingResponseCallback(pingRespCallback);
 
-				m_sendQueue->addToQueue(std::make_unique<SendConnectJob>(&m_connectionInfo,
+				m_sendQueue.addToQueue(std::make_unique<SendConnectJob>(&m_connectionInfo,
 					[this](const packets::BasePacket& packet) {return sendPacket(packet); },
 					m_config.enforceMaxPacketSizeOnSend,
 					m_config.maxAllowedPacketSize));

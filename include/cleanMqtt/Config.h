@@ -13,6 +13,7 @@ namespace cleanMqtt
 
 		bool enforceMaxPacketSizeOnSend{ false }; //Should the client enforce the max allowed packet size being sent. If packet exceeds encoded size, mqtt will shutdown.
 		std::size_t maxAllowedPacketSize{ SIZE_MAX }; //Max packet size, used only if `enforceMaxPacketSizeOnSend` is set to `true`.
+		std::uint32_t retryPublishIntervalMS{ 10000U }; //Interval to retry publish, pubAck, and pubRel messages that failed to send, in MS. 0ms means no retrying.
 	};
 }
 

@@ -3,6 +3,8 @@
 
 #include <cstdint>
 #include <stack>
+#include <bitset>
+
 
 namespace cleanMqtt
 {

@@ -100,7 +100,7 @@ namespace cleanMqtt
 			return packets::PingResp{};
 		}
 
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, ByteBuffer&& payload, PublishOptions& options, PacketID packetId) noexcept
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, PublishOptions& options, PacketID packetId) noexcept
 		{
 			(void)connectionInfo;
 
@@ -124,7 +124,7 @@ namespace cleanMqtt
 			varHeader.qos = options.qos;
 			varHeader.topicName = topic;
 
-			payloadHeader.payload = std::move(payload);
+			payloadHeader.payload = BinaryData(payload);
 
 			EncodedPublishFlags flags{ false, options.qos, options.retain };
 

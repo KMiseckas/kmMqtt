@@ -92,7 +92,9 @@ namespace cleanMqtt
 		{
 			BYTEBUFFER_READ_CHECK(m_readCursor + 1)
 
-			return (m_bytes[m_readCursor++] << 8) | m_bytes[m_readCursor++];
+			std::uint16_t val = (m_bytes[m_readCursor] << 8) | m_bytes[m_readCursor + 1];
+			m_readCursor += 2;
+			return val;
 		}
 
 		const std::uint32_t readUInt32() const

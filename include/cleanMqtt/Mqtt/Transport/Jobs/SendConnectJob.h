@@ -1,7 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDCONNECTJOB_H
 #define INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDCONNECTJOB_H
 
-#include <cleanMqtt/Interfaces/ISendJob.h>
+#include <cleanMqtt/Mqtt/Transport/ISendJob.h>
 
 namespace cleanMqtt
 {
@@ -18,6 +18,7 @@ namespace cleanMqtt
 			{};
 
 			interfaces::SendResultData send() noexcept override;
+			void cancel() noexcept override;
 		};
 	}
 }

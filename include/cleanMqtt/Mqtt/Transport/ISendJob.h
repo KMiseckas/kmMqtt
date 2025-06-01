@@ -6,6 +6,7 @@
 #include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
 #include <cstdint>
 #include <functional>
+#include <cleanMqtt/Mqtt/Packets/ErrorCodes.h>
 
 namespace cleanMqtt
 {
@@ -15,13 +16,13 @@ namespace cleanMqtt
 		packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value()\
 
 
-#define CHECK_ENFORCE_MAX_PACKET_SIZE(shouldEnforce, packetSize, allowedSize)\
+#define CHECK_ENFORCE_MAX_PACKET_SIZE(shouldEnforce, result, packetSize, allowedSize)\
 		if (shouldEnforce == true)\
 		{\
 			if (packetSize > allowedSize)\
 			{\
 				LogInfo("", "Enforced max send size for queued packet.");\
-				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, -1};\
+				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, result, -1};\
 			}\
 		}\
 
@@ -30,19 +31,21 @@ namespace cleanMqtt
 			NONE,
 			SOCKET_SEND_ERROR,
 			OVER_MAX_PACKET_SIZE,
-			INTERNAL_ERROR
+			ENCODE_ERROR
 		};
 
 		struct PUBLIC_API SendResultData
 		{
-			SendResultData(std::size_t size, bool sent, NoSendReason reason, int error = 0) noexcept
-				: packetSize{ size }, wasSent{ sent }, noSendReason{ reason }, socketError{ error }
+			SendResultData() noexcept = default;
+			SendResultData(std::size_t size, bool sent, NoSendReason reason, mqtt::packets::EncodeResult encodeResult, int error = 0) noexcept
+				: packetSize{ size }, wasSent{ sent }, noSendReason{ reason }, encodeResult{ encodeResult }, socketError {error}
 			{
 			}
 
 			std::size_t packetSize{ 0U };
 			bool wasSent{ false };
 			NoSendReason noSendReason{ NoSendReason::NONE };
+			mqtt::packets::EncodeResult encodeResult;
 			int socketError{ 0 };
 		};
 
@@ -66,6 +69,7 @@ namespace cleanMqtt
 			virtual ~ISendJob() {};
 
 			virtual SendResultData send() noexcept = 0;
+			virtual void cancel() noexcept = 0;
 
 		protected:
 			PacketSendDelegate m_packetSendCallback;

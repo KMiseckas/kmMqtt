@@ -12,13 +12,12 @@
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
-#include "cleanMqtt/Interfaces/ISendQueue.h"
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
-#include "cleanMqtt/Mqtt/ReceiveQueue.h"
+#include "cleanMqtt/Mqtt/Transport/ReceiveQueue.h"
 #include <cleanMqtt/Utils/Deferrer.h>
 #include <cleanMqtt/Utils/PacketIdPool.h>
 #include <cleanMqtt/Config.h>
-#include <cleanMqtt/Mqtt/DefaultSendQueue.h>
+#include <cleanMqtt/Mqtt/Transport/SendQueue.h>
 #include <cleanMqtt/Mqtt/TopicAliases.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 
@@ -32,10 +31,13 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		using SendPacketErrorEvent = events::Event<interfaces::SendResultData>;
+
 		using ConnectEvent = events::Event<bool, int, const packets::ConnectAck&>;
 		using ReconnectEvent = events::Event<ReconnectionStatus, int, const packets::ConnectAck&>;
 		using DisconnectEvent = events::Event<const packets::DisconnectReasonCode>;
 		using PublishEvent = events::Event<std::string, const packets::BinaryData*, const packets::Publish&>;
+		using PublishAckEvent = events::Event<PacketID>;
 
 		class PUBLIC_API MqttClient
 		{
@@ -44,7 +46,7 @@ namespace cleanMqtt
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
 
 			MqttClient() = delete;
-			MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket, std::unique_ptr<interfaces::ISendQueue> sendQueue = std::make_unique <DefaultSendQueue>());
+			MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket);
 			~MqttClient();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
@@ -54,8 +56,9 @@ namespace cleanMqtt
 			ClientError disconnect(DisconnectArgs&& args) noexcept;
 			ClientError shutdown() noexcept;
 
-			ClientError tick(float deltaTime) noexcept;
+			void tick(float deltaTime) noexcept;
 
+			const SendPacketErrorEvent& onSendPacketErrorEvent() const noexcept { return m_sendPacketErrorEvent; }
 			const ConnectEvent& onConnectEvent() const noexcept { return m_connectEvent; }
 			const DisconnectEvent& onDisconnectEvent() const noexcept { return m_disconnectEvent; }
 			const ReconnectEvent& onReconnectEvent() const noexcept { return m_reconnectEvent; }
@@ -91,6 +94,7 @@ namespace cleanMqtt
 			void tickCheckKeepAlive();
 			void tickSendPackets();
 			void tickReceivePackets();
+			void tickPendingPublishMessageRetries();
 
 			void handleFailedReconnect(const packets::ConnectAck& packet);
 			void handleFailedConnect(const packets::ConnectAck& packet);
@@ -105,24 +109,23 @@ namespace cleanMqtt
 			std::unique_ptr<interfaces::IWebSocket> m_socket{ nullptr };
 
 			events::Deferrer m_eventDeferrer;
+			SendPacketErrorEvent m_sendPacketErrorEvent;
 			ConnectEvent m_connectEvent;
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
 			PublishEvent m_publishEvent;
 
-			std::unique_ptr<interfaces::ISendQueue> m_sendQueue{ nullptr };
+			SendQueue m_sendQueue;
 			ReceiveQueue m_receiveQueue;
 
 			TopicAliases m_topicAliases;
-			interfaces::SendBatchResult m_batchResultData;
+			SendBatchResult m_batchResultData;
 
 			std::mutex m_mutex;
 			std::mutex m_receiverMutex;
 
 			Config m_config;
 			PacketIdPool m_packetIdPool;
-
-			//TODO create session STATE object (COnnectionInfo + SendQueue + ReceiveQueue)
 		};
 	}
 }

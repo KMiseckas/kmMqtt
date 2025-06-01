@@ -1,24 +1,24 @@
-#include "cleanMqtt/Mqtt/DefaultSendQueue.h"
+#include "cleanMqtt/Mqtt/Transport/SendQueue.h"
 #include <cleanMqtt/Logger/Log.h>
 
 namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		DefaultSendQueue::DefaultSendQueue() noexcept
+		SendQueue::SendQueue() noexcept
 		{
 		}
 
-		DefaultSendQueue::~DefaultSendQueue()
+		SendQueue::~SendQueue()
 		{
 		}
 
-		void DefaultSendQueue::addToQueue(interfaces::PacketSendJobPtr packetSendJob)
+		void SendQueue::addToQueue(PacketSendJobPtr packetSendJob)
 		{
 			m_queuedJobs.push(std::move(packetSendJob));
 		}
 
-		void DefaultSendQueue::sendNextBatch(interfaces::SendBatchResult& outResult)
+		void SendQueue::sendNextBatch(SendBatchResult& outResult)
 		{
 			outResult.packetsSent = 0;
 			outResult.totalBytesSent = 0;
@@ -61,11 +61,13 @@ namespace cleanMqtt
 						continue;
 					}
 					else if (m_lastSendData.noSendReason == interfaces::NoSendReason::OVER_MAX_PACKET_SIZE ||
-						m_lastSendData.noSendReason == interfaces::NoSendReason::INTERNAL_ERROR)
+						m_lastSendData.noSendReason == interfaces::NoSendReason::ENCODE_ERROR)
 					{
 						m_sendBatchRetryCount = 0;
 						outResult.isRecoverable = false;
-						outResult.unrecoverableReasonStr = m_lastSendData.noSendReason == interfaces::NoSendReason::INTERNAL_ERROR ? "Internal error." : "Over max packet size.";
+						outResult.unrecoverableReasonStr = m_lastSendData.encodeResult.reason;
+						outResult.lastSendResult = m_lastSendData;
+
 						return;
 					}
 
@@ -85,15 +87,20 @@ namespace cleanMqtt
 				outResult.isRecoverable = false;
 				outResult.unrecoverableReasonStr = rsnStr;
 			}
+
+			outResult.lastSendResult = m_lastSendData;
 		}
 
-		void DefaultSendQueue::clearQueue() noexcept
+		void SendQueue::clearQueue() noexcept
 		{
-			std::queue<interfaces::PacketSendJobPtr> empty;
-			m_queuedJobs.swap(empty);
+			while (!m_queuedJobs.empty())
+			{
+				m_queuedJobs.front()->cancel();
+				m_queuedJobs.pop();
+			}
 		}
 
-		bool DefaultSendQueue::trySendBatch(interfaces::SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult)
+		bool SendQueue::trySendBatch(SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult)
 		{
 			if (m_queuedJobs.size() <= 0)
 			{

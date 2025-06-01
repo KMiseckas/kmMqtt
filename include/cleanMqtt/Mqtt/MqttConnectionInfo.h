@@ -1,10 +1,12 @@
 #ifndef INCLUDE_CLEANMQTT_MQTT_MQTTCONNECTIONINFO_H
 #define INCLUDE_CLEANMQTT_MQTT_MQTTCONNECTIONINFO_H
 
-#include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Mqtt/Enums/MqttVersion.h>
-#include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
+#include "cleanMqtt/GlobalMacros.h"
+#include "cleanMqtt/GlobalTypes.h"
+#include "cleanMqtt/Mqtt/Enums/MqttVersion.h"
+#include "cleanMqtt/Mqtt/Params/ConnectArgs.h"
+#include "cleanMqtt/Mqtt/Params/ConnectAddress.h"
+#include "cleanMqtt/Mqtt/SessionState/SessionState.h"
 
 #include <string>
 #include <cstdint>
@@ -15,10 +17,6 @@ namespace cleanMqtt
 	{
 		struct PUBLIC_API MqttConnectionInfo
 		{
-			using TimePoint = std::chrono::steady_clock::time_point;
-			using Seconds = std::chrono::seconds;
-			using Milliseconds = std::chrono::milliseconds;
-
 			ConnectArgs connectArgs{ "CLIENT ID" };
 			ConnectAddress connectAddress;
 			ReconnectAddress reconnectAddress;
@@ -33,6 +31,7 @@ namespace cleanMqtt
 			Seconds pingInterval{ 0U };
 			std::uint16_t maxServerTopicAlias{ 0U };
 			bool isRetainAvailable{ true };
+			SessionState sessionState{ "", 0 };
 		};
 	}
 }

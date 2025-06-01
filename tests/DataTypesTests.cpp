@@ -1,4 +1,4 @@
-#include <doctest.h>
+﻿#include <doctest.h>
 #include <cleanMqtt/Mqtt/Packets/DataTypes.h>
 
 TEST_SUITE("Data Type Tests")
@@ -215,6 +215,116 @@ TEST_SUITE("Data Type Tests")
 			CHECK(strFilled_Move_1.encodingSize() == 8);
 			CHECK(strFilled_Move_1.getString().compare("Hello2") == 0);
 			CHECK(strFilled_Move_1.stringSize() == 6);
+		}
+
+		SUBCASE("Constructor with size and char*")
+		{
+			const char* text = "World";
+			UTF8String str(5, text);
+			CHECK(str.stringBytes() != nullptr);
+			CHECK(str.encodingSize() == 7);
+			CHECK(str.getString() == "World");
+			CHECK(str.stringSize() == 5);
+		}
+
+		SUBCASE("Constructor with std::string")
+		{
+			std::string text = "Test";
+			UTF8String str(text);
+			CHECK(str.stringBytes() != nullptr);
+			CHECK(str.encodingSize() == 6);
+			CHECK(str.getString() == "Test");
+			CHECK(str.stringSize() == 4);
+		}
+
+		SUBCASE("Copy Constructor")
+		{
+			UTF8String original(4, "Copy");
+			UTF8String copy(original);
+			CHECK(copy.stringBytes() != nullptr);
+			CHECK(copy.encodingSize() == 6);
+			CHECK(copy.getString() == "Copy");
+			CHECK(copy.stringSize() == 4);
+		}
+
+		SUBCASE("Move Constructor")
+		{
+			UTF8String original(3, "abc");
+			UTF8String moved(std::move(original));
+			CHECK(moved.stringBytes() != nullptr);
+			CHECK(moved.encodingSize() == 5);
+			CHECK(moved.getString() == "abc");
+			CHECK(moved.stringSize() == 3);
+		}
+
+		SUBCASE("Copy Assignment")
+		{
+			UTF8String a(2, "hi");
+			UTF8String b;
+			b = a;
+			CHECK(b.stringBytes() != nullptr);
+			CHECK(b.encodingSize() == 4);
+			CHECK(b.getString() == "hi");
+			CHECK(b.stringSize() == 2);
+		}
+
+		SUBCASE("Move Assignment")
+		{
+			UTF8String a(2, "ok");
+			UTF8String b;
+			b = std::move(a);
+			CHECK(b.stringBytes() != nullptr);
+			CHECK(b.encodingSize() == 4);
+			CHECK(b.getString() == "ok");
+			CHECK(b.stringSize() == 2);
+		}
+
+		SUBCASE("Assignment from std::string")
+		{
+			UTF8String str;
+			std::string s = "assign";
+			str = s;
+			CHECK(str.stringBytes() != nullptr);
+			CHECK(str.encodingSize() == 8);
+			CHECK(str.getString() == "assign");
+			CHECK(str.stringSize() == 6);
+		}
+
+		SUBCASE("Max Size String")
+		{
+			std::string maxStr(65535, 'x');
+			UTF8String str(maxStr);
+			CHECK(str.stringBytes() != nullptr);
+			CHECK(str.encodingSize() == 65537);
+			CHECK(str.getString() == maxStr);
+			CHECK(str.stringSize() == 65535);
+		}
+
+		SUBCASE("Encode/Decode Roundtrip")
+		{
+			std::string text = "roundtrip";
+			UTF8String str(text);
+			cleanMqtt::ByteBuffer buf{ str.encodingSize()};
+			str.encode(buf);
+
+			str.decode(buf);
+			CHECK(str.getString() == text);
+			CHECK(str.stringSize() == text.size());
+		}
+
+		SUBCASE("Encode/Decode with special UTF-8 characters")
+		{
+			// "Héłłø 🌍" contains multi-byte UTF-8 characters.
+			std::string special = u8"Héłłø 🌍";
+			UTF8String str(special);
+			cleanMqtt::ByteBuffer buf{ str.encodingSize() };
+			str.encode(buf);
+
+			UTF8String decoded;
+			decoded.decode(buf);
+
+			CHECK(decoded.getString() == special);
+			CHECK(decoded.stringSize() == special.size());
 		}
 	}
 
