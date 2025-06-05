@@ -31,7 +31,7 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		using SendPacketErrorEvent = events::Event<interfaces::SendResultData>;
+		using ErrorEvent = events::Event<ClientError, interfaces::SendResultData>;
 
 		using ConnectEvent = events::Event<bool, int, const packets::ConnectAck&>;
 		using ReconnectEvent = events::Event<ReconnectionStatus, int, const packets::ConnectAck&>;
@@ -58,7 +58,7 @@ namespace cleanMqtt
 
 			void tick(float deltaTime) noexcept;
 
-			const SendPacketErrorEvent& onSendPacketErrorEvent() const noexcept { return m_sendPacketErrorEvent; }
+			const ErrorEvent& onErrorEvent() const noexcept { return m_errorEvent; }
 			const ConnectEvent& onConnectEvent() const noexcept { return m_connectEvent; }
 			const DisconnectEvent& onDisconnectEvent() const noexcept { return m_disconnectEvent; }
 			const ReconnectEvent& onReconnectEvent() const noexcept { return m_reconnectEvent; }
@@ -90,6 +90,8 @@ namespace cleanMqtt
 			//void handleReceivedUnsubscribeAcknowledge();
 			void handleReceivedPingResponse(const packets::PingResp& packet);
 
+			void firePublishReceivedEvent(const packets::Publish& packet) noexcept;
+
 			void tickCheckTimeOut();
 			void tickCheckKeepAlive();
 			void tickSendPackets();
@@ -109,7 +111,7 @@ namespace cleanMqtt
 			std::unique_ptr<interfaces::IWebSocket> m_socket{ nullptr };
 
 			events::Deferrer m_eventDeferrer;
-			SendPacketErrorEvent m_sendPacketErrorEvent;
+			ErrorEvent m_errorEvent;
 			ConnectEvent m_connectEvent;
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
@@ -126,6 +128,8 @@ namespace cleanMqtt
 
 			Config m_config;
 			PacketIdPool m_packetIdPool;
+
+			ByteBuffer m_leftOverBuffer{ 0U };
 		};
 	}
 }

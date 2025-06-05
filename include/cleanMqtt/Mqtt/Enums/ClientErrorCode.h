@@ -32,6 +32,9 @@ namespace cleanMqtt
 
 			//Publish Errors
 			PublishError = 3000U,
+			Recv_Topic_Alias_Disallowed = 3001U,
+			Recv_Invalid_Topic_Alias = 3002U,
+			Recv_Empty_Topic_Name_And_Invalid_Alias = 3003U,
 
 			//Subscribe Errors
 			SubscribeError = 4000U,

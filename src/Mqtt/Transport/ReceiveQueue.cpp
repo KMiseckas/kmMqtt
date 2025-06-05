@@ -44,15 +44,13 @@ if (callback != nullptr)\
 			packets::DecodeResult decodeResult;
 			decodeResult.code = packets::DecodeErrorCode::NO_ERROR;
 
-			m_mutex.lock();
+			std::lock_guard<std::mutex > guard{ m_mutex };
 			if (m_inQueueData.empty())
 			{
-				m_mutex.unlock();
 				return decodeResult;
 			}
 
 			std::swap(m_inQueueData, m_inProgressData);
-			m_mutex.unlock();
 
 			packets::PacketType packetType{ packets::PacketType::RESERVED };
 
@@ -108,7 +106,16 @@ if (callback != nullptr)\
 					break;
 				case packets::PacketType::PING_RESPONSE:
 				{
-					HANDLE_RECEIVED_PACKET(PingResp, m_pingRespCallback);
+					packets::PingResp packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode(); 
+					if (!decodeResult.isSuccess()) 
+					{
+						LogInfo("ReceiveQueue", "Failed to decode packet."); return decodeResult;
+					}
+					if (m_pingRespCallback != nullptr) 
+					{
+						m_pingRespCallback(packet);
+					};
 					break;
 				}
 				case packets::PacketType::DISCONNECT:

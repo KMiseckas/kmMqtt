@@ -75,7 +75,8 @@ namespace adapter
         }
 
         //Connect socket
-        if (::connect(m_socket, result->ai_addr, static_cast<int>(result->ai_addrlen)) == SOCKET_ERROR) 
+        int connResult = ::connect(m_socket, result->ai_addr, static_cast<int>(result->ai_addrlen));
+        if (connResult == SOCKET_ERROR)
         {
             if (WSAGetLastError() != WSAEWOULDBLOCK) 
             {

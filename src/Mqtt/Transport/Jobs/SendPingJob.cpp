@@ -26,6 +26,12 @@ namespace cleanMqtt
 
 			int sendResult{ m_packetSendCallback(packet) };
 
+			if (sendResult == 0)
+			{
+				m_mqttConnectionInfo->lastPingReqSentTime = std::chrono::steady_clock::now();
+				m_mqttConnectionInfo->awaitingPingResponse = true;
+			}
+
 			return interfaces::SendResultData{
 				packetSize,
 				sendResult == 0,
@@ -36,8 +42,6 @@ namespace cleanMqtt
 
 		void SendPingJob::cancel() noexcept
 		{
-			m_mqttConnectionInfo->lastPingReqSentTime = std::chrono::steady_clock::now();
-			m_mqttConnectionInfo->awaitingPingResponse = true;
 		}
 	}
 }

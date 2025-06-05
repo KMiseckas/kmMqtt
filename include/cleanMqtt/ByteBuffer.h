@@ -112,6 +112,11 @@ namespace cleanMqtt
 			m_readCursor += shiftVal;
 		}
 
+		void resetReadCursor() const
+		{
+			m_readCursor = 0U;
+		}
+
 		ByteBuffer& append(std::uint16_t bytes)
 		{
 			BYTEBUFFER_HEADROOM_CHECK(2)

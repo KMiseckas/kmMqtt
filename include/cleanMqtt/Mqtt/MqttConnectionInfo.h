@@ -28,8 +28,9 @@ namespace cleanMqtt
 			TimePoint lastControlPacketTime;
 			TimePoint lastPingReqSentTime;
 
-			Seconds pingInterval{ 0U };
+			Milliseconds pingInterval{ 0U };
 			std::uint16_t maxServerTopicAlias{ 0U };
+			std::uint16_t serverKeepAlive{ 0U };
 			bool isRetainAvailable{ true };
 			SessionState sessionState{ "", 0 };
 		};

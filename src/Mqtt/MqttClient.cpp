@@ -228,7 +228,7 @@ namespace cleanMqtt
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 
 			m_eventDeferrer.clear();
-			m_sendPacketErrorEvent.removeAll();
+			m_errorEvent.removeAll();
 			m_connectEvent.removeAll();
 			m_disconnectEvent.removeAll();
 			m_publishEvent.removeAll();
@@ -257,10 +257,7 @@ namespace cleanMqtt
 					tickCheckKeepAlive();
 					tickPendingPublishMessageRetries();
 				}
-			}
 
-			if (m_socket->isConnected())
-			{
 				m_socket->tick();
 			}
 
@@ -306,21 +303,25 @@ namespace cleanMqtt
 				const std::uint16_t* serverKeepAlive{ nullptr };
 				if (packet.getVariableHeader().properties.tryGetProperty<std::uint16_t>(PropertyType::SERVER_KEEP_ALIVE, serverKeepAlive))
 				{
-					m_connectionInfo.connectArgs.keepAliveInSec = *serverKeepAlive;
+					m_connectionInfo.serverKeepAlive = *serverKeepAlive;
+				}
+				else
+				{
+					m_connectionInfo.serverKeepAlive = m_connectionInfo.connectArgs.keepAliveInSec * 1000;
 				}
 
 				//Set-up ping interval
-				m_connectionInfo.pingInterval = Seconds{ m_connectionInfo.connectArgs.keepAliveInSec };
-				if (m_config.pingAlways && m_connectionInfo.connectArgs.keepAliveInSec <= 0)
+				m_connectionInfo.pingInterval = Milliseconds{ m_connectionInfo.serverKeepAlive };
+				if (m_config.pingAlways && m_connectionInfo.serverKeepAlive <= 0)
 				{
-					m_connectionInfo.pingInterval = std::chrono::duration_cast<Seconds>(Milliseconds{ m_config.defaultPingInterval });
+					m_connectionInfo.pingInterval = Milliseconds{ m_config.defaultPingInterval };
 				}
 
 				//Set-up max server topic alias
 				const std::uint16_t* serverTopicAliasMax{ nullptr };
 				if (packet.getVariableHeader().properties.tryGetProperty<std::uint16_t>(PropertyType::TOPIC_ALIAS_MAXIMUM, serverTopicAliasMax))
 				{
-					m_connectionInfo.connectArgs.keepAliveInSec = *serverTopicAliasMax;
+					m_connectionInfo.maxServerTopicAlias = *serverTopicAliasMax;
 				}
 
 				//Check is retain available
@@ -361,6 +362,47 @@ namespace cleanMqtt
 
 		void MqttClient::handleReceivedPublish(const Publish& packet)
 		{
+			if (packet.getVariableHeader().qos == Qos::QOS_0)
+			{
+				firePublishReceivedEvent(packet);
+			}
+			else
+			{
+				//If QoS is 1 or 2, we need to send a PUBACK or PUBREC packet back to the server + Store to Session State.
+				//const auto packetId{ packet.getVariableHeader().packetIdentifier};
+
+				//PublishMessageData data{packet.getVariableHeader().}
+
+			//	m_connectionInfo.sessionState.addMessage(packetId, )
+
+			/*	if (packet.getVariableHeader().qos == Qos::QOS_1)
+				{
+					m_sendQueue.addToQueue(std::make_unique<SendPublishReceivedJob>(&m_connectionInfo,
+						[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+						packetId,
+						m_config.enforceMaxPacketSizeOnSend,
+						m_config.maxAllowedPacketSize));
+				}
+				else if (packet.getVariableHeader().qos == Qos::QOS_2)
+				{
+					m_sendQueue.addToQueue(std::make_unique<SendPublishReceivedJob>(&m_connectionInfo,
+						[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+						packetId,
+						m_config.enforceMaxPacketSizeOnSend,
+						m_config.maxAllowedPacketSize));
+				}*/
+			}
+		}
+
+		void MqttClient::handleReceivedPingResponse(const PingResp& packet)
+		{
+			(void)packet;
+
+			m_connectionInfo.awaitingPingResponse = false;
+		}
+
+		void MqttClient::firePublishReceivedEvent(const packets::Publish& packet) noexcept
+		{
 			std::string topicName{ packet.getVariableHeader().topicName.getString() };
 
 			const auto* properties = &packet.getVariableHeader().properties;
@@ -375,6 +417,7 @@ namespace cleanMqtt
 					DisconnectArgs args;
 					args.disconnectReasonText = "Client does not allow topic aliases but server has sent us a topic alias";
 
+					deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Recv_Topic_Alias_Disallowed, args.disconnectReasonText.c_str() }, {});
 					handleInternalDisconnect(DisconnectReasonCode::PROTOCOL_ERROR, std::move(args));
 					return;
 				}
@@ -390,6 +433,7 @@ namespace cleanMqtt
 					DisconnectArgs args;
 					args.disconnectReasonText = "Publish packet TOPIC ALIAS value is invalid.";
 
+					deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Recv_Invalid_Topic_Alias, args.disconnectReasonText.c_str() }, {});
 					handleInternalDisconnect(DisconnectReasonCode::TOPIC_ALIAS_INVALID, std::move(args));
 					return;
 				}
@@ -414,18 +458,12 @@ namespace cleanMqtt
 				DisconnectArgs args;
 				args.disconnectReasonText = "Publish packet TOPIC ALIAS is invalid and TOPIC NAME is empty.";
 
+				deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Recv_Empty_Topic_Name_And_Invalid_Alias, args.disconnectReasonText.c_str() }, {});
 				handleInternalDisconnect(DisconnectReasonCode::PROTOCOL_ERROR, std::move(args));
 				return;
 			}
 
 			deferEvent(m_eventDeferrer, m_publishEvent, std::move(topicName), &packet.getPayloadHeader().payload, packet);
-		}
-
-		void MqttClient::handleReceivedPingResponse(const PingResp& packet)
-		{
-			(void)packet;
-
-			m_connectionInfo.awaitingPingResponse = false;
 		}
 
 		void MqttClient::tickCheckTimeOut()
@@ -452,7 +490,7 @@ namespace cleanMqtt
 		{
 			if (m_connectionStatus == ConnectionStatus::CONNECTED)
 			{
-				if (m_connectionInfo.connectArgs.keepAliveInSec == 0 && !m_config.pingAlways)
+				if (m_connectionInfo.serverKeepAlive == 0 && !m_config.pingAlways)
 				{
 					return;
 				}
@@ -522,7 +560,7 @@ namespace cleanMqtt
 					", Encode result: " + m_batchResultData.lastSendResult.encodeResult.reason;
 				args.clearQueue = true;
 
-				deferEvent(m_eventDeferrer, m_sendPacketErrorEvent, m_batchResultData.lastSendResult);
+				deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Failed_Sending_Packet, args.disconnectReasonText.c_str() }, m_batchResultData.lastSendResult);
 				handleInternalDisconnect(packets::DisconnectReasonCode::UNSPECIFIED_ERROR, args);
 			}
 		}
@@ -926,9 +964,30 @@ namespace cleanMqtt
 			handleExternalDisconnect(m_socket->getLastError(), m_socket->getLastCloseReason());
 		}
 
-		void MqttClient::handleSocketPacketReceivedEvent(ByteBuffer&& buffer)
+        void MqttClient::handleSocketPacketReceivedEvent(ByteBuffer&& buffer)
 		{
-			m_receiveQueue.addToQueue(std::move(buffer));
+			LockGuard guard{ m_receiverMutex };
+
+			ByteBuffer fullBuffer{ buffer.size() + m_leftOverBuffer.size()};
+			fullBuffer.append(m_leftOverBuffer.bytes(), m_leftOverBuffer.size());
+			fullBuffer.append(buffer.bytes(), buffer.size());
+
+			std::vector<ByteBuffer> packets;
+			std::size_t leftOver{ 0U };
+
+			if (separateMqttPacketByteBuffers(fullBuffer, packets, leftOver))
+			{
+				for(auto& packetBuffer : packets)
+				{
+					m_receiveQueue.addToQueue(std::move(packetBuffer));
+				}
+			}
+
+			if (leftOver > 0)
+			{
+				m_leftOverBuffer = ByteBuffer{ leftOver };
+				m_leftOverBuffer.append(fullBuffer.bytes() + fullBuffer.size() - leftOver, leftOver);
+			}
 		}
 
 		void MqttClient::handleSocketErrorEvent(int /*error*/)

@@ -8,6 +8,7 @@
 #include "cleanMqtt/Mqtt/SessionState/ISessionStatePersistantStore.h"
 #include "cleanMqtt/Mqtt/SessionState/MessageContainer.h"
 #include "cleanMqtt/Mqtt/Packets/PacketType.h"
+#include "cleanMqtt/Mqtt/Enums/ClientErrorCode.h"
 
 namespace cleanMqtt
 {

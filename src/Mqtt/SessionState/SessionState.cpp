@@ -33,6 +33,8 @@ namespace cleanMqtt
 			}
 
 			const auto iter{ m_messages.push(std::move(data)) };
+
+			return ClientErrorCode::No_Error;
 		}
 
 		void SessionState::updateMessage(const PacketID packetId, PublishMessageStatus newStatus) noexcept
