@@ -191,6 +191,11 @@ namespace cleanMqtt
 			return m_readCursor;
 		}
 
+		std::size_t readHeadroom() const noexcept
+		{
+			return m_size - m_readCursor;
+		}
+
 		std::string toString() const
 		{
 			std::string result{ "" };

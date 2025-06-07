@@ -19,9 +19,11 @@ namespace cleanMqtt
 			{
 				PacketID nextId{ m_availableIds.top() };
 				m_availableIds.pop();
+				m_usedIds.flip(nextId);
 				return nextId;
 			}
 
+			m_usedIds.flip(m_nextId);
 			return m_nextId++;
 		}
 

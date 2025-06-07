@@ -61,7 +61,7 @@ TEST_SUITE("Utils Tests")
 	}
 
 
-    TEST_CASE("separateMqttPacketByteBuffers splits MQTT packets correctly")
+    TEST_CASE("Split Up MQTT packets - separateMqttPacketByteBuffers")
     {
 		using namespace cleanMqtt;
 

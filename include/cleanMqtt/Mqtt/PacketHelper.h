@@ -11,6 +11,8 @@
 #include <cleanMqtt/Mqtt/Packets/Ping/PingReq.h>
 #include <cleanMqtt/Mqtt/Packets/Ping/PingResp.h>
 #include <cleanMqtt/Mqtt/Packets/Publish/Publish.h>
+#include <cleanMqtt/Mqtt/Packets/Publish/PublishAck.h>
+#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
 
 namespace cleanMqtt
 {
@@ -23,6 +25,7 @@ namespace cleanMqtt
 		PingReq createPingRequestPacket() noexcept;
 		PingResp createPingResponsePacket() noexcept;
 		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, PublishOptions& options, PacketID packetId = 0) noexcept;
+		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept;
 	}
 }
 

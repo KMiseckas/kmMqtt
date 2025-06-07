@@ -22,11 +22,10 @@ namespace cleanMqtt
 			{
 				LockGuard lock(m_mutex);
 
-				auto iter = m_callbacks.begin();
-
-				while (iter != m_callbacks.end())
+				for (auto iter = m_callbacks.begin(); iter != m_callbacks.end(); ++iter)
 				{
-					if (*iter == callback)
+					if (iter->target_type() == callback.target_type() &&
+						iter->template target<void(*)(Args...)>() == callback.template target<void(*)(Args...)>())
 					{
 						return;
 					}
@@ -37,15 +36,14 @@ namespace cleanMqtt
 
 			void remove(const Callback& callback)
 			{
-				LockGuard lock(m_mutex);
+				std::lock_guard<std::mutex> lock(m_mutex);
 
-				auto iter = m_callbacks.begin();
-
-				while (iter != m_callbacks.end())
+				for (auto iter = m_callbacks.begin(); iter != m_callbacks.end(); ++iter)
 				{
-					if (*iter == callback)
+					if (iter->target_type() == callback.target_type() &&
+						iter->template target<void(*)(Args...)>() == callback.template target<void(*)(Args...)>())
 					{
-						*iter = m_callbacks.back();
+						*iter = std::move(m_callbacks.back());
 						m_callbacks.pop_back();
 						break;
 					}
@@ -68,7 +66,7 @@ namespace cleanMqtt
 
 			void operator()(Args... args) { invoke(args...); }
 			void operator+=(const Callback& callback) { add(callback); }
-			void operator-=(const Callback& callback) { remove(callback) }
+			void operator-=(const Callback& callback) { remove(callback); }
 
 		private:
 			std::vector<Callback> m_callbacks;

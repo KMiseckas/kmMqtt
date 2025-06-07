@@ -28,7 +28,12 @@ namespace cleanMqtt
 				topicName.decode(buffer);
 
 				result = std::move(properties.decode(buffer));
-				if (qos >= Qos::QOS_1) packetIdentifier = buffer.readUInt16();
+
+				if (qos >= Qos::QOS_1)
+				{
+					packetIdentifier = buffer.readUInt16();
+				}
+
 				properties.decode(buffer);
 
 				return result;

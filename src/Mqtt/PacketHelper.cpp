@@ -100,7 +100,7 @@ namespace cleanMqtt
 			return packets::PingResp{};
 		}
 
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, PublishOptions& options, PacketID packetId) noexcept
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, PacketID packetId) noexcept
 		{
 			(void)connectionInfo;
 
@@ -129,6 +129,21 @@ namespace cleanMqtt
 			EncodedPublishFlags flags{ false, options.qos, options.retain };
 
 			return packets::Publish{ std::move(payloadHeader), std::move(varHeader), flags };
+		}
+
+		
+		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept
+		{
+			packets::Properties properties;
+			properties.tryAddProperty(packets::PropertyType::REASON_STRING, options.reasonString);
+
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+			}
+
+			PubAckVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
+			return packets::PublishAck{ std::move(varHeader) };
 		}
 	}
 }

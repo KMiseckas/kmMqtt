@@ -88,7 +88,6 @@ namespace cleanMqtt
 				static_cast<std::uint8_t>(args.version),
 				args.protocolName.c_str());
 
-
 			m_connectionStatus = ConnectionStatus::CONNECTING;
 			m_connectionInfo.connectArgs = std::move(args);
 			m_connectionInfo.connectAddress = std::move(address);

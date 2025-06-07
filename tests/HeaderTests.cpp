@@ -4,6 +4,7 @@
 #include <cleanMqtt/Mqtt/Packets/Connection/Headers/ConnectPayloadHeader.h>
 #include <cleanMqtt/ByteBuffer.h>
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
+#include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishPayloadHeader.h>
 
 TEST_SUITE("Header Tests")
 {
@@ -392,6 +393,77 @@ TEST_SUITE("Header Tests")
 				CHECK(buffer[26+1] == 'e');
 				CHECK(buffer[27+1] == 'r');
 			}
+		}
+	}
+
+
+	TEST_CASE("Publish Payload Header")
+	{
+		using cleanMqtt::mqtt::packets::PublishPayloadHeader;
+		using cleanMqtt::mqtt::packets::BinaryData;
+
+		SUBCASE("Encoding Default")
+		{
+			PublishPayloadHeader header;
+			CHECK(header.payload.size() == 0);
+
+			ByteBuffer buffer{ header.getEncodedBytesSize() };
+			CHECK_NOTHROW(header.encode(buffer));
+			CHECK(buffer.size() == 2); // 2 bytes for length prefix (0)
+			CHECK(buffer[0] == 0);
+			CHECK(buffer[1] == 0);
+		}
+
+		SUBCASE("Encoding With Payload")
+		{
+			const std::uint8_t data[] = { 0xDE, 0xAD, 0xBE, 0xEF };
+			BinaryData payload{ 4, data };
+			PublishPayloadHeader header{ std::move(payload) };
+
+			CHECK(header.payload.size() == 4);
+			ByteBuffer buffer{ header.getEncodedBytesSize() };
+			CHECK_NOTHROW(header.encode(buffer));
+			CHECK(buffer.size() == 6); // 2 bytes length + 4 bytes data
+			CHECK(buffer[0] == 0);
+			CHECK(buffer[1] == 4);
+			CHECK(buffer[2] == 0xDE);
+			CHECK(buffer[3] == 0xAD);
+			CHECK(buffer[4] == 0xBE);
+			CHECK(buffer[5] == 0xEF);
+		}
+
+		SUBCASE("Decoding")
+		{
+			const std::uint8_t data[] = { 0, 3, 0x11, 0x22, 0x33 };
+			ByteBuffer buffer{ 5 };
+			buffer.append(data, 5);
+
+			PublishPayloadHeader header;
+			auto result = header.decode(buffer);
+			CHECK(result.isSuccess());
+			CHECK(header.payload.size() == 3);
+			CHECK(header.payload.bytes()[0] == 0x11);
+			CHECK(header.payload.bytes()[1] == 0x22);
+			CHECK(header.payload.bytes()[2] == 0x33);
+		}
+	}
+
+	TEST_CASE("PacketUtils Tests")
+	{
+		SUBCASE("Check Packet Type")
+		{
+			ByteBuffer buffer{ 2 };
+			buffer += 0b00010000; // CONNECT packet type
+			buffer += 0; // Remaining length
+			CHECK(cleanMqtt::mqtt::packets::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
+		}
+
+		SUBCASE("Check Packet Type RESERVED")
+		{
+			ByteBuffer buffer{ 2 };
+			buffer += 0b00000000; // Invalid packet type
+			buffer += 0; // Remaining length
+			CHECK(cleanMqtt::mqtt::packets::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
 		}
 	}
 }

@@ -27,6 +27,22 @@ namespace cleanMqtt
 				other.m_dataBuffer = nullptr;
 			}
 
+			BasePacket& BasePacket::operator=(BasePacket&& other) noexcept
+			{
+				if (this != &other)
+				{
+					m_fixedHeader = std::move(other.m_fixedHeader);
+					m_otherEncodeHeaders = std::move(other.m_otherEncodeHeaders);
+					m_otherDecodeHeaders = std::move(other.m_otherDecodeHeaders);
+
+					delete m_dataBuffer;
+					m_dataBuffer = std::move(other.m_dataBuffer);
+					other.m_dataBuffer = nullptr;
+				}
+
+				return *this;
+			}
+
 			BasePacket::~BasePacket()
 			{
 				m_otherDecodeHeaders.clear();

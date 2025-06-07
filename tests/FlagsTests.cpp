@@ -1,6 +1,7 @@
 #include <doctest.h>
 #include <cleanMqtt/Mqtt/Packets/Flags.h>
 #include <cleanMqtt/GlobalMacros.h>
+#include <cleanMqtt/Utils/TemplateUtils.h>
 
 TEST_SUITE("Flags Tests")
 {
@@ -108,5 +109,30 @@ TEST_SUITE("Flags Tests")
 		CHECK(flags.getFlagValue<bool>(TestFlagsEnum::FLAG_1) == false);
 		CHECK(flags.getFlagValue(TestFlagsEnum::FLAG_2) == 0);
 
+	}
+
+	TEST_CASE("templateUtils::hasFlag basic checks")
+	{
+		using cleanMqtt::templateUtils::hasFlag;
+
+		// Single bit flag
+		static_assert(hasFlag<0b0001, 0b0001>() == true, "Flag present");
+		static_assert(hasFlag<0b0001, 0b0010>() == false, "Flag not present");
+
+		// Multiple bits
+		static_assert(hasFlag<0b0011, 0b0001>() == true, "At least one bit matches");
+		static_assert(hasFlag<0b0100, 0b0010>() == false, "No bits match");
+
+		// All bits match
+		static_assert(hasFlag<0b0110, 0b0110>() == true, "All bits match");
+
+		// No bits set
+		static_assert(hasFlag<0b0000, 0b0000>() == false, "No bits set");
+
+		// Runtime check
+		CHECK(hasFlag<0b0101, 0b0001>() == true);
+		CHECK(hasFlag<0b0101, 0b0010>() == false);
+		CHECK(hasFlag<0b1111, 0b1000>() == true);
+		CHECK(hasFlag<0b1000, 0b0100>() == false);
 	}
 }

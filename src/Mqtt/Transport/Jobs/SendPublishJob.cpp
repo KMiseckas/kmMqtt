@@ -54,7 +54,7 @@ namespace cleanMqtt
 
 		void SendPublishJob::cancel() noexcept
 		{
-			m_packetIdPool->releaseId(m_packetId);
+			
 		}
 	}
 }

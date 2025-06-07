@@ -25,13 +25,11 @@ namespace cleanMqtt
 				m_payloadHeader(other.m_payloadHeader),
 				m_variableHeader(other.m_variableHeader)
 			{
-				other.m_payloadHeader = nullptr;
 				other.m_variableHeader = nullptr;
 			}
 
 			Publish::~Publish()
 			{
-				delete m_payloadHeader;
 				delete m_variableHeader;
 			}
 
