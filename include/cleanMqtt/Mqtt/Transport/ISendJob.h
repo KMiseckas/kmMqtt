@@ -16,14 +16,11 @@ namespace cleanMqtt
 		packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value()\
 
 
-#define CHECK_ENFORCE_MAX_PACKET_SIZE(shouldEnforce, result, packetSize, allowedSize)\
-		if (shouldEnforce == true)\
+#define CHECK_ENFORCE_MAX_PACKET_SIZE(result, packetSize, allowedSize)\
+		if (packetSize > allowedSize)\
 		{\
-			if (packetSize > allowedSize)\
-			{\
-				LogInfo("", "Enforced max send size for queued packet.");\
-				return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, result, -1};\
-			}\
+			LogInfo("", "Packet is over the maximum allowed packet size that the broker accepts.");\
+			return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, result, -1};\
 		}\
 
 		enum class NoSendReason : std::uint8_t
@@ -58,13 +55,9 @@ namespace cleanMqtt
 			using PacketSendDelegate = std::function<int(const mqtt::packets::BasePacket& packet)>;
 
 			ISendJob(mqtt::MqttConnectionInfo* connectionInfo,
-				PacketSendDelegate sendPacketCallback,
-				bool enforceMaxPacketSize = false,
-				std::size_t maxPacketSize = 0U) noexcept
+				PacketSendDelegate sendPacketCallback) noexcept
 				: m_mqttConnectionInfo{ std::move(connectionInfo) },
-				m_packetSendCallback{ sendPacketCallback },
-				m_enforcePacketSize{ enforceMaxPacketSize },
-				m_maxPacketSize{ maxPacketSize }
+				m_packetSendCallback{ sendPacketCallback }
 			{};
 			virtual ~ISendJob() {};
 
@@ -74,8 +67,6 @@ namespace cleanMqtt
 		protected:
 			PacketSendDelegate m_packetSendCallback;
 			mqtt::MqttConnectionInfo* m_mqttConnectionInfo;
-			const bool m_enforcePacketSize{ false };
-			const std::size_t m_maxPacketSize{ 0U };
 		};
 	}
 }

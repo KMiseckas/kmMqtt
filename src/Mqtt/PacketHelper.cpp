@@ -135,7 +135,7 @@ namespace cleanMqtt
 		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept
 		{
 			packets::Properties properties;
-			properties.tryAddProperty(packets::PropertyType::REASON_STRING, options.reasonString);
+			properties.tryAddProperty(packets::PropertyType::REASON_STRING, options.reasonString, !options.reasonString.empty());
 
 			for (const auto& property : options.userProperties)
 			{

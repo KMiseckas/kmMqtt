@@ -11,6 +11,7 @@
 #include "cleanMqtt/Mqtt/Packets/Connection/Connect.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/PublishAck.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
 #include "cleanMqtt/Mqtt/Transport/ReceiveQueue.h"
@@ -20,6 +21,7 @@
 #include <cleanMqtt/Mqtt/Transport/SendQueue.h>
 #include <cleanMqtt/Mqtt/TopicAliases.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
+#include "cleanMqtt/Mqtt/Params/PubAckOptions.h"
 
 #include <cstring>
 #include <memory>
@@ -31,8 +33,11 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		using ErrorEvent = events::Event<ClientError, interfaces::SendResultData>;
+		//Internal Events
+		using SendPubAckEvent = events::Event<PacketID>;
 
+		//Public events
+		using ErrorEvent = events::Event<ClientError, interfaces::SendResultData>;
 		using ConnectEvent = events::Event<bool, int, const packets::ConnectAck&>;
 		using ReconnectEvent = events::Event<ReconnectionStatus, int, const packets::ConnectAck&>;
 		using DisconnectEvent = events::Event<const packets::DisconnectReasonCode>;
@@ -68,6 +73,8 @@ namespace cleanMqtt
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
 
 		private:
+			void pubAck(PacketID packetId, packets::PubAckReasonCode code, PubAckOptions&& options) noexcept;
+
 			bool tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const packets::Properties& properties) noexcept;
 			void reconnect();
 
@@ -116,6 +123,8 @@ namespace cleanMqtt
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
 			PublishEvent m_publishEvent;
+
+			SendPubAckEvent m_sendPubAckEvent;
 
 			SendQueue m_sendQueue;
 			ReceiveQueue m_receiveQueue;

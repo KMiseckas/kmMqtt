@@ -13,10 +13,12 @@ namespace cleanMqtt
 			SendPubAckJob(mqtt::MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback,
 				PacketID publishPacketId,
-				bool enforceMaxPacketSize = false,
-				std::size_t maxPacketSize = 0U) noexcept
-				: interfaces::ISendJob(connectionInfo, sendPacketCallback, enforceMaxPacketSize, maxPacketSize),
-				m_publishPacketId(publishPacketId)
+				PubAckReasonCode reasonCode,
+				PubAckOptions&& options) noexcept
+				: interfaces::ISendJob(connectionInfo, sendPacketCallback),
+				m_publishPacketId(publishPacketId),
+				m_reasonCode(std::move(reasonCode)),
+				m_options(std::move(options))
 			{
 			};
 
@@ -25,6 +27,8 @@ namespace cleanMqtt
 
 		private:
 			PacketID m_publishPacketId;
+			PubAckReasonCode m_reasonCode;
+			PubAckOptions m_options;
 		};
 	}
 }

@@ -11,10 +11,8 @@ namespace cleanMqtt
 		{
 		public:
 			SendConnectJob(mqtt::MqttConnectionInfo* connectionInfo,
-				PacketSendDelegate sendPacketCallback,
-				bool enforceMaxPacketSize = false,
-				std::size_t maxPacketSize = 0U) noexcept
-				: interfaces::ISendJob(connectionInfo, sendPacketCallback, enforceMaxPacketSize, maxPacketSize)
+				PacketSendDelegate sendPacketCallback) noexcept
+				: interfaces::ISendJob(connectionInfo, sendPacketCallback)
 			{};
 
 			interfaces::SendResultData send() noexcept override;

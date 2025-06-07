@@ -7,6 +7,7 @@
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPublishJob.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPingJob.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SendPubAckJob.h>
 
 namespace cleanMqtt
 {
@@ -23,6 +24,8 @@ namespace cleanMqtt
 			m_socket->setOnDisconnectCallback([this]() { handleSocketDisconnectEvent(); });
 			m_socket->setOnPacketRecvdCallback([this](ByteBuffer&& buffer) { handleSocketPacketReceivedEvent(std::move(buffer)); });
 			m_socket->setOnErrorCallback([this](std::uint16_t error) { handleSocketErrorEvent(error); });
+
+			m_sendPubAckEvent.add([this](PacketID packetId) { pubAck(packetId, packets::PubAckReasonCode::SUCCESS, PubAckOptions{}); });
 		}
 
 		MqttClient::~MqttClient()
@@ -151,9 +154,7 @@ namespace cleanMqtt
 				packetId,
 				topic,
 				std::move(payload),
-				std::move(options),
-				m_config.enforceMaxPacketSizeOnSend,
-				m_config.maxAllowedPacketSize));
+				std::move(options)));
 
 			LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
 
@@ -330,6 +331,24 @@ namespace cleanMqtt
 					m_connectionInfo.isRetainAvailable = *retainAvailable == 1;
 				}
 
+				//Set-up max server packet size
+				const std::uint32_t* maxPacketSize{ nullptr };
+				if (packet.getVariableHeader().properties.tryGetProperty<std::uint32_t>(PropertyType::MAXIMUM_PACKET_SIZE, maxPacketSize))
+				{
+					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(*maxPacketSize);
+				}
+				else
+				{
+					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(MAX_PACKET_SIZE);
+				}
+
+				//Check is retain available
+				const std::uint8_t* retainAvailable{ 0 };
+				if (packet.getVariableHeader().properties.tryGetProperty<std::uint8_t>(PropertyType::RETAIN_AVAILABLE, retainAvailable))
+				{
+					m_connectionInfo.isRetainAvailable = *retainAvailable == 1;
+				}
+
 				m_connectionInfo.sessionState = SessionState{ m_connectionInfo.connectArgs.clientId.c_str(),
 					m_connectionInfo.connectArgs.sessionExpiryInterval,
 					m_config.retryPublishIntervalMS,
@@ -424,7 +443,7 @@ namespace cleanMqtt
 				if (*topicAlias <= 0 || *topicAlias > m_connectionInfo.connectArgs.maximumTopicAliases)
 				{
 					LogError("MqttClient",
-						"Publish packet TOPIC ALIAS is invalid: %d\nTOPIC ALIAS info - Min allowed value: %d. Max allowed value: %d",
+						"Publish packet TOPIC ALIAS is invalid: %d\nTOPIC ALIAS - Min allowed value: %d. Max allowed value: %d",
 						*topicAlias,
 						1,
 						m_connectionInfo.connectArgs.maximumTopicAliases);
@@ -463,6 +482,12 @@ namespace cleanMqtt
 			}
 
 			deferEvent(m_eventDeferrer, m_publishEvent, std::move(topicName), &packet.getPayloadHeader().payload, packet);
+
+			if (packet.getVariableHeader().qos == Qos::QOS_1)
+			{
+				//After packet is sent to application layer (previous deferEvent), send PUBACK packet back to the server.
+				deferEvent(m_eventDeferrer, m_sendPubAckEvent, packet.getVariableHeader().packetIdentifier);
+			}
 		}
 
 		void MqttClient::tickCheckTimeOut()
@@ -523,9 +548,7 @@ namespace cleanMqtt
 
 				if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval)
 				{
-					m_sendQueue.addToQueue(std::make_unique<SendPingJob>(&m_connectionInfo,
-						[this](const packets::BasePacket& packet) {return sendPacket(packet); },
-						m_config.enforceMaxPacketSizeOnSend, m_config.maxAllowedPacketSize));
+					m_sendQueue.addToQueue(std::make_unique<SendPingJob>(&m_connectionInfo, [this](const packets::BasePacket& packet) {return sendPacket(packet); }));
 				}
 			}
 		}
@@ -605,9 +628,7 @@ namespace cleanMqtt
 							msg.data.packetID,
 							msg.data.publishMsgData.topic,
 							std::move(payloadCopy),
-							std::move(options),
-							m_config.enforceMaxPacketSizeOnSend,
-							m_config.maxAllowedPacketSize));
+							std::move(options)));
 					}
 					else if (type == packets::PacketType::PUBLISH_RECEIVED)
 					{
@@ -707,6 +728,15 @@ namespace cleanMqtt
 					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
 				}
 			}
+		}
+
+		void MqttClient::pubAck(PacketID packetId, packets::PubAckReasonCode code, PubAckOptions&& options) noexcept
+		{
+			m_sendQueue.addToQueue(std::make_unique<SendPubAckJob>(&m_connectionInfo,
+				[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+				packetId,
+				code, 
+				std::move(options)));
 		}
 
 		bool MqttClient::tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const packets::Properties& properties) noexcept
@@ -934,9 +964,7 @@ namespace cleanMqtt
 				m_receiveQueue.setPingResponseCallback(pingRespCallback);
 
 				m_sendQueue.addToQueue(std::make_unique<SendConnectJob>(&m_connectionInfo,
-					[this](const packets::BasePacket& packet) {return sendPacket(packet); },
-					m_config.enforceMaxPacketSizeOnSend,
-					m_config.maxAllowedPacketSize));
+					[this](const packets::BasePacket& packet) {return sendPacket(packet); }));
 
 				LogTrace("MqttClient", "Connect packet send request queued, to be resolved on next tick.");
 			}

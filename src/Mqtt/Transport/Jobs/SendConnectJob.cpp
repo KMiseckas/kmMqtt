@@ -21,8 +21,7 @@ namespace cleanMqtt
 			}
 
 			const std::size_t packetSize{ PACKET_SIZE_POST_ENCODE(packet) };
-
-			CHECK_ENFORCE_MAX_PACKET_SIZE(m_enforcePacketSize, result, packetSize, m_maxPacketSize);
+			CHECK_ENFORCE_MAX_PACKET_SIZE(result, packetSize, m_mqttConnectionInfo->maxServerPacketSize);
 
 			int sendResult{ m_packetSendCallback(packet) };
 

@@ -11,10 +11,8 @@ namespace cleanMqtt
 			const PacketID packetId,
 			const char* topic,
 			ByteBuffer&& payload,
-			PublishOptions&& pubOptions,
-			bool enforceMaxPacketSize,
-			std::size_t maxPacketSize) noexcept :
-			interfaces::ISendJob(connectionInfo, sendPacketCallback, enforceMaxPacketSize, maxPacketSize),
+			PublishOptions&& pubOptions) noexcept :
+			interfaces::ISendJob(connectionInfo, sendPacketCallback),
 			m_packetIdPool{ packetIdPool },
 			m_packetId{ packetId },
 			m_topic{ topic },
@@ -39,8 +37,7 @@ namespace cleanMqtt
 			}
 
 			const std::size_t packetSize{ PACKET_SIZE_POST_ENCODE(packet) };
-
-			CHECK_ENFORCE_MAX_PACKET_SIZE(m_enforcePacketSize, result, packetSize, m_maxPacketSize);
+			CHECK_ENFORCE_MAX_PACKET_SIZE(result, packetSize, m_mqttConnectionInfo->maxServerPacketSize);
 
 			int sendResult{ m_packetSendCallback(packet) }; //Send the packet
 

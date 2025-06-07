@@ -10,6 +10,8 @@ namespace cleanMqtt
 {
     using LockGuard = std::lock_guard<std::mutex>;
 
+#define MAX_PACKET_SIZE 268435455U //The maximum size of a MQTT packet as per the MQTT specification, 256 MB
+
 #define ENUM_FLAG_OPERATORS(enumName)\
         constexpr enumName operator | (enumName lhs, enumName rhs)\
         {\

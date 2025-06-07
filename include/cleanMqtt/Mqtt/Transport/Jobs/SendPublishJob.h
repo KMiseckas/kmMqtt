@@ -18,9 +18,7 @@ namespace cleanMqtt
 				const PacketID packetId,
 				const char* topic,
 				ByteBuffer&& payload,
-				PublishOptions&& pubOptions,
-				bool enforceMaxPacketSize = false,
-				std::size_t maxPacketSize = 0U) noexcept;
+				PublishOptions&& pubOptions) noexcept;
 
 			interfaces::SendResultData send() noexcept override;
 			void cancel() noexcept override;

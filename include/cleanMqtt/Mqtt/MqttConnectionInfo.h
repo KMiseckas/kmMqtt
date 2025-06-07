@@ -30,6 +30,7 @@ namespace cleanMqtt
 
 			Milliseconds pingInterval{ 0U };
 			std::uint16_t maxServerTopicAlias{ 0U };
+			std::size_t maxServerPacketSize{ MAX_PACKET_SIZE };
 			std::uint16_t serverKeepAlive{ 0U };
 			bool isRetainAvailable{ true };
 			SessionState sessionState{ "", 0 };

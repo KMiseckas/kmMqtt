@@ -10,9 +10,6 @@ namespace cleanMqtt
 		std::uint32_t pingTimeOutMS{ 10000U };
 		bool pingAlways{ true }; //Ping server always, regardless if a control packet has been sent within the keep alive time or keep alive is 0.
 		std::uint32_t defaultPingInterval{ 15000U }; //Ping interval to use when keepAlive is 0 and pingAlways is true.
-
-		bool enforceMaxPacketSizeOnSend{ false }; //Should the client enforce the max allowed packet size being sent. If packet exceeds encoded size, mqtt will shutdown.
-		std::size_t maxAllowedPacketSize{ SIZE_MAX }; //Max packet size, used only if `enforceMaxPacketSizeOnSend` is set to `true`.
 		std::uint32_t retryPublishIntervalMS{ 10000U }; //Interval to retry publish, pubAck, and pubRel messages that failed to send, in MS. 0ms means no retrying.
 	};
 }
