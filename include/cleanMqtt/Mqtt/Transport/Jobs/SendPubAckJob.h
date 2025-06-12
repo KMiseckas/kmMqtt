@@ -2,6 +2,8 @@
 #define INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDPUBACKJOB_H
 
 #include <cleanMqtt/Mqtt/Transport/ISendJob.h>
+#include <cleanMqtt/Mqtt/Packets/Publish/Codes/PubAckReasonCode.h>
+#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
 
 namespace cleanMqtt
 {
@@ -13,7 +15,7 @@ namespace cleanMqtt
 			SendPubAckJob(mqtt::MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback,
 				PacketID publishPacketId,
-				PubAckReasonCode reasonCode,
+				packets::PubAckReasonCode reasonCode,
 				PubAckOptions&& options) noexcept
 				: interfaces::ISendJob(connectionInfo, sendPacketCallback),
 				m_publishPacketId(publishPacketId),
@@ -27,7 +29,7 @@ namespace cleanMqtt
 
 		private:
 			PacketID m_publishPacketId;
-			PubAckReasonCode m_reasonCode;
+			packets::PubAckReasonCode m_reasonCode;
 			PubAckOptions m_options;
 		};
 	}

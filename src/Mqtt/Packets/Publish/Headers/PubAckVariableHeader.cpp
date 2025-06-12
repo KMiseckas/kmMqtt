@@ -62,12 +62,12 @@ namespace cleanMqtt
             std::size_t PubAckVariableHeader::getEncodedBytesSize() const noexcept
             {
                 static constexpr std::size_t size{ sizeof(packetId) + sizeof(reasonCode) };
-
+				std::size_t encodedSize{ size };
                 if (properties.size() > 0)
                 {
-                    size += properties.encodingSize();
+                    encodedSize += properties.encodingSize();
                 }
-                return size;
+                return encodedSize;
             }
         }
     }

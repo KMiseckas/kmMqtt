@@ -108,11 +108,11 @@ namespace cleanMqtt
 			PublishPayloadHeader payloadHeader;
 
 			packets::Properties properties;
-			properties.tryAddProperty(packets::PropertyType::PAYLOAD_FORMAT_INDICATOR, options.payloadFormatIndicator);
-			properties.tryAddProperty(packets::PropertyType::MESSAGE_EXPIRY_INTERVAL, options.messageExpiryInterval, options.addMessageExpiryInterval);
-			properties.tryAddProperty(packets::PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
-			properties.tryAddProperty(packets::PropertyType::RESPONSE_TOPIC, options.responseTopic, !options.responseTopic.empty());
-			properties.tryAddProperty(packets::PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, options.correlationData != nullptr && !options.responseTopic.empty());
+			properties.tryAddProperty(PropertyType::PAYLOAD_FORMAT_INDICATOR, options.payloadFormatIndicator);
+			properties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, options.messageExpiryInterval, options.addMessageExpiryInterval);
+			properties.tryAddProperty(PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
+			properties.tryAddProperty(PropertyType::RESPONSE_TOPIC, options.responseTopic, !options.responseTopic.empty());
+			properties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, options.correlationData != nullptr && !options.responseTopic.empty());
 
 			for (const auto& property : options.userProperties)
 			{
@@ -135,7 +135,7 @@ namespace cleanMqtt
 		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept
 		{
 			packets::Properties properties;
-			properties.tryAddProperty(packets::PropertyType::REASON_STRING, options.reasonString, !options.reasonString.empty());
+			properties.tryAddProperty(PropertyType::REASON_STRING, options.reasonString, !options.reasonString.empty());
 
 			for (const auto& property : options.userProperties)
 			{
@@ -144,6 +144,36 @@ namespace cleanMqtt
 
 			PubAckVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
 			return packets::PublishAck{ std::move(varHeader) };
+		}
+
+		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept
+		{
+			packets::Properties properties;
+			properties.tryAddProperty(PropertyType::SUBSCRIPTION_IDENTIFIER, VariableByteInteger(options.subscribeIdentifier), options.subscribeIdentifier.uint32Value() != 0);
+
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+			}
+
+			std::vector<Subscription> subscriptions;
+			subscriptions.reserve(topics.size());
+
+			for (const auto& t : topics)
+			{
+				EncodedSubscribeOptionsFlags flags;
+				flags.setFlagValue(SubscribeOptionsFlags::QOS, static_cast<uint8_t>(t.options.qos));
+				flags.setFlagValue(SubscribeOptionsFlags::NL, t.options.noLocal);
+				flags.setFlagValue(SubscribeOptionsFlags::RAP, t.options.retainAsPublished);
+				flags.setFlagValue(SubscribeOptionsFlags::RETAIN_HANDLING, static_cast<uint8_t>(t.options.retainHandling));
+
+				subscriptions.emplace_back(t.topicFilter.c_str(), std::move(flags));
+			}
+
+			SubscribeVariableHeader varHeader{ packetId, std::move(properties) };
+			SubscribePayloadHeader payloadHeader{ std::move(subscriptions) };
+
+			return packets::Subscribe{ std::move(varHeader), std::move(payloadHeader)};
 		}
 	}
 }

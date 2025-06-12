@@ -8,6 +8,7 @@
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPingJob.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPubAckJob.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SendSubscribeJob.h>
 
 namespace cleanMqtt
 {
@@ -161,7 +162,7 @@ namespace cleanMqtt
 			return ClientErrorCode::No_Error;
 		}
 
-		ClientError MqttClient::subscribe(const char* topic) noexcept
+		ClientError MqttClient::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
 		{
 			LockGuard guard{ m_mutex };
 
@@ -171,11 +172,20 @@ namespace cleanMqtt
 				return { ClientErrorCode::Not_Connected, "Client not connected, cannot subscribe()!" };
 			}
 
-			LogTrace("MqttClient", "Started subscribe: Subscribing to %s", topic);
+			if (topics.empty())
+			{
+				LogError("MqttClient", "Cannot subscribe to an empty list of topics!");
+				return { ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
+			}
 
-			//TODO
+			m_sendQueue.addToQueue(std::make_unique<SendSubscribeJob>(&m_connectionInfo,
+				[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+				&m_packetIdPool,
+				m_packetIdPool.getId(),
+				topics,
+				std::move(options)));
 
-			(void)topic;
+			LogTrace("MqttClient", "Started subscribe: Subscribing to; %s", allTopicsToStr(topics));
 
 			return ClientErrorCode::No_Error;
 		}
@@ -340,13 +350,6 @@ namespace cleanMqtt
 				else
 				{
 					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(MAX_PACKET_SIZE);
-				}
-
-				//Check is retain available
-				const std::uint8_t* retainAvailable{ 0 };
-				if (packet.getVariableHeader().properties.tryGetProperty<std::uint8_t>(PropertyType::RETAIN_AVAILABLE, retainAvailable))
-				{
-					m_connectionInfo.isRetainAvailable = *retainAvailable == 1;
 				}
 
 				m_connectionInfo.sessionState = SessionState{ m_connectionInfo.connectArgs.clientId.c_str(),

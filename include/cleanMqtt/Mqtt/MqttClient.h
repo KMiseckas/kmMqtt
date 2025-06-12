@@ -22,6 +22,8 @@
 #include <cleanMqtt/Mqtt/TopicAliases.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 #include "cleanMqtt/Mqtt/Params/PubAckOptions.h"
+#include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
+#include "cleanMqtt/Mqtt/Params/Topic.h"
 
 #include <cstring>
 #include <memory>
@@ -56,7 +58,7 @@ namespace cleanMqtt
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
 			ClientError publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
-			ClientError subscribe(const char* topic) noexcept;
+			ClientError subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
 			ClientError unSubscribe(const char* topic) noexcept;
 			ClientError disconnect(DisconnectArgs&& args) noexcept;
 			ClientError shutdown() noexcept;
