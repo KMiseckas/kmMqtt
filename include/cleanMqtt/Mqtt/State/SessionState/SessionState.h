@@ -5,8 +5,8 @@
 #include "cleanMqtt/Utils/PacketIdPool.h"
 #include "cleanMqtt/ByteBuffer.h"
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
-#include "cleanMqtt/Mqtt/SessionState/ISessionStatePersistantStore.h"
-#include "cleanMqtt/Mqtt/SessionState/MessageContainer.h"
+#include "cleanMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h"
+#include "cleanMqtt/Mqtt/State/SessionState/MessageContainer.h"
 #include "cleanMqtt/Mqtt/Packets/PacketType.h"
 #include "cleanMqtt/Mqtt/Enums/ClientErrorCode.h"
 

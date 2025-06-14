@@ -4,16 +4,11 @@ namespace cleanMqtt
 {
 	namespace events
 	{
-		void Deferrer::defer(const std::function<void()>& event) noexcept
-		{
-			m_events.push(event);
-		}
-
 		void Deferrer::invokeEvents() noexcept
 		{
 			while (!m_events.empty())
 			{
-				m_events.front()();
+				m_events.front()->call();
 				m_events.pop();
 			}
 		}
@@ -22,7 +17,7 @@ namespace cleanMqtt
 		{
 			if (!m_events.empty())
 			{
-				std::queue<std::function<void()>> empty;
+				std::queue<std::unique_ptr<ICallable>> empty;
 				m_events.swap(empty);
 			}
 		}

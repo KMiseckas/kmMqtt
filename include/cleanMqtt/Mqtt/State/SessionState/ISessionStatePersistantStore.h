@@ -2,7 +2,7 @@
 #define INCLUDE_CLEANMQTT_MQTT_ISESSIONSTATEPERSISTANTSTORE_H
 
 #include "cleanMqtt/GlobalMacros.h"
-#include "cleanMqtt/Mqtt/SessionState/MessageContainer.h"
+#include "cleanMqtt/Mqtt/State/SessionState/MessageContainer.h"
 #include <vector>
 #include <string>
 #include <cstdint>

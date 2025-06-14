@@ -2,6 +2,7 @@
 #define INCLUDE_CLEANMQTT_MQTT_PARAMS_SUBSCRIBEOPTIONS_H
 
 #include <cleanMqtt/GlobalMacros.h>
+#include <cleanMqtt/Mqtt/Packets/DataTypes.h>
 
 namespace cleanMqtt
 {
@@ -57,7 +58,7 @@ namespace cleanMqtt
 				return *this;
 			}
 			 
-			VariableByteInteger subscribeIdentifier{ 0 }; //Use 0 to ignore subscribtion identifier property.
+			packets::VariableByteInteger subscribeIdentifier{ 0 }; //Use 0 to ignore subscribtion identifier property.
 			std::map<std::string, std::string> userProperties;
 		};
 	}

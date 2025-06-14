@@ -20,6 +20,7 @@ namespace cleanMqtt
 			public:
 				ConnectAck() noexcept;
 				ConnectAck(ByteBuffer&& dataBuffer) noexcept;
+				ConnectAck(ConnectAck&& other) noexcept;
 				~ConnectAck() override;
 
 				PacketType getPacketType() const noexcept override;

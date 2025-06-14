@@ -1,7 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_MQTT_SESSIONSTATE_MESSAGECONTAINER_H
 #define INCLUDE_CLEANMQTT_MQTT_SESSIONSTATE_MESSAGECONTAINER_H
 
-#include "cleanMqtt/Mqtt/SessionState/MessageContainerData.h"
+#include "cleanMqtt/Mqtt/State/SessionState/MessageContainerData.h"
 #include <list>
 #include <unordered_map>
 #include <cstdint>

@@ -8,6 +8,8 @@
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
 #include "cleanMqtt/Mqtt/Packets/Ping/PingResp.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/PublishAck.h"
+#include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
 
 #include <queue>
 #include <mutex>
@@ -19,15 +21,16 @@ namespace cleanMqtt
 	{
 		using FailedDecodeResults = std::vector<packets::DecodeResult>;
 
-		using ConAckCallback = std::function<void(const packets::ConnectAck&)>;
-		using DisconnectCallback = std::function<void(const packets::Disconnect&)>;
-		using PubCallback = std::function<void(const packets::Publish&)>;
+		using ConAckCallback = std::function<void(packets::ConnectAck&&)>;
+		using DisconnectCallback = std::function<void(packets::Disconnect&&)>;
+		using PubCallback = std::function<void(packets::Publish&&)>;
+		using PubAckCallback = std::function<void(packets::PublishAck&&)>;
 		//using PubCompCallback = void (MqttClient::*)(const packets::ConnectAck&);
 		//using PubRecvCallback = void (MqttClient::*)(const packets::ConnectAck&);
 		//using PubRelCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		//using SubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		using SubAckCallback = std::function<void(packets::SubscribeAck&&)>;
 		//using UnSubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using PingRespCallback = std::function<void(const packets::PingResp&)>;
+		using PingRespCallback = std::function<void(packets::PingResp&&)>;
 
 		class ReceiveQueue
 		{
@@ -45,12 +48,14 @@ namespace cleanMqtt
 			void setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept;
 			void setDisconnectCallback(DisconnectCallback& callback) noexcept;
 			void setPublishCallback(PubCallback& callback) noexcept;
+			void setPublishAcknowledgeCallback(PubAckCallback& callback) noexcept;
 			//void setPublishCompleteCallback() noexcept;
 			//void setPublishReceivedCallback() noexcept;
 			//void setPublishReleasedCallback() noexcept;
-			//void setSubscribeAcknowledgeCallback() noexcept;
+			void setSubscribeAcknowledgeCallback(SubAckCallback& callback) noexcept;
 			//void setUnsubscribeAcknowledgeCallback() noexcept;
 			void setPingResponseCallback(PingRespCallback& callback) noexcept;
+			//TODO: Add more callbacks as needed
 
 		private:
 			bool tryAddFailedResult(packets::DecodeResult&& result) noexcept;
@@ -62,7 +67,9 @@ namespace cleanMqtt
 			ConAckCallback m_conAckCallback;
 			DisconnectCallback m_DisconnectCallback;
 			PubCallback m_pubCallback;
+			PubAckCallback m_pubAckCallback;
 			PingRespCallback m_pingRespCallback;
+			SubAckCallback m_subAckCallback;
 
 			std::mutex m_mutex;
 		};

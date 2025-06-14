@@ -6,8 +6,6 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			SubscribePayloadHeader::SubscribePayloadHeader() noexcept = default;
-
 			SubscribePayloadHeader::SubscribePayloadHeader(std::vector<Subscription>&& subscriptions) noexcept
 				: subscriptions(std::move(subscriptions)) {}
 

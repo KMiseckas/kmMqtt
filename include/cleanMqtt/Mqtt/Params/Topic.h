@@ -4,6 +4,7 @@
 #include "cleanMqtt/GlobalMacros.h"
 #include <string>
 #include <cstdint>
+#include <vector>
 #include <cleanMqtt/Mqtt/Enums/Qos.h>
 
 namespace cleanMqtt
@@ -32,7 +33,7 @@ namespace cleanMqtt
         struct PUBLIC_API Topic
         {
             Topic() noexcept = default;
-            Topic(const std::string filter, const TopicSubscriptionOptions opts) noexcept
+            Topic(std::string filter, TopicSubscriptionOptions opts) noexcept
                 : topicFilter(std::move(filter)), options(std::move(opts)) {}
 
             std::string topicFilter;

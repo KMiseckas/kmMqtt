@@ -19,7 +19,7 @@ if (!decodeResult.isSuccess())\
 \
 if (callback != nullptr)\
 {\
-	callback(packet);\
+	callback(std::move(packet));\
 }\
 
 
@@ -87,8 +87,10 @@ if (callback != nullptr)\
 					break;
 				}
 				case packets::PacketType::PUBLISH_ACKNOWLEDGE:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(PublishAck, m_pubAckCallback);
 					break;
+				}
 				case packets::PacketType::PUBLISH_COMPLETE:
 					//TODO
 					break;
@@ -99,8 +101,10 @@ if (callback != nullptr)\
 					//TODO
 					break;
 				case packets::PacketType::SUBSCRIBE_ACKNOWLEDGE:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(SubscribeAck, m_subAckCallback);
 					break;
+				}
 				case packets::PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
 					//TODO
 					break;
@@ -114,7 +118,7 @@ if (callback != nullptr)\
 					}
 					if (m_pingRespCallback != nullptr) 
 					{
-						m_pingRespCallback(packet);
+						m_pingRespCallback(std::move(packet));
 					};
 					break;
 				}
@@ -145,6 +149,8 @@ if (callback != nullptr)\
 			m_DisconnectCallback = nullptr;
 			m_pubCallback = nullptr;
 			m_pingRespCallback = nullptr;
+			m_pubAckCallback = nullptr;
+			m_subAckCallback = nullptr;
 		}
 
 		void ReceiveQueue::setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept
@@ -165,6 +171,16 @@ if (callback != nullptr)\
 		void ReceiveQueue::setPingResponseCallback(PingRespCallback& callback) noexcept
 		{
 			m_pingRespCallback = callback;
+		}
+
+		void ReceiveQueue::setPublishAcknowledgeCallback(PubAckCallback& callback) noexcept
+		{
+			m_pubAckCallback = callback;
+		}
+
+		void ReceiveQueue::setSubscribeAcknowledgeCallback(SubAckCallback& callback) noexcept
+		{
+			m_subAckCallback = callback;
 		}
 	}
 }

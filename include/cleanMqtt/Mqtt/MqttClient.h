@@ -19,11 +19,13 @@
 #include <cleanMqtt/Utils/PacketIdPool.h>
 #include <cleanMqtt/Config.h>
 #include <cleanMqtt/Mqtt/Transport/SendQueue.h>
-#include <cleanMqtt/Mqtt/TopicAliases.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 #include "cleanMqtt/Mqtt/Params/PubAckOptions.h"
 #include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/Topic.h"
+#include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
+#include "cleanMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h"
+#include "cleanMqtt/Mqtt/State/SubAckTopicReason.h"
 
 #include <cstring>
 #include <memory>
@@ -44,7 +46,8 @@ namespace cleanMqtt
 		using ReconnectEvent = events::Event<ReconnectionStatus, int, const packets::ConnectAck&>;
 		using DisconnectEvent = events::Event<const packets::DisconnectReasonCode>;
 		using PublishEvent = events::Event<std::string, const packets::BinaryData*, const packets::Publish&>;
-		using PublishAckEvent = events::Event<PacketID>;
+		using PublishAckEvent = events::Event<PacketID, const packets::PublishAck&>;
+		using SubscribeAckEvent = events::Event<PacketID, const SubAckResults&, const packets::SubscribeAck&>;
 
 		class PUBLIC_API MqttClient
 		{
@@ -70,6 +73,8 @@ namespace cleanMqtt
 			const DisconnectEvent& onDisconnectEvent() const noexcept { return m_disconnectEvent; }
 			const ReconnectEvent& onReconnectEvent() const noexcept { return m_reconnectEvent; }
 			const PublishEvent& onPublishEvent() const noexcept { return m_publishEvent; }
+			const PublishAckEvent& onPublishAckEvent() const noexcept { return m_pubAckEvent; }
+			const SubscribeAckEvent& onSubscribeAckEvent() const noexcept { return m_subAckEvent; }
 
 			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
@@ -83,23 +88,25 @@ namespace cleanMqtt
 			void handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args = {}) noexcept;
 			void handleExternalDisconnect(const packets::Disconnect& packet);
 			void handleExternalDisconnect(int closeCode = -1, std::string reason = "");
+			void clearState() noexcept;
 
 			void handleSocketConnectEvent(bool success);
 			void handleSocketDisconnectEvent();
 			void handleSocketPacketReceivedEvent(ByteBuffer&& buffer);
 			void handleSocketErrorEvent(int error);
 
-			void handleReceivedConnectAcknowledge(const packets::ConnectAck& packet);
-			void handleReceivedDisconnect(const packets::Disconnect& packet);
-			void handleReceivedPublish(const packets::Publish& packet);
+			void handleReceivedConnectAcknowledge(packets::ConnectAck&& packet);
+			void handleReceivedDisconnect(packets::Disconnect&& packet);
+			void handleReceivedPublish(packets::Publish&& packet);
+			void handleReceivedPublishAck(packets::PublishAck&& packet);
 			//void handleReceivedPublishComplete();
 			//void handleReceivedPublishReceived();
 			//void handleReceivedPublishReleased();
-			//void handleReceivedSubscribeAcknowledge();
+			void handleReceivedSubscribeAcknowledge(packets::SubscribeAck&& packet);
 			//void handleReceivedUnsubscribeAcknowledge();
-			void handleReceivedPingResponse(const packets::PingResp& packet);
+			void handleReceivedPingResponse(packets::PingResp&& packet);
 
-			void firePublishReceivedEvent(const packets::Publish& packet) noexcept;
+			void firePublishReceivedEvent(packets::Publish&& packet) noexcept;
 
 			void tickCheckTimeOut();
 			void tickCheckKeepAlive();
@@ -107,8 +114,8 @@ namespace cleanMqtt
 			void tickReceivePackets();
 			void tickPendingPublishMessageRetries();
 
-			void handleFailedReconnect(const packets::ConnectAck& packet);
-			void handleFailedConnect(const packets::ConnectAck& packet);
+			void handleFailedReconnect(packets::ConnectAck&& packet);
+			void handleFailedConnect(packets::ConnectAck&& packet);
 			void handleTimeOutConnect();
 			void handleTimeOutReconnect();
 
@@ -125,13 +132,14 @@ namespace cleanMqtt
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
 			PublishEvent m_publishEvent;
+			PublishAckEvent m_pubAckEvent;
+			SubscribeAckEvent m_subAckEvent;
 
 			SendPubAckEvent m_sendPubAckEvent;
 
 			SendQueue m_sendQueue;
 			ReceiveQueue m_receiveQueue;
 
-			TopicAliases m_topicAliases;
 			SendBatchResult m_batchResultData;
 
 			std::mutex m_mutex;

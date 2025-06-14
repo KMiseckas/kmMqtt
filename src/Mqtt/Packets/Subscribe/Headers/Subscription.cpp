@@ -6,8 +6,6 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			Subscription::Subscription() noexcept = default;
-
 			Subscription::Subscription(const char* topic, EncodedSubscribeOptionsFlags opts) noexcept
 				: topicFilter{ topic }, options{ std::move(opts) }
 			{

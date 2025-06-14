@@ -1,4 +1,4 @@
-#include <cleanMqtt/Mqtt/SessionState/SessionState.h>
+#include <cleanMqtt/Mqtt/State/SessionState/SessionState.h>
 #include <cleanMqtt/Mqtt/Enums/ClientErrorCode.h>
 
 namespace cleanMqtt

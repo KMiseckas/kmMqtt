@@ -18,6 +18,15 @@ namespace cleanMqtt
 				setUpHeaders();
 			}
 
+			ConnectAck::ConnectAck(ConnectAck&& other) noexcept
+				: BasePacket(std::move(other)),
+				m_variableHeader(std::move(other.m_variableHeader))
+			{
+				other.m_variableHeader = nullptr;
+
+				setUpHeaders();
+			}
+
 			ConnectAck::~ConnectAck()
 			{
 				delete m_variableHeader;
