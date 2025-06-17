@@ -58,7 +58,12 @@ namespace cleanMqtt
 				delete m_dataBuffer;
 
 				m_fixedHeader.packetType = getPacketType();
-				m_fixedHeader.remainingLength = static_cast<std::uint32_t>(calculateFixedHeaderRemainingLength());
+
+				if (!m_fixedHeader.remainingLength.setValue(static_cast<std::uint32_t>(calculateFixedHeaderRemainingLength())))
+				{
+					return EncodeResult{ EncodeErrorCode::INTERNAL_ERROR, "Failed to set remaining length in fixed header. Remaing length size"};
+				}
+
 				const std::size_t bufferCapacity = m_fixedHeader.getEncodedBytesSize() + static_cast<std::size_t>(m_fixedHeader.remainingLength.uint32Value());
 
 				try

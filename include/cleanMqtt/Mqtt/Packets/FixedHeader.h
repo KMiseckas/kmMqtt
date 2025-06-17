@@ -58,7 +58,7 @@ namespace cleanMqtt
 
 				PacketType packetType;
 				FixedHeaderFlags flags{ 0U };
-				VariableByteInteger remainingLength{ 0 };
+				VariableByteInteger remainingLength;
 			};
 		}
 	}

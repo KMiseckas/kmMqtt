@@ -21,7 +21,7 @@ TEST_SUITE("Properties Tests")
 
 		CHECK(properties.tryAddProperty<BinaryData>(PropertyType::USER_PROPERTY, BinaryData()));
 		CHECK(properties.tryAddProperty<UTF8String>(PropertyType::WILL_DELAY_INTERVAL, UTF8String("Hello World")));
-		CHECK(properties.tryAddProperty<VariableByteInteger>(PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE, VariableByteInteger{ 150 }));
+		CHECK(properties.tryAddProperty<VariableByteInteger>(PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE, VariableByteInteger::tryCreateFromValue(150)));
 
 		const std::uint8_t* valueInt;
 		const bool* valueBool;

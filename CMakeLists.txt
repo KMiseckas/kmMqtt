@@ -37,10 +37,12 @@ if(ENABLE_THROW_ON_FATAL_LOG)
     target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_THROW_ON_FATAL_LOG)
 endif()
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_BUFFER_SIZE=${LOG_BUFFER_SIZE})
+
 if(ENABLE_WARNINGS_AS_ERRORS)
     if(MSVC)
         target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
-        target_compile_options(${PROJECT_NAME} PRIVATE /wd4003 /wd4005) #Ignore | Macro warning c4003 | c4005 Macro redefinition |
+        target_compile_options(${PROJECT_NAME} PRIVATE /wd4003 /wd4005) #Ignore, Macro warning c4003, c4005 Macro redefinition
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()

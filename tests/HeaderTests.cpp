@@ -24,7 +24,7 @@ TEST_SUITE("Header Tests")
 			header.flags.setFlagValue(1, true); //-> 0b00000001
 			CHECK_NOTHROW(header.flags.setFlagValue(4 | 8, 3)); //-> 0b00001101
 			header.packetType = PacketType::CONNECT;
-			header.remainingLength = 3123; //2 bytes worth
+			header.remainingLength.setValue(3123); //2 bytes worth
 
 			CHECK(header.getEncodedBytesSize() == 3);
 
@@ -122,7 +122,7 @@ TEST_SUITE("Header Tests")
 				CHECK(buffer[8] == 0b10100111);	//Keep alive in seconds - byte 0
 				CHECK(buffer[9] == 0b11111000);	//Keep alive in seconds - byte 1
 				CHECK(buffer[10] == 5);			//Properties Length Variable Byte Integer
-				VariableByteInteger propertyIdVar{ buffer[11] };
+				VariableByteInteger propertyIdVar{ VariableByteInteger::tryCreateFromValue(buffer[11])};
 				CHECK(propertyIdVar.uint32Value() == static_cast<std::uint8_t>(PropertyType::WILL_DELAY_INTERVAL));
 				CHECK(buffer[12] == 0);			//200 in uint32
 				CHECK(buffer[13] == 0);			//...
@@ -194,7 +194,7 @@ TEST_SUITE("Header Tests")
 				for (size_t i = 0; i < 6; i++)
 				{
 					VariableByteInteger propertyIdVal;
-					propertyIdVal = buffer[nextIdByte];
+					propertyIdVal.setValue(buffer[nextIdByte]);
 
 					switch (static_cast<PropertyType>(propertyIdVal.uint32Value()))
 					{

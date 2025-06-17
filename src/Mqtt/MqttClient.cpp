@@ -294,21 +294,6 @@ namespace cleanMqtt
 			//Connection counts as succeeded for any ConnectReasonCode < 128U so report back as connection success, else start failure proccess.
 			if (packet.getVariableHeader().reasonCode < packets::ConnectReasonCode::UNSPECIFIED_ERROR)
 			{
-				if (m_connectionStatus == ConnectionStatus::RECONNECTING)
-				{
-					LogDebug("MqttClient", "Reconnection complete to broker: %s Port: %s",
-						m_connectionInfo.reconnectAddress.primaryAddress.hostname().c_str(),
-						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
-					deferPacketEvent(m_eventDeferrer, m_reconnectEvent, packet, ReconnectionStatus::SUCCEEDED, 0);
-				}
-				else
-				{
-					LogDebug("MqttClient", "Client connected to broker: %s Port: %s",
-						m_connectionInfo.connectAddress.primaryAddress.hostname().c_str(),
-						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
-					deferPacketEvent(m_eventDeferrer, m_connectEvent, packet, true, 0);
-				}
-
 				m_connectionStatus = ConnectionStatus::CONNECTED;
 				m_connectionInfo.hasBeenConnected = true;
 
@@ -363,6 +348,21 @@ namespace cleanMqtt
 					nullptr };
 
 				//TODO read mqtt5 spec for rest of properties of Connect Ack (relating to publishing, subscribing and reconnection).
+
+				if (m_connectionStatus == ConnectionStatus::RECONNECTING)
+				{
+					LogDebug("MqttClient", "Reconnection complete to broker: %s Port: %s",
+						m_connectionInfo.reconnectAddress.primaryAddress.hostname().c_str(),
+						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
+					deferPacketEvent_wMove(m_eventDeferrer, m_reconnectEvent, packet, ReconnectionStatus::SUCCEEDED, 0);
+				}
+				else
+				{
+					LogDebug("MqttClient", "Client connected to broker: %s Port: %s",
+						m_connectionInfo.connectAddress.primaryAddress.hostname().c_str(),
+						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
+					deferPacketEvent_wMove(m_eventDeferrer, m_connectEvent, packet, true, 0);
+				}
 			}
 			else
 			{
@@ -458,7 +458,7 @@ namespace cleanMqtt
 			results.setTopicReasons(packet.getPayloadHeader().reasonCodes);
 			m_packetIdPool.releaseId(packetId);
 
-			deferPacketEvent(m_eventDeferrer, m_subAckEvent, packet, packetId, std::move(results));
+			deferPacketEvent_wMove(m_eventDeferrer, m_subAckEvent, packet, packetId, std::move(results));
 		}
 
 		void MqttClient::handleReceivedPingResponse(PingResp&& packet)
@@ -530,12 +530,15 @@ namespace cleanMqtt
 				return;
 			}
 
-			deferPacketEvent(m_eventDeferrer, m_publishEvent, packet, std::move(topicName), &packet.getPayloadHeader().payload);
+			const auto qos{ packet.getVariableHeader().qos };
+			const auto id{ packet.getVariableHeader().packetIdentifier };
 
-			if (packet.getVariableHeader().qos == Qos::QOS_1)
+			deferPacketEvent_wMove(m_eventDeferrer, m_publishEvent, packet, std::move(topicName), &packet.getPayloadHeader().payload);
+
+			if (qos == Qos::QOS_1)
 			{
 				//After packet is sent to application layer (previous deferEvent), send PUBACK packet back to the server.
-				deferEvent(m_eventDeferrer, m_sendPubAckEvent, packet.getVariableHeader().packetIdentifier);
+				deferEvent(m_eventDeferrer, m_sendPubAckEvent, id);
 			}
 		}
 
@@ -709,7 +712,7 @@ namespace cleanMqtt
 			{
 				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
-				deferPacketEvent(m_eventDeferrer, m_reconnectEvent, packet, ReconnectionStatus::FAILED, 0);
+				deferPacketEvent_wMove(m_eventDeferrer, m_reconnectEvent, packet, ReconnectionStatus::FAILED, 0);
 
 				if (m_connectionInfo.hasBeenConnected)
 				{
@@ -738,7 +741,7 @@ namespace cleanMqtt
 			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
-			deferPacketEvent(m_eventDeferrer, m_connectEvent, packet, false, 0);
+			deferPacketEvent_wMove(m_eventDeferrer, m_connectEvent, packet, false, 0);
 		}
 
 		void MqttClient::handleTimeOutConnect()
@@ -1043,7 +1046,7 @@ namespace cleanMqtt
 				{
 					//TODO maybe try reconnect to other addresses if provided rather than straight disconnect?
 
-					deferPacketEvent(m_eventDeferrer, m_connectEvent, packets::ConnectAck{}, false, m_socket->getLastError());
+					deferPacketEvent_wMove(m_eventDeferrer, m_connectEvent, packets::ConnectAck{}, false, m_socket->getLastError());
 				}
 			}
 		}

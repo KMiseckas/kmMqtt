@@ -14,7 +14,7 @@ namespace cleanMqtt
 #define deferEvent(deferrer, event, ...)\
 	deferrer.defer([&](){event(__VA_ARGS__);})\
 
-#define deferPacketEvent(deferrer, event, packet, ...)\
+#define deferPacketEvent_wMove(deferrer, event, packet, ...)\
 	deferrer.defer([&, p = std::move(packet)](){event(__VA_ARGS__, p);})\
 
 	namespace events

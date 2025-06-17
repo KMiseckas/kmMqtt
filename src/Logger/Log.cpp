@@ -15,13 +15,15 @@ namespace cleanMqtt
 #define LOG_LEVEL 999
 #endif //ENABLE_LOGS
 
-#define LOG_BUFFER_SIZE 512
+#ifndef LOG_BUFFER_SIZE
+#define LOG_BUFFER_SIZE 2048
+#endif
 
 #if _WIN32 || _WIN64
-#define VSNPRINTF _vsnprintf_s<LOG_BUFFER_SIZE>
+#define VSNPRINTF(buffer, size, fmt, args) _vsnprintf_s(buffer, size, _TRUNCATE, fmt, args)
 #else
 #include <cstdio>
-#define VSNPRINTF std::vsnprintf
+#define VSNPRINTF(buffer, size, fmt, args) std::vsnprintf(buffer, size, fmt, args)
 #endif
 
 namespace

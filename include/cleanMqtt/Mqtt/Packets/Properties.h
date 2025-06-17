@@ -155,7 +155,7 @@ namespace cleanMqtt
 
 				std::uint32_t encodingSize() const
 				{
-					auto varBytes{ VariableByteInteger(m_propertiesSizeInBytes) };
+					auto varBytes{ VariableByteInteger::tryCreateFromValue(m_propertiesSizeInBytes) };
 					return static_cast<std::uint32_t>(varBytes.encodingSize()) + m_propertiesSizeInBytes;
 				}
 
@@ -167,7 +167,8 @@ namespace cleanMqtt
 				void encode(ByteBuffer& buffer) const
 				{
 					//Encode properties combined length.
-					const auto varBytesInt = VariableByteInteger(m_propertiesSizeInBytes);
+					bool b;
+					const auto varBytesInt{ VariableByteInteger::tryCreateFromValue(m_propertiesSizeInBytes, &b) };
 					varBytesInt.encode(buffer);
 
 					//Encode properties one by one
@@ -180,11 +181,19 @@ namespace cleanMqtt
 				DecodeResult decode(const ByteBuffer& buffer)
 				{
 					//Decode properties combined length
-					const VariableByteInteger propertySizeBytes(buffer);
-					m_propertiesSizeInBytes = propertySizeBytes.uint32Value();
+					bool isSuccess;
+					const auto varBytes{ VariableByteInteger::tryCreateFromBuffer(buffer, &isSuccess) };
+
+					if (!isSuccess)
+					{
+						return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET,
+							"Failed to get value from variable byte integer encoded bytes. Has Property length been included in packet?"};
+					}
+
+					m_propertiesSizeInBytes = varBytes.uint32Value();
 					
-					const std::size_t startingBufferCursor = buffer.readCursor();
-					const std::size_t endBufferCursor = startingBufferCursor + m_propertiesSizeInBytes;
+					const std::size_t startingBufferCursor{ buffer.readCursor() };
+					const std::size_t endBufferCursor{ startingBufferCursor + m_propertiesSizeInBytes };
 
 					if (buffer.size() < endBufferCursor)
 					{
@@ -208,6 +217,7 @@ namespace cleanMqtt
 
 						if (!tryAddProperty(type, data))
 						{
+							delete data;
 							LogError("Properties", "Failed to add property to properties list due to it already existing.");
 							return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Duplicate property not allowed for property type: " + std::to_string(static_cast<std::uint8_t>(type)) };
 						}

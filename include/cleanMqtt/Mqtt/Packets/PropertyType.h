@@ -102,6 +102,8 @@ namespace cleanMqtt
 
 				namespace
 				{
+					//TODO maybe we can reuse pointers rather than allocating new ones?
+
 					void encodeUInt8(ByteBuffer& buffer, PropertyType property, const void* data)
 					{
 						const auto castData = static_cast<const std::uint8_t*>(data);
@@ -159,6 +161,8 @@ namespace cleanMqtt
 
 				namespace
 				{
+					//TODO maybe we can reuse pointers rather than allocating new ones?
+
 					void* decodeUInt8(const ByteBuffer& buffer)
 					{
 						return new std::uint8_t(buffer.readUint8());
@@ -186,7 +190,7 @@ namespace cleanMqtt
 
 					void* decodeVariableByteInteger(const ByteBuffer& buffer)
 					{
-						return new VariableByteInteger(buffer);
+						return VariableByteInteger::tryCreateNewFromBuffer(buffer);
 					}
 
 					void* decodeBinaryData(const ByteBuffer& buffer)

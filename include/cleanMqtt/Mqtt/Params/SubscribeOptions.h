@@ -58,7 +58,7 @@ namespace cleanMqtt
 				return *this;
 			}
 			 
-			packets::VariableByteInteger subscribeIdentifier{ 0 }; //Use 0 to ignore subscribtion identifier property.
+			packets::VariableByteInteger subscribeIdentifier;
 			std::map<std::string, std::string> userProperties;
 		};
 	}

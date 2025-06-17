@@ -68,13 +68,13 @@ namespace cleanMqtt
 
 			void tick(float deltaTime) noexcept;
 
-			const ErrorEvent& onErrorEvent() const noexcept { return m_errorEvent; }
-			const ConnectEvent& onConnectEvent() const noexcept { return m_connectEvent; }
-			const DisconnectEvent& onDisconnectEvent() const noexcept { return m_disconnectEvent; }
-			const ReconnectEvent& onReconnectEvent() const noexcept { return m_reconnectEvent; }
-			const PublishEvent& onPublishEvent() const noexcept { return m_publishEvent; }
-			const PublishAckEvent& onPublishAckEvent() const noexcept { return m_pubAckEvent; }
-			const SubscribeAckEvent& onSubscribeAckEvent() const noexcept { return m_subAckEvent; }
+			ErrorEvent& onErrorEvent() noexcept { return m_errorEvent; }
+			ConnectEvent& onConnectEvent() noexcept { return m_connectEvent; }
+			DisconnectEvent& onDisconnectEvent() noexcept { return m_disconnectEvent; }
+			ReconnectEvent& onReconnectEvent() noexcept { return m_reconnectEvent; }
+			PublishEvent& onPublishEvent() noexcept { return m_publishEvent; }
+			PublishAckEvent& onPublishAckEvent() noexcept { return m_pubAckEvent; }
+			SubscribeAckEvent& onSubscribeAckEvent() noexcept { return m_subAckEvent; }
 
 			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;

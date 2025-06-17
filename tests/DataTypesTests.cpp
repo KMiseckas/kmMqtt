@@ -102,6 +102,13 @@ TEST_SUITE("Data Type Tests")
 			std::uint32_t expectedEncodedVal;
 			std::size_t expectedBytesSize;
 
+			SUBCASE("2 (1 byte)")
+			{
+				val = 2;
+				expectedEncodedVal = 0b00000010000000000000000000000000;
+				expectedBytesSize = 1;
+			}
+
 			SUBCASE("10 (1 byte)")
 			{
 				val = 10;
@@ -131,7 +138,7 @@ TEST_SUITE("Data Type Tests")
 			}
 
 			//Encoding
-			const VariableByteInteger varByteInt{ val };
+			const VariableByteInteger varByteInt{VariableByteInteger::tryCreateFromValue(val)};
 			CHECK(varByteInt.encodingSize() == expectedBytesSize);
 			CHECK(varByteInt.uint32Value() == val);
 			CHECK(varByteInt.uint32EncodedBytes() == expectedEncodedVal);
@@ -155,7 +162,7 @@ TEST_SUITE("Data Type Tests")
 		SUBCASE("Assignment to Value Decoding")
 		{
 			VariableByteInteger varByteInt;
-			varByteInt = 10;
+			varByteInt.setValue(10);
 
 			CHECK(varByteInt.encodingSize() == 1);
 			CHECK(varByteInt.uint32Value() == 10);

@@ -139,32 +139,91 @@ namespace cleanMqtt
 
 			struct VariableByteInteger : public MqttDataType
 			{
+				static constexpr std::uint32_t kmaxByteSize{ 268435455U };
+
 			public:
-				VariableByteInteger(std::uint32_t value = 0U)
-					: m_value(value), m_size(1)
+				VariableByteInteger() : m_value(0), m_size(1), m_encodedValue(0)
 				{
-					if (m_value > 0)
+				}
+
+				static VariableByteInteger tryCreateFromBuffer(const ByteBuffer& buffer, bool* isSuccess = nullptr) noexcept
+				{
+					if (buffer.readHeadroom() <= 0)
 					{
-						encodeValue(m_value);
+						LogError("VariableByteInteger", "Buffer has no remaining bytes to read.");
+						if (isSuccess != nullptr)
+						{
+							*isSuccess = false;
+						}
+						return VariableByteInteger(0);
 					}
+
+					if (isSuccess != nullptr)
+					{
+						*isSuccess = true;
+					}
+					return VariableByteInteger(buffer);
 				}
 
-				VariableByteInteger(const ByteBuffer& buffer)
-					:m_size(1), m_value(0), m_encodedValue(0)
+				static VariableByteInteger tryCreateFromValue(const std::uint32_t& val, bool* isSuccess = nullptr) noexcept
 				{
-					decode(buffer);
+					if (val > kmaxByteSize)
+					{
+						LogError("VariableByteInteger", "Invalid argument val (%d), max value allowed is %d", val, kmaxByteSize);
+						if (isSuccess != nullptr)
+						{
+							*isSuccess = false;
+						}
+						return VariableByteInteger(0);
+					}
+
+					if (isSuccess != nullptr)
+					{
+						*isSuccess = true;
+					}
+					return VariableByteInteger(val);
 				}
 
-				VariableByteInteger& operator=(const std::uint32_t& other)
+				static VariableByteInteger* tryCreateNewFromBuffer(const ByteBuffer& buffer) noexcept
 				{
-					m_value = other;
-					encodeValue(m_value);
-					return *this;
+					if (buffer.readHeadroom() <= 0)
+					{
+						LogError("VariableByteInteger", "Buffer has no remaining bytes to read.");
+						return nullptr;
+					}
+
+					return new VariableByteInteger(buffer);
+				}
+
+				static VariableByteInteger* tryCreateNewFromValue(const std::uint32_t& val) noexcept
+				{
+					if (val > kmaxByteSize)
+					{
+						LogError("VariableByteInteger", "Invalid argument val (%d), max value allowed is %d", val, kmaxByteSize);
+						return nullptr;
+					}
+
+					return new VariableByteInteger(val);
 				}
 
 				constexpr std::uint32_t uint32Value() const noexcept
 				{
 					return m_value;
+				}
+
+				constexpr bool setValue(std::uint32_t value) noexcept
+				{
+					if (value > kmaxByteSize)
+					{
+						LogError("VariableByteInteger", "Cannot set value larger than max size: %d", kmaxByteSize);
+						return false;
+					}
+
+					m_value = value;
+					m_encodedValue = 0;
+					m_size = 1;
+					encodeValue(m_value);
+					return true;
 				}
 
 				constexpr std::uint32_t uint32EncodedBytes() const noexcept
@@ -200,13 +259,26 @@ namespace cleanMqtt
 
 			private:
 
+				VariableByteInteger(std::uint32_t value)
+					: m_value(value), m_size(1)
+				{
+					if (m_value > 0)
+					{
+						encodeValue(m_value);
+					}
+				}
+
+				VariableByteInteger(const ByteBuffer& buffer)
+					:m_size(1), m_value(0), m_encodedValue(0)
+				{
+					decode(buffer);
+				}
+
 				constexpr void encodeValue(std::uint32_t value)
 				{
-					constexpr std::uint32_t maxByteSize = 268435455;
-
-					if (value > maxByteSize)
+					if (value > kmaxByteSize)
 					{
-						LogException("DataTypes", std::runtime_error("Cannot encode value larger than 268,435,455"));
+						LogError("DataTypes", "Cannot encode value larger than max size: %d", kmaxByteSize);
 					}
 
 					std::uint8_t encodedByte{ 0U };
@@ -237,7 +309,8 @@ namespace cleanMqtt
 
 					std::uint8_t encodedByte{ 0U };
 
-					do
+					bool found{ false };
+					while (!found)
 					{
 						m_size++;
 						encodedByte = *(bytes++);
@@ -246,12 +319,12 @@ namespace cleanMqtt
 
 						if (multiplier > (128 * 128 * 128))
 						{
-							LogException("DataTypes", std::exception("Could not decode malformed variable byte integer data."));
+							LogError("DataTypes", "Could not decode malformed variable byte integer data.");
 						}
 
 						multiplier *= 128;
-
-					} while ((encodedByte & 128) != 0);
+						found = (encodedByte & 128) == 0;
+					}
 				}
 
 				std::uint8_t m_size{ 1 };
