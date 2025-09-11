@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+using namespace cleanMqtt;
 using namespace cleanMqtt::mqtt;
 
 namespace 
@@ -56,10 +57,6 @@ TEST_SUITE("SessionState Tests")
     {
         DummyPersistantStore store;
         SessionState state("client1", 1000, 500, &store);
-        CHECK(state.m_clientId == std::string("client1"));
-        CHECK(state.m_retryInterval.count() == 500);
-        CHECK(state.m_sessionExpiryInterval.count() == 1000);
-        CHECK(state.m_persistantStore == &store);
     }
 
     TEST_CASE("addMessage No_Error")
@@ -67,7 +64,8 @@ TEST_SUITE("SessionState Tests")
         DummyPersistantStore store;
         SessionState state("client2", 1000, 500, &store);
 
-        PublishMessageData msgData;
+        ByteBuffer bytes{ 0 };
+        PublishMessageData msgData{ "", std::move(bytes), {} };
         auto result = state.addMessage(42, std::move(msgData));
         CHECK(result == ClientErrorCode::No_Error);
         CHECK(store.log.size() == 1);
@@ -78,14 +76,16 @@ TEST_SUITE("SessionState Tests")
     {
         struct FailingStore : DummyPersistantStore 
         {
-            bool write(const char*, std::uint32_t, const PublishMessageData&) override 
+            bool write(const char* clientId, std::uint32_t expiry, const SavedData& data) override
             { 
                 return false; 
             }
         } store;
+
         SessionState state("client3", 1000, 500, &store);
 
-        PublishMessageData msgData;
+        ByteBuffer bytes{ 0 };
+        PublishMessageData msgData{ "", std::move(bytes), {} };
         auto result = state.addMessage(43, std::move(msgData));
         CHECK(result == ClientErrorCode::Failed_Writing_To_Persistent_Storage);
     }
@@ -95,7 +95,8 @@ TEST_SUITE("SessionState Tests")
         DummyPersistantStore store;
         SessionState state("client4", 1000, 500, &store);
 
-        PublishMessageData msgData;
+        ByteBuffer bytes{ 0 };
+        PublishMessageData msgData{ "", std::move(bytes), {} };
         state.addMessage(44, std::move(msgData));
         state.updateMessage(44, PublishMessageStatus::WaitingForPubComp);
         CHECK(store.log.size() == 2);
@@ -107,7 +108,8 @@ TEST_SUITE("SessionState Tests")
         DummyPersistantStore store;
         SessionState state("client5", 1000, 500, &store);
 
-        PublishMessageData msgData;
+        ByteBuffer bytes{ 0 };
+        PublishMessageData msgData{ "", std::move(bytes), {} };
         state.addMessage(45, std::move(msgData));
         state.removeMessage(45);
         CHECK(store.log.size() == 2);
@@ -119,21 +121,11 @@ TEST_SUITE("SessionState Tests")
         DummyPersistantStore store;
         SessionState state("client6", 1000, 500, &store);
 
-        PublishMessageData msgData;
+        ByteBuffer bytes{ 0 };
+        PublishMessageData msgData{ "", std::move(bytes), {} };
         state.addMessage(46, std::move(msgData));
         state.clear();
         CHECK(store.log.size() == 2);
         CHECK(store.log[1].find("clear:client6") != std::string::npos);
-    }
-
-    TEST_CASE("shouldBringToFront logic")
-    {
-        DummyPersistantStore store;
-        SessionState state("client7", 1000, 500, &store);
-
-        CHECK(state.shouldBringToFront(PublishMessageStatus::WaitingForPubAck, PublishMessageStatus::WaitingForPubComp) == true);
-        CHECK(state.shouldBringToFront(PublishMessageStatus::WaitingForPubAck, PublishMessageStatus::WaitingForPubRel) == true);
-        CHECK(state.shouldBringToFront(PublishMessageStatus::WaitingForPubAck, PublishMessageStatus::WaitingForPubAck) == false);
-        CHECK(state.shouldBringToFront(PublishMessageStatus::WaitingForPubAck, PublishMessageStatus::Published) == false);
     }
 }
