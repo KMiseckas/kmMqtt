@@ -137,8 +137,6 @@ namespace cleanMqtt
 			{
 				packetId = m_packetIdPool.getId();
 
-				LogTrace("MqttClient", "Packet ID: %d", packetId);
-
 				ByteBuffer payloadCopy{ payload.size() };
 				payloadCopy.append(payload);
 				PublishMessageData msgData{ topic, std::move(payloadCopy), options };
@@ -179,10 +177,13 @@ namespace cleanMqtt
 				return { ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
 			}
 
+			auto id{ m_packetIdPool.getId() };
+			m_connectionInfo.pendingSubscriptions.push_back( PendingSubscription{ id, topics });
+
 			m_sendQueue.addToQueue(std::make_unique<SendSubscribeJob>(&m_connectionInfo,
 				[this](const packets::BasePacket& packet) {return sendPacket(packet); },
 				&m_packetIdPool,
-				m_packetIdPool.getId(),
+				id,
 				topics,
 				std::move(options)));
 
@@ -237,6 +238,7 @@ namespace cleanMqtt
 			LogInfo("MqttClient", "Client shutdown.");
 
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
+			m_disconnectEvent.invoke({});
 
 			m_eventDeferrer.clear();
 			m_errorEvent.removeAll();
@@ -354,14 +356,16 @@ namespace cleanMqtt
 					LogDebug("MqttClient", "Reconnection complete to broker: %s Port: %s",
 						m_connectionInfo.reconnectAddress.primaryAddress.hostname().c_str(),
 						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
-					deferPacketEvent_wMove(m_eventDeferrer, m_reconnectEvent, packet, ReconnectionStatus::SUCCEEDED, 0);
+
+					m_eventDeferrer.defer([&, p = std::move(packet)]() {m_reconnectEvent({ ReconnectionStatus::SUCCEEDED, true, 0, ClientErrorCode::No_Error }, p); });
 				}
 				else
 				{
 					LogDebug("MqttClient", "Client connected to broker: %s Port: %s",
 						m_connectionInfo.connectAddress.primaryAddress.hostname().c_str(),
 						m_connectionInfo.reconnectAddress.primaryAddress.port().c_str());
-					deferPacketEvent_wMove(m_eventDeferrer, m_connectEvent, packet, true, 0);
+
+					m_eventDeferrer.defer([&, p = std::move(packet)]() {m_connectEvent({ true, true, ClientErrorCode::No_Error }, p); });
 				}
 			}
 			else
@@ -427,7 +431,7 @@ namespace cleanMqtt
 			m_connectionInfo.sessionState.removeMessage(packetId);
 			m_packetIdPool.releaseId(packetId);
 
-			m_eventDeferrer.defer([&]() {m_pubAckEvent(packetId, packet); });
+			m_eventDeferrer.defer([&, id = packetId, p = std::move(packet)]() {m_pubAckEvent({ id }, p); });
 		}
 
 		void MqttClient::handleReceivedSubscribeAcknowledge(packets::SubscribeAck&& packet)
@@ -458,7 +462,7 @@ namespace cleanMqtt
 			results.setTopicReasons(packet.getPayloadHeader().reasonCodes);
 			m_packetIdPool.releaseId(packetId);
 
-			deferPacketEvent_wMove(m_eventDeferrer, m_subAckEvent, packet, packetId, std::move(results));
+			m_eventDeferrer.defer([&, id = packetId, res = std::move(results), p = std::move(packet)]() {m_subAckEvent({ id, std::move(res) }, p); });
 		}
 
 		void MqttClient::handleReceivedPingResponse(PingResp&& packet)
@@ -484,7 +488,7 @@ namespace cleanMqtt
 					DisconnectArgs args;
 					args.disconnectReasonText = "Client does not allow topic aliases but server has sent us a topic alias";
 
-					deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Recv_Topic_Alias_Disallowed, args.disconnectReasonText.c_str() }, {});
+					m_eventDeferrer.defer([&, reasonText = args.disconnectReasonText.c_str()]() {m_errorEvent({ ClientErrorCode::Recv_Topic_Alias_Disallowed, reasonText }, {}); });
 					handleInternalDisconnect(DisconnectReasonCode::PROTOCOL_ERROR, std::move(args));
 					return;
 				}
@@ -500,7 +504,7 @@ namespace cleanMqtt
 					DisconnectArgs args;
 					args.disconnectReasonText = "Publish packet TOPIC ALIAS value is invalid.";
 
-					deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Recv_Invalid_Topic_Alias, args.disconnectReasonText.c_str() }, {});
+					m_eventDeferrer.defer([&, reasonText = args.disconnectReasonText.c_str()]() {m_errorEvent({ ClientErrorCode::Recv_Invalid_Topic_Alias, reasonText }, {}); });
 					handleInternalDisconnect(DisconnectReasonCode::TOPIC_ALIAS_INVALID, std::move(args));
 					return;
 				}
@@ -525,7 +529,7 @@ namespace cleanMqtt
 				DisconnectArgs args;
 				args.disconnectReasonText = "Publish packet TOPIC ALIAS is invalid and TOPIC NAME is empty.";
 
-				deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Recv_Empty_Topic_Name_And_Invalid_Alias, args.disconnectReasonText.c_str() }, {});
+				m_eventDeferrer.defer([&, reasonText = args.disconnectReasonText.c_str()]() {m_errorEvent({ ClientErrorCode::Recv_Empty_Topic_Name_And_Invalid_Alias, reasonText }, {}); });
 				handleInternalDisconnect(DisconnectReasonCode::PROTOCOL_ERROR, std::move(args));
 				return;
 			}
@@ -533,12 +537,12 @@ namespace cleanMqtt
 			const auto qos{ packet.getVariableHeader().qos };
 			const auto id{ packet.getVariableHeader().packetIdentifier };
 
-			deferPacketEvent_wMove(m_eventDeferrer, m_publishEvent, packet, std::move(topicName), &packet.getPayloadHeader().payload);
+			m_eventDeferrer.defer([&, tName = std::move(topicName), pload = &packet.getPayloadHeader().payload, p = std::move(packet)]() {m_publishEvent({ std::move(tName), pload }, p); });
 
 			if (qos == Qos::QOS_1)
 			{
 				//After packet is sent to application layer (previous deferEvent), send PUBACK packet back to the server.
-				deferEvent(m_eventDeferrer, m_sendPubAckEvent, id);
+				m_eventDeferrer.defer([&]() {m_sendPubAckEvent(id); });
 			}
 		}
 
@@ -614,7 +618,7 @@ namespace cleanMqtt
 			{
 				m_connectionInfo.lastControlPacketTime = std::chrono::steady_clock::now();
 
-				LogInfo("MqttClient", "Packets Sent: %d\tPackets Expected to Send: %d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
+				LogInfo("MqttClient", "Packets Sent: %d/%d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
 			}
 
 			//Check for potential issues
@@ -634,7 +638,7 @@ namespace cleanMqtt
 					", Encode result: " + m_batchResultData.lastSendResult.encodeResult.reason;
 				args.clearQueue = true;
 
-				deferEvent(m_eventDeferrer, m_errorEvent, { ClientErrorCode::Failed_Sending_Packet, args.disconnectReasonText.c_str() }, m_batchResultData.lastSendResult);
+				m_eventDeferrer.defer([&, reasonText = args.disconnectReasonText.c_str(), res = m_batchResultData.lastSendResult]() {m_errorEvent({ ClientErrorCode::Failed_Sending_Packet, reasonText }, std::move(res)); });
 				handleInternalDisconnect(packets::DisconnectReasonCode::UNSPECIFIED_ERROR, args);
 			}
 		}
@@ -645,11 +649,7 @@ namespace cleanMqtt
 			const DecodeResult result{ m_receiveQueue.receiveNextBatch() };
 			if (!result.isSuccess())
 			{
-				DisconnectArgs args{ false, true };
-				args.disconnectReasonText = result.reason;
-
-				LogInfo("MqttClient", "Failed to decode received packet. Packet Type: %d, Reason: %s", static_cast<std::uint8_t>(result.packetType), result.reason.c_str());
-				handleInternalDisconnect(result.getDisconnectReason(), args);
+				handleDecodeError(result);
 			}
 		}
 
@@ -712,11 +712,11 @@ namespace cleanMqtt
 			{
 				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
-				deferPacketEvent_wMove(m_eventDeferrer, m_reconnectEvent, packet, ReconnectionStatus::FAILED, 0);
+				m_eventDeferrer.defer([&, p = std::move(packet)]() {m_reconnectEvent({ ReconnectionStatus::FAILED, false, 0, ClientErrorCode::No_Error }, p); });
 
 				if (m_connectionInfo.hasBeenConnected)
 				{
-					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
+					m_eventDeferrer.defer([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, false, ClientErrorCode::No_Error }); });
 				}
 			}
 		}
@@ -741,7 +741,7 @@ namespace cleanMqtt
 			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
-			deferPacketEvent_wMove(m_eventDeferrer, m_connectEvent, packet, false, 0);
+			m_eventDeferrer.defer([&, p = std::move(packet)]() {m_connectEvent({ false, true, ClientErrorCode::No_Error }, p); });
 		}
 
 		void MqttClient::handleTimeOutConnect()
@@ -755,7 +755,7 @@ namespace cleanMqtt
 			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
-			deferEvent(m_eventDeferrer, m_connectEvent, false, 0, {});
+			m_eventDeferrer.defer([&]() {m_connectEvent({ false, false, ClientErrorCode::TimeOut }, {}); });
 		}
 
 		void MqttClient::handleTimeOutReconnect()
@@ -773,13 +773,31 @@ namespace cleanMqtt
 			{
 				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
-				deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::FAILED, 0, {});
+				m_eventDeferrer.defer([&]() {m_reconnectEvent({ ReconnectionStatus::FAILED, false, 0, ClientErrorCode::No_Error }, {}); });
 
 				if (m_connectionInfo.hasBeenConnected)
 				{
-					deferEvent(m_eventDeferrer, m_disconnectEvent, DisconnectReasonCode::NORMAL_DISCONNECTION);
+					m_eventDeferrer.defer([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, false, ClientErrorCode::TimeOut }); });
 				}
 			}
+		}
+
+		void MqttClient::handleDecodeError(const DecodeResult& result) noexcept
+		{
+			DisconnectArgs args{ false, true };
+			args.disconnectReasonText = result.reason;
+
+			LogInfo("MqttClient", "Failed to decode received packet. Packet Type: %d, Reason: %s", static_cast<std::uint8_t>(result.packetType), result.reason.c_str());
+
+			if (m_connectionStatus == ConnectionStatus::CONNECTING)
+			{
+				const bool hasAck{ result.packetType == packets::PacketType::CONNECT_ACKNOWLEDGE };
+
+				m_eventDeferrer.defer([&, hA = hasAck, p = std::move(packets::ConnectAck{})]() {m_connectEvent({ false, hA, ClientErrorCode::Failed_Decoding_Packet }, p); });
+			}
+
+			m_eventDeferrer.defer([&]() {m_errorEvent({ ClientErrorCode::Failed_Decoding_Packet, args.disconnectReasonText.c_str() }, {}); });
+			handleInternalDisconnect(result.getDisconnectReason(), args);
 		}
 
 		void MqttClient::pubAck(PacketID packetId, packets::PubAckReasonCode code, PubAckOptions&& options) noexcept
@@ -854,7 +872,7 @@ namespace cleanMqtt
 
 		void MqttClient::reconnect()
 		{
-			deferEvent(m_eventDeferrer, m_reconnectEvent, ReconnectionStatus::RECONNECTING, 0, packets::ConnectAck{});
+			m_eventDeferrer.defer([&]() {m_reconnectEvent({ ReconnectionStatus::RECONNECTING, false, 0, ClientErrorCode::No_Error }, packets::ConnectAck{}); });
 
 			m_connectionStatus = ConnectionStatus::RECONNECTING;
 			m_receiveQueue.clear();
@@ -915,7 +933,7 @@ namespace cleanMqtt
 
 			clearState();
 
-			deferEvent(m_eventDeferrer, m_disconnectEvent, reason);
+			m_eventDeferrer.defer([&, reasonCode = reason]() {m_disconnectEvent({ reasonCode, false, false, ClientErrorCode::No_Error }); });
 		}
 
 		void MqttClient::handleExternalDisconnect(const packets::Disconnect& packet)
@@ -951,7 +969,7 @@ namespace cleanMqtt
 			m_sendQueue.clearQueue();
 			clearState();
 
-			deferEvent(m_eventDeferrer, m_disconnectEvent, packet.getVariableHeader().reasonCode);
+			m_eventDeferrer.defer([&, reasonCode = packet.getVariableHeader().reasonCode]() {m_disconnectEvent({ reasonCode, true, false, ClientErrorCode::No_Error }); });
 		}
 
 		void MqttClient::handleExternalDisconnect(int closeCode, std::string reason)
@@ -966,7 +984,7 @@ namespace cleanMqtt
 			m_sendQueue.clearQueue();
 			clearState();
 
-			deferEvent(m_eventDeferrer, m_disconnectEvent, packets::DisconnectReasonCode::UNSPECIFIED_ERROR);
+			m_eventDeferrer.defer([&]() {m_disconnectEvent({ packets::DisconnectReasonCode::UNSPECIFIED_ERROR, true, false, ClientErrorCode::Socket_Error }); });
 		}
 
 		void MqttClient::clearState() noexcept
@@ -982,8 +1000,8 @@ namespace cleanMqtt
 		int MqttClient::sendPacket(const packets::BasePacket& packet)
 		{
 			LogInfo("MqttClient",
-				"Sending packet. PacketType: %d, Size: %d",
-				static_cast<std::uint8_t>(packet.getPacketType()),
+				"Sending packet. PacketType: %s, Size: %d",
+				packetTypeToString(packet.getPacketType()),
 				packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value());
 
 			const ByteBuffer* bufferPtr{ packet.getDataBuffer() };
@@ -991,7 +1009,7 @@ namespace cleanMqtt
 			{
 				if (m_socket->send(*bufferPtr) == true)
 				{
-					LogTrace("MqttClient", "Packet sent:\n\tBytes: %s.", bufferPtr->toString().c_str());
+					LogTrace("MqttClient", "Packet sent, Bytes: %s.", bufferPtr->toString().c_str());
 					return 0;
 				}
 
@@ -1046,7 +1064,7 @@ namespace cleanMqtt
 				{
 					//TODO maybe try reconnect to other addresses if provided rather than straight disconnect?
 
-					deferPacketEvent_wMove(m_eventDeferrer, m_connectEvent, packets::ConnectAck{}, false, m_socket->getLastError());
+					m_eventDeferrer.defer([&, p = std::move(packets::ConnectAck{})]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
 				}
 			}
 		}

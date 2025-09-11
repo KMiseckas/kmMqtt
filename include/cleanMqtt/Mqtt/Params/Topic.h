@@ -20,8 +20,7 @@ namespace cleanMqtt
 
         struct PUBLIC_API TopicSubscriptionOptions
         {
-            TopicSubscriptionOptions() noexcept = default;
-            TopicSubscriptionOptions(Qos qos, bool noLocal, bool retainAsPublished, RetainHandling retainHandling) noexcept
+            TopicSubscriptionOptions(Qos qos = Qos::QOS_0, bool noLocal = false, bool retainAsPublished = false, RetainHandling retainHandling = RetainHandling::SendAtSubscribe) noexcept
                 : qos(qos), noLocal(noLocal), retainAsPublished(retainAsPublished), retainHandling(retainHandling) {}
 
             Qos qos{ Qos::QOS_0 };
@@ -33,7 +32,7 @@ namespace cleanMqtt
         struct PUBLIC_API Topic
         {
             Topic() noexcept = default;
-            Topic(std::string filter, TopicSubscriptionOptions opts) noexcept
+            Topic(std::string filter, TopicSubscriptionOptions opts = {}) noexcept
                 : topicFilter(std::move(filter)), options(std::move(opts)) {}
 
             std::string topicFilter;

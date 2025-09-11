@@ -32,6 +32,18 @@ namespace cleanMqtt
 				delete m_variableHeader;
 			}
 
+			ConnectAck& ConnectAck::operator=(ConnectAck&& other) noexcept
+			{
+				if (this != &other)
+				{
+					BasePacket::operator=(std::move(other));
+					delete m_variableHeader;
+					m_variableHeader = std::move(other.m_variableHeader);
+					other.m_variableHeader = nullptr;
+				}
+				return *this;
+			}
+
 			PacketType ConnectAck::getPacketType() const noexcept
 			{
 				return PacketType::CONNECT_ACKNOWLEDGE;

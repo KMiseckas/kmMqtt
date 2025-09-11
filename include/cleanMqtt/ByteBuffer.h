@@ -12,6 +12,7 @@ namespace cleanMqtt
 {
 	namespace
 	{
+		//TODO remove throws/exceptions
 #define BYTEBUFFER_HEADROOM_CHECK(spaceRequired) \
 		if (headroom() < spaceRequired)\
 		{\
@@ -92,27 +93,28 @@ namespace cleanMqtt
 		{
 			BYTEBUFFER_READ_CHECK(m_readCursor + 1)
 
-			std::uint16_t val = (m_bytes[m_readCursor] << 8) | m_bytes[m_readCursor + 1];
-			m_readCursor += 2;
-			return val;
+            std::uint16_t val = (static_cast<std::uint16_t>(m_bytes[m_readCursor]) << 8) | static_cast<std::uint16_t>(m_bytes[m_readCursor + 1]);
+            m_readCursor += 2;
+            return val;
 		}
 
 		const std::uint32_t readUInt32() const
 		{
 			BYTEBUFFER_READ_CHECK(m_readCursor + 3)
 
-			return (m_bytes[m_readCursor++] << 24) |
-			(m_bytes[m_readCursor++] << 16) |
-			(m_bytes[m_readCursor++] << 8) |
-			m_bytes[m_readCursor++];
+			std::uint32_t b0{m_bytes[m_readCursor++]};
+			std::uint32_t b1{m_bytes[m_readCursor++]};
+			std::uint32_t b2{m_bytes[m_readCursor++]};
+			std::uint32_t b3{m_bytes[m_readCursor++]};
+			return (b0 << 24) | (b1 << 16) | (b2 << 8) | b3;
 		}
 
-		void incrementReadCursor(std::size_t shiftVal) const
+		void incrementReadCursor(std::size_t shiftVal) const noexcept
 		{
 			m_readCursor += shiftVal;
 		}
 
-		void resetReadCursor() const
+		void resetReadCursor() const noexcept
 		{
 			m_readCursor = 0U;
 		}
@@ -196,7 +198,7 @@ namespace cleanMqtt
 			return m_size - m_readCursor;
 		}
 
-		std::string toString() const
+		std::string toString() const noexcept
 		{
 			std::string result{ "" };
 

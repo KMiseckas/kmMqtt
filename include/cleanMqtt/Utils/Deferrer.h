@@ -11,11 +11,14 @@
 namespace cleanMqtt
 {
 
-#define deferEvent(deferrer, event, ...)\
-	deferrer.defer([&](){event(__VA_ARGS__);})\
+#define deferEvent(deferrer, lambda)\
+	deferrer.defer(lambda)\
 
 #define deferPacketEvent_wMove(deferrer, event, packet, ...)\
 	deferrer.defer([&, p = std::move(packet)](){event(__VA_ARGS__, p);})\
+
+#define deferEvent_wCaptures(deferrer, event, captures, ...)\
+	deferrer.defer([captures](){event(__VA_ARGS__);})\
 
 	namespace events
 	{

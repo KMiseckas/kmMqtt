@@ -178,7 +178,7 @@ namespace cleanMqtt
 					}
 				}
 
-				DecodeResult decode(const ByteBuffer& buffer)
+				DecodeResult decode(const ByteBuffer& buffer) noexcept
 				{
 					//Decode properties combined length
 					bool isSuccess;
@@ -208,12 +208,23 @@ namespace cleanMqtt
 					//Decode properties one by one
 					while (buffer.readCursor() < endBufferCursor)
 					{
-						//Property ID - 1 byte
-						PropertyType type{ static_cast<PropertyType>(buffer.readUint8()) };
+						PropertyType type{};
+						void* data{ nullptr };
 
-						//Property Data - Bytes based on property type
-						void* data{ propertyDecodings::decode(buffer, type) };
-						assert(data != nullptr);
+						try
+						{
+							//Property ID - 1 byte
+							type = static_cast<PropertyType>(buffer.readUint8());
+
+							//Property Data - Bytes based on property type
+							data = propertyDecodings::decode(buffer, type);
+							assert(data != nullptr);
+						}
+						catch(const std::exception& e)
+						{
+							LogError("Properties", "Failed to decode property from buffer. Exception: %s", e.what());
+							return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET, "Failed to decode property from buffer: " + std::string(e.what()) };
+						}
 
 						if (!tryAddProperty(type, data))
 						{

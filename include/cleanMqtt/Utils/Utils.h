@@ -47,7 +47,7 @@ namespace cleanMqtt
 			// If there are not enough bytes left to read a full packet header, break out of the loop.
 			if (buffer.size() - buffer.readCursor() < 2)
 			{
-				return false;
+				return !packets.empty();;
 			}
 
 			buffer.resetReadCursor();

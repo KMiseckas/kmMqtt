@@ -102,7 +102,11 @@ if (callback != nullptr)\
 					break;
 				case packets::PacketType::SUBSCRIBE_ACKNOWLEDGE:
 				{
-					HANDLE_RECEIVED_PACKET(SubscribeAck, m_subAckCallback);
+					packets::SubscribeAck packet{ std::move(m_inProgressData.front()) }; decodeResult = packet.decode(); if (!decodeResult.isSuccess()) {
+						LogInfo("ReceiveQueue", "Failed to decode packet."); return decodeResult;
+					}if (m_subAckCallback != nullptr) {
+						m_subAckCallback(std::move(packet));
+					};
 					break;
 				}
 				case packets::PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
@@ -129,7 +133,10 @@ if (callback != nullptr)\
 				}
 				}
 
-				m_inProgressData.pop();
+				if (!m_inProgressData.empty())
+				{
+					m_inProgressData.pop();
+				}
 
 				LogInfo("ReceiveQueue", "Succesfully decoded packet.");
 			}

@@ -340,10 +340,11 @@ namespace cleanMqtt
 				}
 
 				UTF8String(std::uint16_t size, const char* val)
-					: m_size(size), m_bytes(new std::uint8_t[size])
+					: m_size(size)
 				{
 					if (m_size > 0)
 					{
+						m_bytes = new std::uint8_t[size];
 						std::memcpy(m_bytes, val, m_size);
 					}
 				}
@@ -361,19 +362,20 @@ namespace cleanMqtt
 					}
 
 					m_size = static_cast<std::uint16_t>(val.size());
-					m_bytes = new std::uint8_t[val.size()];
 
 					if (m_size > 0)
 					{
+						m_bytes = new std::uint8_t[val.size()];
 						std::memcpy(m_bytes, val.c_str(), m_size);
 					}
 				}
 
 				UTF8String(const UTF8String& other)
-					:m_size(other.m_size), m_bytes(new std::uint8_t[other.m_size])
+					:m_size(other.m_size)
 				{
 					if (m_size > 0)
 					{
+						m_bytes = new std::uint8_t[other.m_size];
 						std::memcpy(m_bytes, other.m_bytes, m_size);
 					}
 				}

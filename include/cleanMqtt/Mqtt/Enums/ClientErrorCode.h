@@ -19,6 +19,8 @@ namespace cleanMqtt
 			MQTT_Not_Active = 6U,
 			Failed_Sending_Packet = 7U,
 			Failed_Writing_To_Persistent_Storage = 8U,
+			Failed_Decoding_Packet = 9U,
+			TimeOut = 8U,
 
 			//Connect Errors
 			ConnectError = 1000U,

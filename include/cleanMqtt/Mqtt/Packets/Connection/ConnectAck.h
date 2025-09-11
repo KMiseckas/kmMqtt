@@ -23,6 +23,8 @@ namespace cleanMqtt
 				ConnectAck(ConnectAck&& other) noexcept;
 				~ConnectAck() override;
 
+				ConnectAck& operator=(ConnectAck&& other) noexcept;
+
 				PacketType getPacketType() const noexcept override;
 
 				const ConnectAckVariableHeader& getVariableHeader() const noexcept;

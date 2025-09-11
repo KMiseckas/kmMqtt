@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cleanMqtt/Mqtt/MqttClientEvents.h>
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 #include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Utils/Event.h>
 #include <cleanMqtt/Mqtt/ClientError.h>
 #include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
 #include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
@@ -27,6 +27,7 @@
 #include "cleanMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h"
 #include "cleanMqtt/Mqtt/State/SubAckTopicReason.h"
 
+
 #include <cstring>
 #include <memory>
 #include <queue>
@@ -39,15 +40,6 @@ namespace cleanMqtt
 	{
 		//Internal Events
 		using SendPubAckEvent = events::Event<PacketID>;
-
-		//Public events
-		using ErrorEvent = events::Event<ClientError, interfaces::SendResultData>;
-		using ConnectEvent = events::Event<bool, int, const packets::ConnectAck&>;
-		using ReconnectEvent = events::Event<ReconnectionStatus, int, const packets::ConnectAck&>;
-		using DisconnectEvent = events::Event<const packets::DisconnectReasonCode>;
-		using PublishEvent = events::Event<std::string, const packets::BinaryData*, const packets::Publish&>;
-		using PublishAckEvent = events::Event<PacketID, const packets::PublishAck&>;
-		using SubscribeAckEvent = events::Event<PacketID, const SubAckResults&, const packets::SubscribeAck&>;
 
 		class PUBLIC_API MqttClient
 		{
@@ -63,7 +55,7 @@ namespace cleanMqtt
 			ClientError publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
 			ClientError subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
 			ClientError unSubscribe(const char* topic) noexcept;
-			ClientError disconnect(DisconnectArgs&& args) noexcept;
+			ClientError disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
 			void tick(float deltaTime) noexcept;
@@ -118,6 +110,7 @@ namespace cleanMqtt
 			void handleFailedConnect(packets::ConnectAck&& packet);
 			void handleTimeOutConnect();
 			void handleTimeOutReconnect();
+			void handleDecodeError(const DecodeResult& result) noexcept;
 
 			int sendPacket(const packets::BasePacket& packet);
 

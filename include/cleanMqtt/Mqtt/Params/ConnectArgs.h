@@ -125,7 +125,7 @@ namespace cleanMqtt
 			std::string responseTopic;
 			std::unique_ptr<packets::BinaryData> correlationData{ nullptr };
 			std::string willTopic;
-			PayloadFormatIndicator payloadFormat;
+			PayloadFormatIndicator payloadFormat{ PayloadFormatIndicator::BINARY };
 			std::unique_ptr<packets::BinaryData> payload{ nullptr };
 			std::map<std::string, std::string> userProperties;
 		};

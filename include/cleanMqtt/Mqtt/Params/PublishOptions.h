@@ -20,8 +20,7 @@ namespace cleanMqtt
 			}
 
 			PublishOptions(const PublishOptions& other)
-				: correlationData{ std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes()) },
-				responseTopic{ other.responseTopic },
+				: responseTopic{ other.responseTopic },
 				topicAlias{ other.topicAlias },
 				messageExpiryInterval{ other.messageExpiryInterval },
 				addMessageExpiryInterval{ other.addMessageExpiryInterval },
@@ -30,7 +29,10 @@ namespace cleanMqtt
 				qos{ other.qos },
 				userProperties{ other.userProperties }
 			{
-				
+				if (other.correlationData != nullptr)
+				{
+					correlationData = std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+				}
 			}
 
 			PublishOptions& operator=(const PublishOptions& other)
@@ -40,7 +42,11 @@ namespace cleanMqtt
 					return* this;
 				}
 
-				correlationData = std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+				if (other.correlationData != nullptr)
+				{
+					correlationData = std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+				}
+
 				responseTopic = responseTopic;
 				topicAlias = other.topicAlias;
 				messageExpiryInterval = other.messageExpiryInterval;

@@ -50,7 +50,11 @@ namespace cleanMqtt
 				willProperties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, conArgs.will->messageExpiryInterval, conArgs.will->messageExpiryInterval > 0);
 				willProperties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String{ conArgs.will->contentType }, !conArgs.will->contentType.empty());
 				willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, UTF8String{ conArgs.will->responseTopic }, !conArgs.will->responseTopic.empty());
-				willProperties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() }, conArgs.will->correlationData != nullptr);
+
+				if (conArgs.will->correlationData != nullptr)
+				{
+					willProperties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() });
+				}
 
 				for (const auto& property : conArgs.will->userProperties)
 				{
@@ -112,7 +116,11 @@ namespace cleanMqtt
 			properties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, options.messageExpiryInterval, options.addMessageExpiryInterval);
 			properties.tryAddProperty(PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
 			properties.tryAddProperty(PropertyType::RESPONSE_TOPIC, options.responseTopic, !options.responseTopic.empty());
-			properties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, options.correlationData != nullptr && !options.responseTopic.empty());
+
+			if (options.correlationData != nullptr)
+			{
+				properties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, !options.responseTopic.empty());
+			}
 
 			for (const auto& property : options.userProperties)
 			{
