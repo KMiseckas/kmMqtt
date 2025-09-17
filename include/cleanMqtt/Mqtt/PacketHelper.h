@@ -13,8 +13,11 @@
 #include <cleanMqtt/Mqtt/Packets/Publish/Publish.h>
 #include <cleanMqtt/Mqtt/Packets/Publish/PublishAck.h>
 #include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
-#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
 #include <cleanMqtt/Mqtt/Packets/Subscribe/Subscribe.h>
+#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribe.h>
+#include <cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribeAck.h>
+#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
 #include <cleanMqtt/Mqtt/Params/Topic.h>
 
 namespace cleanMqtt
@@ -30,6 +33,7 @@ namespace cleanMqtt
 		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, PacketID packetId = 0) noexcept;
 		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept;
 		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept;
+		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept;
 	}
 }
 

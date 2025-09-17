@@ -10,6 +10,7 @@
 #include "cleanMqtt/Mqtt/Packets/Ping/PingResp.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/PublishAck.h"
 #include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
+#include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribeAck.h"
 
 #include <queue>
 #include <mutex>
@@ -29,7 +30,7 @@ namespace cleanMqtt
 		//using PubRecvCallback = void (MqttClient::*)(const packets::ConnectAck&);
 		//using PubRelCallback = void (MqttClient::*)(const packets::ConnectAck&);
 		using SubAckCallback = std::function<void(packets::SubscribeAck&&)>;
-		//using UnSubAckCallback = void (MqttClient::*)(const packets::ConnectAck&);
+		using UnSubAckCallback = std::function<void(packets::UnSubscribeAck&&)>;
 		using PingRespCallback = std::function<void(packets::PingResp&&)>;
 
 		class ReceiveQueue
@@ -53,7 +54,7 @@ namespace cleanMqtt
 			//void setPublishReceivedCallback() noexcept;
 			//void setPublishReleasedCallback() noexcept;
 			void setSubscribeAcknowledgeCallback(SubAckCallback& callback) noexcept;
-			//void setUnsubscribeAcknowledgeCallback() noexcept;
+			void setUnSubscribeAcknowledgeCallback(UnSubAckCallback& callback) noexcept;
 			void setPingResponseCallback(PingRespCallback& callback) noexcept;
 			//TODO: Add more callbacks as needed
 
@@ -70,6 +71,7 @@ namespace cleanMqtt
 			PubAckCallback m_pubAckCallback;
 			PingRespCallback m_pingRespCallback;
 			SubAckCallback m_subAckCallback;
+			UnSubAckCallback m_unSubAckCallback;
 
 			std::mutex m_mutex;
 		};

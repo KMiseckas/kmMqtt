@@ -1,15 +1,17 @@
 #include <cleanMqtt/Mqtt/MqttClient.h>
 
-#include <iostream>
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
-#include <functional>
+#include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendConnectJob.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPublishJob.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPingJob.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendPubAckJob.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendSubscribeJob.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SendUnSubscribeJob.h>
 #include <cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h>
+
+#include <iostream>
+#include <functional>
 
 namespace cleanMqtt
 {
@@ -192,7 +194,7 @@ namespace cleanMqtt
 			return ClientErrorCode::No_Error;
 		}
 
-		ClientError MqttClient::unSubscribe(const char* topic) noexcept
+		ClientError MqttClient::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
 		{
 			LockGuard guard{ m_mutex };
 
@@ -202,7 +204,23 @@ namespace cleanMqtt
 				return { ClientErrorCode::Not_Connected, "Client not connected, cannot unSubscribe()!" };
 			}
 
-			LogTrace("MqttClient", "Started un-subscribe: Unsubscribing from %s", topic);
+			if (topics.empty())
+			{
+				LogError("MqttClient", "Cannot unsubscribe with an empty list of topics!");
+				return { ClientErrorCode::Invalid_Argument, "Cannot unsubscribe with an empty list of topics!" };
+			}
+
+			auto id{ m_packetIdPool.getId() };
+			m_connectionInfo.pendingUnSubscriptions.push_back(PendingUnSubscription{ id, topics });
+
+			m_sendQueue.addToQueue(std::make_unique<SendUnSubscribeJob>(&m_connectionInfo,
+				[this](const packets::BasePacket& packet) {return sendPacket(packet); },
+				&m_packetIdPool,
+				id,
+				topics,
+				std::move(options)));
+
+			LogTrace("MqttClient", "Started unSubscribe: Unsubscribing from %s", allTopicsToStr(topics).c_str());
 
 			return ClientErrorCode::No_Error;
 		}
@@ -463,6 +481,37 @@ namespace cleanMqtt
 			m_packetIdPool.releaseId(packetId);
 
 			m_eventDeferrer.defer([&, id = packetId, res = std::move(results), p = std::move(packet)]() {m_subAckEvent({ id, std::move(res) }, p); });
+		}
+
+		void MqttClient::handleReceivedUnSubscribeAcknowledge(packets::UnSubscribeAck&& packet)
+		{
+			const auto packetId{ packet.getVariableHeader().packetId };
+			UnSubAckResults results;
+
+			bool foundPacketId{ false };
+
+			for (auto iter = m_connectionInfo.pendingUnSubscriptions.begin(); iter != m_connectionInfo.pendingUnSubscriptions.end(); ++iter)
+			{
+				if (iter->packetId == packetId)
+				{
+					foundPacketId = true;
+					results = std::move(iter->unSubscriptionResults);
+					m_connectionInfo.pendingUnSubscriptions.erase(iter);
+					break;
+				}
+			}
+
+			if (!foundPacketId)
+			{
+				m_packetIdPool.releaseId(packetId);
+				LogWarning("MqttClient", "Received UNSUBACK packet with Packet ID %d, but no pending un-subscription found for it.", packetId);
+				return;
+			}
+
+			results.setTopicReasons(packet.getPayloadHeader().reasonCodes);
+			m_packetIdPool.releaseId(packetId);
+
+			m_eventDeferrer.defer([&, id = packetId, res = std::move(results), p = std::move(packet)]() {m_unSubAckEvent({ id, std::move(res) }, p); });
 		}
 
 		void MqttClient::handleReceivedPingResponse(PingResp&& packet)
@@ -1036,6 +1085,7 @@ namespace cleanMqtt
 				PingRespCallback pingRespCallback{ std::bind(&MqttClient::handleReceivedPingResponse, this, std::placeholders::_1) };
 				PubAckCallback pubAckCallback{ std::bind(&MqttClient::handleReceivedPublishAck, this, std::placeholders::_1) };
 				SubAckCallback subAckCallback{ std::bind(&MqttClient::handleReceivedSubscribeAcknowledge, this, std::placeholders::_1) };
+				UnSubAckCallback unSubAckCallback{ std::bind(&MqttClient::handleReceivedUnSubscribeAcknowledge, this, std::placeholders::_1) };
 				//TODO puback receive
 				//TODO suback receive
 
@@ -1045,6 +1095,7 @@ namespace cleanMqtt
 				m_receiveQueue.setPingResponseCallback(pingRespCallback);
 				m_receiveQueue.setPublishAcknowledgeCallback(pubAckCallback);
 				m_receiveQueue.setSubscribeAcknowledgeCallback(subAckCallback);
+				m_receiveQueue.setUnSubscribeAcknowledgeCallback(unSubAckCallback);
 
 				m_sendQueue.addToQueue(std::make_unique<SendConnectJob>(&m_connectionInfo,
 					[this](const packets::BasePacket& packet) {return sendPacket(packet); }));

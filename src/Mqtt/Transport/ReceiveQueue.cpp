@@ -102,28 +102,17 @@ if (callback != nullptr)\
 					break;
 				case packets::PacketType::SUBSCRIBE_ACKNOWLEDGE:
 				{
-					packets::SubscribeAck packet{ std::move(m_inProgressData.front()) }; decodeResult = packet.decode(); if (!decodeResult.isSuccess()) {
-						LogInfo("ReceiveQueue", "Failed to decode packet."); return decodeResult;
-					}if (m_subAckCallback != nullptr) {
-						m_subAckCallback(std::move(packet));
-					};
+					HANDLE_RECEIVED_PACKET(SubscribeAck, m_subAckCallback);
 					break;
 				}
 				case packets::PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(UnSubscribeAck, m_unSubAckCallback);
 					break;
+				}
 				case packets::PacketType::PING_RESPONSE:
 				{
-					packets::PingResp packet{ std::move(m_inProgressData.front()) };
-					decodeResult = packet.decode(); 
-					if (!decodeResult.isSuccess()) 
-					{
-						LogInfo("ReceiveQueue", "Failed to decode packet."); return decodeResult;
-					}
-					if (m_pingRespCallback != nullptr) 
-					{
-						m_pingRespCallback(std::move(packet));
-					};
+					HANDLE_RECEIVED_PACKET(PingResp, m_pingRespCallback);
 					break;
 				}
 				case packets::PacketType::DISCONNECT:
@@ -158,6 +147,7 @@ if (callback != nullptr)\
 			m_pingRespCallback = nullptr;
 			m_pubAckCallback = nullptr;
 			m_subAckCallback = nullptr;
+			m_unSubAckCallback = nullptr;
 		}
 
 		void ReceiveQueue::setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept
@@ -188,6 +178,11 @@ if (callback != nullptr)\
 		void ReceiveQueue::setSubscribeAcknowledgeCallback(SubAckCallback& callback) noexcept
 		{
 			m_subAckCallback = callback;
+		}
+
+		void ReceiveQueue::setUnSubscribeAcknowledgeCallback(UnSubAckCallback& callback) noexcept
+		{
+			m_unSubAckCallback = callback;
 		}
 	}
 }

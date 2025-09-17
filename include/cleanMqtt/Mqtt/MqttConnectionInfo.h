@@ -8,6 +8,7 @@
 #include "cleanMqtt/Mqtt/Params/ConnectAddress.h"
 #include "cleanMqtt/Mqtt/State/SessionState/SessionState.h"
 #include "cleanMqtt/Mqtt/State/PendingSubscription.h"
+#include "cleanMqtt/Mqtt/State/PendingUnSubscription.h"
 #include <cleanMqtt/Mqtt/TopicAliases.h>
 
 #include <string>
@@ -37,6 +38,7 @@ namespace cleanMqtt
 			bool isRetainAvailable{ true };
 			SessionState sessionState{ "", 0 };
 			std::vector<PendingSubscription> pendingSubscriptions;
+			std::vector<PendingUnSubscription> pendingUnSubscriptions;
 			TopicAliases topicAliases;
 
 			void clear(bool clearSessionState = false)

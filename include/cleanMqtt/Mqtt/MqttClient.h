@@ -25,6 +25,8 @@
 #include "cleanMqtt/Mqtt/Params/Topic.h"
 #include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
 #include "cleanMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h"
+#include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribeAck.h"
+#include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribe.h"
 #include "cleanMqtt/Mqtt/State/SubAckTopicReason.h"
 
 
@@ -54,7 +56,7 @@ namespace cleanMqtt
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
 			ClientError publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
 			ClientError subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
-			ClientError unSubscribe(const char* topic) noexcept;
+			ClientError unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
 			ClientError disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
@@ -95,7 +97,7 @@ namespace cleanMqtt
 			//void handleReceivedPublishReceived();
 			//void handleReceivedPublishReleased();
 			void handleReceivedSubscribeAcknowledge(packets::SubscribeAck&& packet);
-			//void handleReceivedUnsubscribeAcknowledge();
+			void handleReceivedUnSubscribeAcknowledge(packets::UnSubscribeAck&& packet);
 			void handleReceivedPingResponse(packets::PingResp&& packet);
 
 			void firePublishReceivedEvent(packets::Publish&& packet) noexcept;
@@ -127,6 +129,7 @@ namespace cleanMqtt
 			PublishEvent m_publishEvent;
 			PublishAckEvent m_pubAckEvent;
 			SubscribeAckEvent m_subAckEvent;
+			UnSubscribeAckEvent m_unSubAckEvent;
 
 			SendPubAckEvent m_sendPubAckEvent;
 

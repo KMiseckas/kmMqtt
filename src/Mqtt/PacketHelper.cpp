@@ -183,5 +183,27 @@ namespace cleanMqtt
 
 			return packets::Subscribe{ std::move(varHeader), std::move(payloadHeader)};
 		}
+
+		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept
+		{
+			packets::Properties properties;
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+			}
+
+			std::vector<UTF8String> topicsFilter;
+			topicsFilter.reserve(topics.size());
+
+			for (const auto& t : topics)
+			{
+				topicsFilter.emplace_back(t.topicFilter);
+			}
+
+			UnSubscribeVariableHeader varHeader{ packetId, std::move(properties) };
+			UnSubscribePayloadHeader payloadHeader{ std::move(topicsFilter) };
+
+			return packets::UnSubscribe{ std::move(varHeader), std::move(payloadHeader) };
+		}
 	}
 }

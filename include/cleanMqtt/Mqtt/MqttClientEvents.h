@@ -5,6 +5,7 @@
 #include <cleanMqtt/Mqtt/ClientError.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Mqtt/Enums/ReconnectionStatus.h>
+#include "cleanMqtt/Mqtt/State/UnSubAckTopicReason.h"
 #include <cstdint>
 #include <cstring>
 
@@ -72,6 +73,12 @@ namespace cleanMqtt
 			SubAckResults results{};
 		};
 
+		struct UnSubscribeAckEventDetails
+		{
+			std::uint16_t packetId{ 0 };
+			UnSubAckResults results{};
+		};
+
 		//Public events
 		using ErrorEvent = events::Event<ClientError, interfaces::SendResultData>;
 		using ConnectEvent = events::Event<const ConnectEventDetails&, const packets::ConnectAck&>;
@@ -80,6 +87,7 @@ namespace cleanMqtt
 		using PublishEvent = events::Event<const PublishEventDetails&, const packets::Publish&>;
 		using PublishAckEvent = events::Event<const PublishAckEventDetails&, const packets::PublishAck&>;
 		using SubscribeAckEvent = events::Event<const SubscribeAckEventDetails&, const packets::SubscribeAck&>;
+		using UnSubscribeAckEvent = events::Event<const UnSubscribeAckEventDetails&, const packets::UnSubscribeAck&>;
 	}
 }
 
