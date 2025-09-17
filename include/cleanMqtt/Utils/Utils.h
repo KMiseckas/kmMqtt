@@ -11,6 +11,14 @@
 
 namespace cleanMqtt
 {
+	/**
+	 * Splits a string by a given delimiter using regex.
+	 * 
+	 * @param target The string to be split.
+	 * @param delimiter The delimiter used for splitting the string.
+	 * 
+	 * @return A vector containing the split parts of the string.
+	 */
 	inline std::vector<std::string> splitByDelimiter(const std::string& target, const char* delimiter)
 	{
 		std::vector<std::string> tokens;

@@ -55,7 +55,7 @@ namespace cleanMqtt
     #if defined(PUBLIC_API_EXPORT)
         #define PUBLIC_API __declspec(dllexport)
     #elif defined(PUBLIC_API_IMPORT)
-        #define PUBLIC_API c(dllimport)
+        #define PUBLIC_API __declspec(dllimport)
     #else
         #define PUBLIC_API
     #endif
