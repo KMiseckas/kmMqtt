@@ -13,7 +13,6 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")
 
 file(GLOB_RECURSE source_files "src/*.cpp")
-file(GLOB_RECURSE  "include/cleanMqtt/*.h")
 
 add_library (${PROJECT_NAME} ${source_files})
 target_include_directories( ${PROJECT_NAME} PUBLIC include)
