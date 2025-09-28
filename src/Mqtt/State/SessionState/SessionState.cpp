@@ -16,7 +16,7 @@ namespace cleanMqtt
 		{
 		}
 
-		ClientErrorCode SessionState::addMessage(const PacketID packetId, PublishMessageData publishMsgData) noexcept
+		ClientErrorCode SessionState::addMessage(const std::uint16_t packetId, PublishMessageData publishMsgData) noexcept
 		{
 			TimePoint nextRetryTime{ std::chrono::steady_clock::now() + m_retryInterval };
 			MessageContainerData data{ packetId, std::move(publishMsgData), std::move(nextRetryTime), m_retryInterval.count() > 0};
@@ -37,7 +37,7 @@ namespace cleanMqtt
 			return ClientErrorCode::No_Error;
 		}
 
-		void SessionState::updateMessage(const PacketID packetId, PublishMessageStatus newStatus) noexcept
+		void SessionState::updateMessage(const std::uint16_t packetId, PublishMessageStatus newStatus) noexcept
 		{
 			auto iter{ *(m_messages.get(packetId)) };
 			if (iter == m_messages.end())
@@ -64,7 +64,7 @@ namespace cleanMqtt
 			m_persistantStore->updateMessage(m_clientId, packetId, newStatus, bringToFront);
 		}
 		
-		void SessionState::removeMessage(const PacketID packetId) noexcept
+		void SessionState::removeMessage(const std::uint16_t packetId) noexcept
 		{
 			m_messages.erase(packetId);
 

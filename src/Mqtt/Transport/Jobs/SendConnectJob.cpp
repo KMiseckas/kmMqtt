@@ -5,17 +5,17 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		interfaces::SendResultData SendConnectJob::send() noexcept
+		SendResultData SendConnectJob::send() noexcept
 		{
 			packets::Connect packet{ createConnectPacket(*m_mqttConnectionInfo) };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())
 			{
-				return interfaces::SendResultData{
+				return SendResultData{
 				0,
 				false,
-				interfaces::NoSendReason::ENCODE_ERROR,
+				NoSendReason::ENCODE_ERROR,
 				std::move(result),
 				0 };
 			}
@@ -25,10 +25,10 @@ namespace cleanMqtt
 
 			int sendResult{ m_packetSendCallback(packet) };
 
-			return interfaces::SendResultData{
+			return SendResultData{
 				packetSize,
 				sendResult == 0,
-				sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
+				sendResult == 0 ? NoSendReason::NONE : NoSendReason::SOCKET_SEND_ERROR,
 				std::move(result),
 				sendResult };
 		}

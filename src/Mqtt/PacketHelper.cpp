@@ -104,7 +104,7 @@ namespace cleanMqtt
 			return packets::PingResp{};
 		}
 
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, PacketID packetId) noexcept
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, std::uint16_t packetId) noexcept
 		{
 			(void)connectionInfo;
 

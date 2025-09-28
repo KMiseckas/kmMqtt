@@ -7,15 +7,15 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		class SendConnectJob : public interfaces::ISendJob
+		class SendConnectJob : public ISendJob
 		{
 		public:
 			SendConnectJob(mqtt::MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback) noexcept
-				: interfaces::ISendJob(connectionInfo, sendPacketCallback)
+				: ISendJob(connectionInfo, sendPacketCallback)
 			{};
 
-			interfaces::SendResultData send() noexcept override;
+			SendResultData send() noexcept override;
 			void cancel() noexcept override;
 		};
 	}

@@ -5,17 +5,17 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		interfaces::SendResultData SendPingJob::send() noexcept
+		SendResultData SendPingJob::send() noexcept
 		{
 			packets::PingReq packet{ createPingRequestPacket() };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())
 			{
-				return interfaces::SendResultData{
+				return SendResultData{
 				0,
 				false,
-				interfaces::NoSendReason::ENCODE_ERROR,
+				NoSendReason::ENCODE_ERROR,
 				std::move(result),
 				0 };
 			}
@@ -30,10 +30,10 @@ namespace cleanMqtt
 				m_mqttConnectionInfo->awaitingPingResponse = true;
 			}
 
-			return interfaces::SendResultData{
+			return SendResultData{
 				packetSize,
 				sendResult == 0,
-				sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
+				sendResult == 0 ? NoSendReason::NONE : NoSendReason::SOCKET_SEND_ERROR,
 				std::move(result),
 				sendResult };
 		}

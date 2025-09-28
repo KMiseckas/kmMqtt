@@ -1,6 +1,8 @@
 #ifndef INCLUDE_CLEANMQTT_CONFIG_H
 #define INCLUDE_CLEANMQTT_CONFIG_H
 
+#include <cstdint>
+
 namespace cleanMqtt
 {
 	struct Config

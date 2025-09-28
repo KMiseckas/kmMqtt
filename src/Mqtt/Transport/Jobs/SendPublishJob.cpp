@@ -8,11 +8,11 @@ namespace cleanMqtt
 		SendPublishJob::SendPublishJob(MqttConnectionInfo* connectionInfo,
 			PacketSendDelegate sendPacketCallback,
 			PacketIdPool* packetIdPool,
-			const PacketID packetId,
+			const std::uint16_t packetId,
 			const char* topic,
 			ByteBuffer&& payload,
 			PublishOptions&& pubOptions) noexcept :
-			interfaces::ISendJob(connectionInfo, sendPacketCallback),
+			ISendJob(connectionInfo, sendPacketCallback),
 			m_packetIdPool{ packetIdPool },
 			m_packetId{ packetId },
 			m_topic{ topic },
@@ -21,17 +21,17 @@ namespace cleanMqtt
 		{
 		}
 
-		interfaces::SendResultData SendPublishJob::send() noexcept
+		SendResultData SendPublishJob::send() noexcept
 		{
 			packets::Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic, m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())
 			{
-				return interfaces::SendResultData{
+				return SendResultData{
 				0,
 				false,
-				interfaces::NoSendReason::ENCODE_ERROR,
+				NoSendReason::ENCODE_ERROR,
 				std::move(result),
 				0 };
 			}
@@ -41,10 +41,10 @@ namespace cleanMqtt
 
 			int sendResult{ m_packetSendCallback(packet) }; //Send the packet
 
-			return interfaces::SendResultData{
+			return SendResultData{
 				packetSize,
 				sendResult == 0,
-				sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
+				sendResult == 0 ? NoSendReason::NONE : NoSendReason::SOCKET_SEND_ERROR,
 				std::move(result),
 				sendResult };
 		}

@@ -9,23 +9,23 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		class SendPublishJob : public interfaces::ISendJob
+		class SendPublishJob : public ISendJob
 		{
 		public:
 			SendPublishJob(MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback,
 				PacketIdPool* packetIdPool,
-				const PacketID packetId,
+				const std::uint16_t packetId,
 				const char* topic,
 				ByteBuffer&& payload,
 				PublishOptions&& pubOptions) noexcept;
 
-			interfaces::SendResultData send() noexcept override;
+			SendResultData send() noexcept override;
 			void cancel() noexcept override;
 
 		private:
 			PacketIdPool* m_packetIdPool{ nullptr };
-			PacketID m_packetId{ 0 };
+			std::uint16_t m_packetId{ 0 };
 			const char* m_topic{ nullptr };
 			ByteBuffer m_payload;
 			PublishOptions m_publishOptions;

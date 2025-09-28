@@ -2,7 +2,6 @@
 #define INCLUDE_CLEANMQTT_MQTT_SESSIONSTATE_H
 
 #include <cleanMqtt/GlobalTypes.h>
-#include "cleanMqtt/Utils/PacketIdPool.h"
 #include "cleanMqtt/ByteBuffer.h"
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
 #include "cleanMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h"
@@ -35,7 +34,7 @@ namespace cleanMqtt
             * @param packetId The packet identifier.
             * @param publishMsgData Data for publish packet.
             */
-            ClientErrorCode addMessage(const PacketID packetId, PublishMessageData publishMsgData) noexcept;
+            ClientErrorCode addMessage(const std::uint16_t packetId, PublishMessageData publishMsgData) noexcept;
 
             /**
 			 * @brief Updates the status of a message in the session state and any other relevant data.
@@ -43,14 +42,14 @@ namespace cleanMqtt
 			 * @param packetId The packet identifier of the message to update.
 			 * @param newStatus The new status to set for the message.
              */
-			void updateMessage(const PacketID packetId, PublishMessageStatus newStatus) noexcept;
+			void updateMessage(const std::uint16_t packetId, PublishMessageStatus newStatus) noexcept;
 
             /**
             * @brief Removes a message from the session state by packet ID.
             * 
             * @param packetId The packet identifier to remove.
             */
-            void removeMessage(const PacketID packetId) noexcept;
+            void removeMessage(const std::uint16_t packetId) noexcept;
 
             /**
             * @brief Gets the message container for the session state (const).

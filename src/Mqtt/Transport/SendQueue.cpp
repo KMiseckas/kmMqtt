@@ -46,7 +46,7 @@ namespace cleanMqtt
 				{
 					LogInfo("SendQueue", "Failed to proccess and send an outgoing packet. Reason: %d.", static_cast<std::uint8_t>(m_lastSendData.noSendReason));
 
-					if (m_lastSendData.noSendReason == interfaces::NoSendReason::SOCKET_SEND_ERROR)
+					if (m_lastSendData.noSendReason == NoSendReason::SOCKET_SEND_ERROR)
 					{
 						//Can retry same packet a few times before registering as a concrete fail for the overall send queue.
 						LogInfo("SendQueue", "Attempting to retry failed packet. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
@@ -60,8 +60,8 @@ namespace cleanMqtt
 
 						continue;
 					}
-					else if (m_lastSendData.noSendReason == interfaces::NoSendReason::OVER_MAX_PACKET_SIZE ||
-						m_lastSendData.noSendReason == interfaces::NoSendReason::ENCODE_ERROR)
+					else if (m_lastSendData.noSendReason == NoSendReason::OVER_MAX_PACKET_SIZE ||
+						m_lastSendData.noSendReason == NoSendReason::ENCODE_ERROR)
 					{
 						m_sendBatchRetryCount = 0;
 						outResult.isRecoverable = false;
@@ -100,7 +100,7 @@ namespace cleanMqtt
 			}
 		}
 
-		bool SendQueue::trySendBatch(SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult)
+		bool SendQueue::trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult)
 		{
 			if (m_queuedJobs.size() <= 0)
 			{

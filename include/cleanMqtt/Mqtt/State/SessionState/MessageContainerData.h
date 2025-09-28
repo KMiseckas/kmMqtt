@@ -5,7 +5,6 @@
 #include <cleanMqtt/GlobalTypes.h>
 #include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 #include <cleanMqtt/Mqtt/Packets/PacketType.h>
-#include <cleanMqtt/Utils/PacketIdPool.h>
 #include <cassert>
 
 namespace cleanMqtt
@@ -44,7 +43,7 @@ namespace cleanMqtt
 
 		struct MessageContainerData
 		{
-			MessageContainerData(PacketID packetId, PublishMessageData msgData, TimePoint nextRetryTime, bool retryEnabled = false)
+			MessageContainerData(std::uint16_t packetId, PublishMessageData msgData, TimePoint nextRetryTime, bool retryEnabled = false)
 				: nextRetryTime(std::move(nextRetryTime)),
 				canRetry(retryEnabled),
 				data{ msgData.options.qos == Qos::QOS_1 ? PublishMessageStatus::WaitingForAck : PublishMessageStatus::WaitingForPubRec, packetId, std::move(msgData) }

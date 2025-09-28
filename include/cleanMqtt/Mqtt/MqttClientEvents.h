@@ -3,9 +3,16 @@
 
 #include <cleanMqtt/Utils/Event.h>
 #include <cleanMqtt/Mqtt/ClientError.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Mqtt/Enums/ReconnectionStatus.h>
 #include "cleanMqtt/Mqtt/State/UnSubAckTopicReason.h"
+#include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/PublishAck.h"
+#include "cleanMqtt/Mqtt/Packets/DataTypes.h"
+#include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
+#include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribeAck.h"
+#include <cleanMqtt/Mqtt/Transport/SendResultData.h>
+#include <cleanMqtt/Mqtt/State/SubAckTopicReason.h>
 #include <cstdint>
 #include <cstring>
 
@@ -18,16 +25,6 @@ namespace cleanMqtt
 
 	namespace mqtt
 	{
-		namespace packets
-		{
-			class ConnectAck;
-			class Publish;
-			class SubscribeAck;
-			class PublishAck;
-			enum class DisconnectReasonCode : std::uint8_t;
-			struct BinaryData;
-		}
-
 		//Event data structures
 		struct ConnectEventDetails
 		{
@@ -80,7 +77,7 @@ namespace cleanMqtt
 		};
 
 		//Public events
-		using ErrorEvent = events::Event<ClientError, interfaces::SendResultData>;
+		using ErrorEvent = events::Event<ClientError, SendResultData>;
 		using ConnectEvent = events::Event<const ConnectEventDetails&, const packets::ConnectAck&>;
 		using ReconnectEvent = events::Event<const ReconnectEventDetails&, const packets::ConnectAck&>;
 		using DisconnectEvent = events::Event<const DisconnectEventDetails&>;

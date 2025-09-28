@@ -9,10 +9,10 @@ namespace cleanMqtt
 			MqttConnectionInfo* connectionInfo,
 			PacketSendDelegate sendPacketCallback,
 			PacketIdPool* packetIdPool,
-			const PacketID packetId,
+			const std::uint16_t packetId,
 			std::vector<Topic> topics,
 			SubscribeOptions&& subscribeOptions) noexcept :
-			interfaces::ISendJob(connectionInfo, sendPacketCallback),
+			ISendJob(connectionInfo, sendPacketCallback),
 			m_packetIdPool{ packetIdPool },
 			m_packetId{ packetId },
 			m_topics{ std::move(topics) },
@@ -20,17 +20,17 @@ namespace cleanMqtt
 		{
 		}
 
-		interfaces::SendResultData SendSubscribeJob::send() noexcept
+		SendResultData SendSubscribeJob::send() noexcept
 		{
 			packets::Subscribe packet{ createSubscribePacket(m_packetId, m_topics, m_subscribeOptions) };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())
 			{
-				return interfaces::SendResultData{
+				return SendResultData{
 					0,
 					false,
-					interfaces::NoSendReason::ENCODE_ERROR,
+					NoSendReason::ENCODE_ERROR,
 					std::move(result),
 					0
 				};
@@ -41,10 +41,10 @@ namespace cleanMqtt
 
 			const int sendResult{ m_packetSendCallback(packet) };
 
-			return interfaces::SendResultData{
+			return SendResultData{
 				packetSize,
 				sendResult == 0,
-				sendResult == 0 ? interfaces::NoSendReason::NONE : interfaces::NoSendReason::SOCKET_SEND_ERROR,
+				sendResult == 0 ? NoSendReason::NONE : NoSendReason::SOCKET_SEND_ERROR,
 				std::move(result),
 				sendResult
 			};

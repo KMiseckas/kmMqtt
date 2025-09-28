@@ -22,10 +22,10 @@ namespace cleanMqtt
 			int socketError{ NO_SOCKET_ERROR };
 			bool isRecoverable{ true };
 			std::string unrecoverableReasonStr;
-			interfaces::SendResultData lastSendResult;
+			SendResultData lastSendResult;
 		};
 
-		using PacketSendJobPtr = std::unique_ptr<interfaces::ISendJob>;
+		using PacketSendJobPtr = std::unique_ptr<ISendJob>;
 
 		class SendQueue
 		{
@@ -36,12 +36,12 @@ namespace cleanMqtt
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
 			void clearQueue() noexcept;
-			bool trySendBatch(SendBatchResult& outResult, interfaces::SendResultData& outLastSendResult);
+			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
 
 		private:
 
 			std::uint8_t m_currentLocalRetry{ 0U };
-			interfaces::SendResultData m_lastSendData{ 0, true, interfaces::NoSendReason::NONE,{}, 0 };
+			SendResultData m_lastSendData{ 0, true, NoSendReason::NONE,{}, 0 };
 
 			const std::uint8_t k_maxSendBatchRetries{ 3U };
 			std::uint8_t m_sendBatchRetryCount{ 0U };

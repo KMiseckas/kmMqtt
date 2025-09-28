@@ -7,10 +7,11 @@
 #include <cstdint>
 #include <functional>
 #include <cleanMqtt/Mqtt/Packets/ErrorCodes.h>
+#include <cleanMqtt/Mqtt/Transport/SendResultData.h>
 
 namespace cleanMqtt
 {
-	namespace interfaces
+	namespace mqtt
 	{
 #define PACKET_SIZE_POST_ENCODE(packet)\
 		packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value()\
@@ -20,41 +21,18 @@ namespace cleanMqtt
 		if (packetSize > allowedSize)\
 		{\
 			LogInfo("", "Packet is over the maximum allowed packet size that the broker accepts.");\
-			return interfaces::SendResultData{ packetSize, false, interfaces::NoSendReason::OVER_MAX_PACKET_SIZE, result, -1};\
+			return mqtt::SendResultData{ packetSize, false, NoSendReason::OVER_MAX_PACKET_SIZE, result, -1};\
 		}\
 
-		enum class NoSendReason : std::uint8_t
-		{
-			NONE,
-			SOCKET_SEND_ERROR,
-			OVER_MAX_PACKET_SIZE,
-			ENCODE_ERROR
-		};
-
-		struct PUBLIC_API SendResultData
-		{
-			SendResultData() noexcept = default;
-			SendResultData(std::size_t size, bool sent, NoSendReason reason, mqtt::packets::EncodeResult encodeResult, int error = 0) noexcept
-				: packetSize{ size }, wasSent{ sent }, noSendReason{ reason }, encodeResult{ encodeResult }, socketError {error}
-			{
-			}
-
-			std::size_t packetSize{ 0U };
-			bool wasSent{ false };
-			NoSendReason noSendReason{ NoSendReason::NONE };
-			mqtt::packets::EncodeResult encodeResult;
-			int socketError{ 0 };
-		};
-
-		class PUBLIC_API ISendJob
+		class ISendJob
 		{
 		public:
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(ISendJob)
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ISendJob)
 
-			using PacketSendDelegate = std::function<int(const mqtt::packets::BasePacket& packet)>;
+			using PacketSendDelegate = std::function<int(const packets::BasePacket& packet)>;
 
-			ISendJob(mqtt::MqttConnectionInfo* connectionInfo,
+			ISendJob(MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback) noexcept
 				: m_mqttConnectionInfo{ std::move(connectionInfo) },
 				m_packetSendCallback{ sendPacketCallback }
@@ -66,7 +44,7 @@ namespace cleanMqtt
 
 		protected:
 			PacketSendDelegate m_packetSendCallback;
-			mqtt::MqttConnectionInfo* m_mqttConnectionInfo;
+			MqttConnectionInfo* m_mqttConnectionInfo;
 		};
 	}
 }

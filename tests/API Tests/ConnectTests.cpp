@@ -4,6 +4,7 @@
 #include <string>
 #include "MockWebSocket.h"
 #include "Helpers.h"
+#include <cleanMqtt/Mqtt/Transport/SendResultData.h>
 
 using namespace cleanMqtt;
 using namespace cleanMqtt::mqtt;
@@ -93,8 +94,8 @@ TEST_SUITE("MqttClient Connect")
 
 
         ClientError cError;
-        interfaces::SendResultData rData;
-        testContext.client->onErrorEvent().add([&](ClientError error, interfaces::SendResultData data)
+        mqtt::SendResultData rData;
+        testContext.client->onErrorEvent().add([&](ClientError error, mqtt::SendResultData data)
             {
                 cError = error;
                 rData = data;
@@ -135,8 +136,8 @@ TEST_SUITE("MqttClient Connect")
             });
 
         ClientError cError;
-        interfaces::SendResultData rData;
-        testContext.client->onErrorEvent().add([&](ClientError error, interfaces::SendResultData data)
+        mqtt::SendResultData rData;
+        testContext.client->onErrorEvent().add([&](ClientError error, mqtt::SendResultData data)
             {
                 cError = error;
                 rData = data;
@@ -205,7 +206,7 @@ TEST_SUITE("MqttClient Connect")
                 CHECK(false); // Should not onConnectEvent
             });
 
-        testContext.client->onErrorEvent().add([&](ClientError error, interfaces::SendResultData data)
+        testContext.client->onErrorEvent().add([&](ClientError error, mqtt::SendResultData data)
             {
                 CHECK(false); // Should not onErrorEvent
             });
@@ -229,7 +230,7 @@ TEST_SUITE("MqttClient Connect")
                
             });
 
-        testContext.client->onErrorEvent().add([&](ClientError error, interfaces::SendResultData data)
+        testContext.client->onErrorEvent().add([&](ClientError error, mqtt::SendResultData data)
             {
                 CHECK(false); // Should not fire onErrorEvent
             });

@@ -5,19 +5,16 @@
 #include <stack>
 #include <bitset>
 
-
 namespace cleanMqtt
 {
-	using PacketID = std::uint16_t;
-
 	//Not thread safe by design as currently not needed to be thread safe due to how its used internally.
 	struct PacketIdPool
 	{
-		PacketID getId() noexcept
+		std::uint16_t getId() noexcept
 		{
 			if (!m_availableIds.empty())
 			{
-				PacketID nextId{ m_availableIds.top() };
+				std::uint16_t nextId{ m_availableIds.top() };
 				m_availableIds.pop();
 				m_usedIds.flip(nextId);
 				return nextId;
@@ -27,7 +24,7 @@ namespace cleanMqtt
 			return m_nextId++;
 		}
 
-		void releaseId(PacketID id) noexcept
+		void releaseId(std::uint16_t id) noexcept
 		{
 			if (id == 0U) return;
 			if (!m_usedIds.test(id)) return;
@@ -37,8 +34,8 @@ namespace cleanMqtt
 		}
 
 	private:
-		PacketID m_nextId{ 1U };//0 is not a valid MQTT packet ID.
-		std::stack<PacketID> m_availableIds{};
+		std::uint16_t m_nextId{ 1U };//0 is not a valid MQTT packet ID.
+		std::stack<std::uint16_t> m_availableIds{};
 		std::bitset<65535> m_usedIds;
 	};
 }

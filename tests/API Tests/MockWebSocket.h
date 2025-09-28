@@ -2,6 +2,7 @@
 #define MOCKWEBSOCKET_H
 
 #include <cleanMqtt/Interfaces/IWebSocket.h>
+#include <queue>
 
 using namespace cleanMqtt;
 using namespace cleanMqtt::mqtt;
