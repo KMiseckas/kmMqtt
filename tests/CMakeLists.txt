@@ -14,6 +14,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Doctest)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${doctest_SOURCE_DIR}/doctest)
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_ROOT}/include/private)
 target_link_libraries(${PROJECT_NAME} PRIVATE cleanMqtt)
 
 add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

@@ -1,11 +1,14 @@
 ﻿cmake_minimum_required (VERSION 3.14)
 
+#Include initial CMake files
 include(cmake/options.cmake)
 
 project (
     "cleanMqtt" 
     VERSION 0.0.1 
     LANGUAGES CXX)
+
+set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,7 +18,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:preprocessor")
 file(GLOB_RECURSE source_files "src/*.cpp")
 
 add_library (${PROJECT_NAME} ${source_files})
-target_include_directories( ${PROJECT_NAME} PUBLIC include)
+target_include_directories( ${PROJECT_NAME} PUBLIC include/public)
+target_include_directories( ${PROJECT_NAME} PRIVATE include/private)
 
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(${PROJECT_NAME} PRIVATE PUBLIC_API_EXPORT)
@@ -30,10 +34,6 @@ if(ENABLE_LOGS)
     target_compile_definitions(${PROJECT_NAME} PRIVATE 
     LOG_LEVEL=${LOG_LEVEL_TARGET}
     ENABLE_LOGS)
-endif()
-
-if(ENABLE_THROW_ON_FATAL_LOG)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE ENABLE_THROW_ON_FATAL_LOG)
 endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_BUFFER_SIZE=${LOG_BUFFER_SIZE})
@@ -64,3 +64,4 @@ if(BUILD_TESTS)
         enable_testing()
     endif()
 endif()
+

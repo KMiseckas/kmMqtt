@@ -6,7 +6,6 @@
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
 #include "cleanMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h"
 #include "cleanMqtt/Mqtt/State/SessionState/MessageContainer.h"
-#include "cleanMqtt/Mqtt/Packets/PacketType.h"
 #include "cleanMqtt/Mqtt/Enums/ClientErrorCode.h"
 
 namespace cleanMqtt

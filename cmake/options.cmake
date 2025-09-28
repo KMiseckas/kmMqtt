@@ -7,7 +7,6 @@ option(ENABLE_CODE_COVERAGE "Should enable code coverage to run?" ON)
 option(BUILD_EXAMPLES "Should examples be built?" ON)
 option(ENABLE_WARNINGS_AS_ERRORS "Should enable max warnings level as errors?" ON)
 option(ENABLE_LOGS "Should logging be enabled?" ON)
-option(ENABLE_THROW_ON_FATAL_LOG "Should throw exception on fatal log level be enabled?" ON)
 
 #MQTT Encoding
 option(FORCE_ADD_PROPERTIES "Should properties for packets be added as part of encoding regardless 
@@ -24,7 +23,6 @@ message(STATUS "  BUILD_EXAMPLES: ${BUILD_EXAMPLES}")
 message(STATUS "  ENABLE_WARNINGS_AS_ERRORS: ${ENABLE_WARNINGS_AS_ERRORS}")
 message(STATUS "  FORCE_ADD_PROPERTIES: ${FORCE_ADD_PROPERTIES}")
 message(STATUS "  ENABLE_LOGS: ${ENABLE_LOGS}")
-message(STATUS "  ENABLE_THROW_ON_FATAL_LOG: ${ENABLE_THROW_ON_FATAL_LOG}")
 
 
 # Sets

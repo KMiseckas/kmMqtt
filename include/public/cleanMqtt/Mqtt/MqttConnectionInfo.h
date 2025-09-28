@@ -18,6 +18,8 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		struct SessionState;
+
 		struct PUBLIC_API MqttConnectionInfo
 		{
 			ConnectArgs connectArgs{ "CLIENT ID" };
@@ -41,28 +43,7 @@ namespace cleanMqtt
 			std::vector<PendingUnSubscription> pendingUnSubscriptions;
 			TopicAliases topicAliases;
 
-			void clear(bool clearSessionState = false)
-			{
-				connectArgs = ConnectArgs{ "CLIENT ID" };
-				connectAddress = ConnectAddress{};
-				reconnectAddress = ReconnectAddress{};
-				hasBeenConnected = false;
-				awaitingPingResponse = false;
-				connectionStartTime = TimePoint{};
-				lastControlPacketTime = TimePoint{};
-				lastPingReqSentTime = TimePoint{};
-				pingInterval = Milliseconds{ 0U };
-				maxServerTopicAlias = 0U;
-				maxServerPacketSize = MAX_PACKET_SIZE;
-				serverKeepAlive = 0U;
-				isRetainAvailable = true;
-				if (clearSessionState)
-				{
-					sessionState.clear();
-				}
-				topicAliases = {};
-				pendingSubscriptions.clear();
-			}
+			void clear(bool clearSessionState = false) noexcept;
 
 		};
 	}
