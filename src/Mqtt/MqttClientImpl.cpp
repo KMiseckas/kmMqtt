@@ -7,6 +7,8 @@
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendSubscribeJob.h>
 #include <cleanMqtt/Mqtt/Transport/Jobs/SendUnSubscribeJob.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
+#include <cleanMqtt/Logger/LoggerInstance.h>
+#include <cleanMqtt/Logger/DefaultLogger.h>
 
 namespace cleanMqtt
 {
@@ -14,9 +16,14 @@ namespace cleanMqtt
 	{
 		using namespace packets;
 
-		MqttClientImpl::MqttClientImpl(const Config& config, std::unique_ptr<interfaces::IWebSocket> socket)
-			: m_config(config), m_socket(std::move(socket))
+		MqttClientImpl::MqttClientImpl(const IMqttEnvironment* const env)
+			: m_config(env->createConfig()), m_socket(env->createWebSocket())
 		{
+			if (getLogger() == nullptr)
+			{
+				setLogger(new DefaultLogger());
+			}
+
 			assert(m_socket != nullptr);
 
 			m_socket->setOnConnectCallback([this](bool success) {handleSocketConnectEvent(success); });

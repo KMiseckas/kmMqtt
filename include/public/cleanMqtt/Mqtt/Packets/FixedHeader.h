@@ -15,8 +15,8 @@ namespace cleanMqtt
 		namespace packets
 		{
 			struct FixedHeader : 
-				public interfaces::IEncodeHeader, 
-				public interfaces::IDecodeHeader
+				public IEncodeHeader, 
+				public IDecodeHeader
 			{
 				void encode(ByteBuffer& buffer) const override
 				{

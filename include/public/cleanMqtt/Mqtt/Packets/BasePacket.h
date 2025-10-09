@@ -47,14 +47,14 @@ namespace cleanMqtt
 
 				virtual void onFixedHeaderDecoded() const;
 
-				void addEncodeHeader(const interfaces::IEncodeHeader* header);
-				void addDecodeHeader(interfaces::IDecodeHeader* header);
+				void addEncodeHeader(const IEncodeHeader* header);
+				void addDecodeHeader(IDecodeHeader* header);
 
 			private:
 				FixedHeader m_fixedHeader;
 
-				std::vector<const interfaces::IEncodeHeader*> m_otherEncodeHeaders;
-				std::vector<interfaces::IDecodeHeader*> m_otherDecodeHeaders;
+				std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
+				std::vector<IDecodeHeader*> m_otherDecodeHeaders;
 				ByteBuffer* m_dataBuffer{ nullptr };
 			};
 		}

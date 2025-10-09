@@ -37,7 +37,7 @@ namespace cleanMqtt
 {
 	namespace socket
 	{
-		class CleanSocket : public interfaces::ISocket
+		class PUBLIC_API CleanSocket : public ISocket
 		{
 			~CleanSocket() override;
 

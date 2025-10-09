@@ -1,7 +1,5 @@
 #include <mqttClient/Model/SessionModel.h>
-#include <WinWebsocketAdapter.h>
-#include <cleanMqtt/Settings.h>
-#include <cleanMqtt/Logger/CleanLogger.h>
+#include <cleanMqtt/Environments/DefaultWinEnv.h>
 
 SessionModel::SessionModel()
 {
@@ -40,14 +38,10 @@ void SessionModel::connect()
 {
 	failedLastConnect = false;
 
-	std::unique_ptr<cleanMqtt::interfaces::IWebSocket> webSocket{ std::make_unique<adapter::WinWebsocketAdapter>(adapter::WinWebsocketAdapter()) };
-
-	m_mqttClient = new cleanMqtt::mqtt::MqttClient(mqttConfig, std::move(webSocket));
+	m_mqttClient = new cleanMqtt::mqtt::MqttClient{};
 
 	auto connectArgsCpy{ connectArgs };
 	auto connectAddressCpy{ connectAddress };
-
-	cleanMqtt::settings::setLogger(new cleanMqtt::logger::CleanLogger(), true);
 
 	m_mqttClient->connect(std::move(connectArgsCpy), std::move(connectAddressCpy));
 

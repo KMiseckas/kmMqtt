@@ -13,7 +13,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct ConnectVariableHeader : interfaces::IEncodeHeader
+			struct ConnectVariableHeader : IEncodeHeader
 			{
 			public:
 				ConnectVariableHeader() noexcept;

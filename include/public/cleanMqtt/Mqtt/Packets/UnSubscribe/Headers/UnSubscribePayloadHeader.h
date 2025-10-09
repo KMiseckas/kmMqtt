@@ -12,7 +12,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct UnSubscribePayloadHeader : interfaces::IEncodeHeader
+			struct UnSubscribePayloadHeader : IEncodeHeader
 			{
 				UnSubscribePayloadHeader() noexcept = default;
 				UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept;

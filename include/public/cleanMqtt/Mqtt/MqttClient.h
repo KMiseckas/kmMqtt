@@ -2,7 +2,9 @@
 
 #include "cleanMqtt/GlobalMacros.h"
 #include "cleanMqtt/Config.h"
+#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
 #include "cleanMqtt/Interfaces/IWebSocket.h"
+#include <cleanMqtt/Environments/DefaultEnvironmentFactory.h>
 #include <cleanMqtt/Mqtt/ClientError.h>
 #include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
 #include "cleanMqtt/Mqtt/MqttClientEvents.h"
@@ -30,8 +32,8 @@ namespace cleanMqtt
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
 
-			MqttClient() = delete;
-			MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket);
+			MqttClient();
+			MqttClient(const IMqttEnvironment* const env);
 			~MqttClient();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;

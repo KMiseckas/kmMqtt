@@ -5,9 +5,8 @@
 #include <queue>
 
 using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
 
-class MockWebSocket : public interfaces::IWebSocket
+class MockWebSocket : public IWebSocket
 {
 public:
     bool connectCalled = false;
@@ -18,10 +17,10 @@ public:
     int lastError = 0;
     int lastCloseCode = 0;
     std::string lastCloseReason = "none";
-    interfaces::OnConnectCallback onConnectCb;
-    interfaces::OnDisconnectCallback onDisconnectCb;
-    interfaces::OnPacketRecvdCallback onPacketCb;
-    interfaces::OnErrorCallback onErrorCb;
+    OnConnectCallback onConnectCb;
+    OnDisconnectCallback onDisconnectCb;
+    OnPacketRecvdCallback onPacketCb;
+    OnErrorCallback onErrorCb;
 
     // Internal state for simulating send/receive
     std::vector<ByteBuffer> sentPackets;
@@ -97,10 +96,10 @@ public:
     int getLastError() const noexcept override { return lastError; }
     int getLastCloseCode() const noexcept override { return lastCloseCode; }
     const char* getLastCloseReason() const noexcept override { return lastCloseReason.c_str(); }
-    void setOnConnectCallback(interfaces::OnConnectCallback cb) noexcept override { onConnectCb = cb; }
-    void setOnDisconnectCallback(interfaces::OnDisconnectCallback cb) noexcept override { onDisconnectCb = cb; }
-    void setOnPacketRecvdCallback(interfaces::OnPacketRecvdCallback cb) noexcept override { onPacketCb = cb; }
-    void setOnErrorCallback(interfaces::OnErrorCallback cb) noexcept override { onErrorCb = cb; }
+    void setOnConnectCallback(OnConnectCallback cb) noexcept override { onConnectCb = cb; }
+    void setOnDisconnectCallback(OnDisconnectCallback cb) noexcept override { onDisconnectCb = cb; }
+    void setOnPacketRecvdCallback(OnPacketRecvdCallback cb) noexcept override { onPacketCb = cb; }
+    void setOnErrorCallback(OnErrorCallback cb) noexcept override { onErrorCb = cb; }
 
     // Test helper: queue a response to be "received" on next tick
     void queueMockResponse(const ByteBuffer& data) 

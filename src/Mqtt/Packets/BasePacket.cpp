@@ -76,7 +76,7 @@ namespace cleanMqtt
 					m_dataBuffer = new ByteBuffer(bufferCapacity);
 
 					m_fixedHeader.encode(*m_dataBuffer);
-					for (const interfaces::IEncodeHeader* header : m_otherEncodeHeaders)
+					for (const IEncodeHeader* header : m_otherEncodeHeaders)
 					{
 						header->encode(*m_dataBuffer);
 					}
@@ -118,7 +118,7 @@ namespace cleanMqtt
 
 					if (result.isSuccess())
 					{
-						for (interfaces::IDecodeHeader* header : m_otherDecodeHeaders)
+						for (IDecodeHeader* header : m_otherDecodeHeaders)
 						{
 							result = std::move(header->decode(*m_dataBuffer));
 
@@ -154,7 +154,7 @@ namespace cleanMqtt
 			{
 				std::size_t remainingLength{ 0 };
 
-				for (const interfaces::IEncodeHeader* header : m_otherEncodeHeaders)
+				for (const IEncodeHeader* header : m_otherEncodeHeaders)
 				{
 					remainingLength += header->getEncodedBytesSize();
 				}
@@ -167,12 +167,12 @@ namespace cleanMqtt
 				//Do nothing by default.
 			}
 
-			void BasePacket::addEncodeHeader(const interfaces::IEncodeHeader* header)
+			void BasePacket::addEncodeHeader(const IEncodeHeader* header)
 			{
 				m_otherEncodeHeaders.push_back(header);
 			}
 
-			void BasePacket::addDecodeHeader(interfaces::IDecodeHeader* header)
+			void BasePacket::addDecodeHeader(IDecodeHeader* header)
 			{
 				m_otherDecodeHeaders.push_back(header);
 			}

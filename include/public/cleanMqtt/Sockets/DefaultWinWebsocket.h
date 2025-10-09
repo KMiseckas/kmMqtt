@@ -1,5 +1,5 @@
-#ifndef INCLUDE_ADAPTERS_WEBSOCKETS_WINWEBSOCKETADAPTER_H
-#define INCLUDE_ADAPTERS_WEBSOCKETS_WINWEBSOCKETADAPTER_H
+#ifndef INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H
+#define INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H
 
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 
@@ -14,16 +14,13 @@
 
 #pragma comment(lib, "Ws2_32.lib")
 
-namespace adapter
+namespace cleanMqtt
 {
-	using namespace cleanMqtt::interfaces;
-	using namespace cleanMqtt;
-
-	class WinWebsocketAdapter : public IWebSocket
+	class PUBLIC_API DefaultWinWebsocket : public IWebSocket
 	{
 	public:
-		WinWebsocketAdapter();
-		~WinWebsocketAdapter() override;
+		DefaultWinWebsocket();
+		~DefaultWinWebsocket() override;
 
 		bool connect(const std::string& hostname, const std::string& port = "80") noexcept override;
 		bool send(const ByteBuffer& data) noexcept override;
@@ -75,4 +72,4 @@ namespace adapter
 	};
 }
 
-#endif //INCLUDE_ADAPTERS_WEBSOCKETS_WINWEBSOCKETADAPTER_H 
+#endif //INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H 

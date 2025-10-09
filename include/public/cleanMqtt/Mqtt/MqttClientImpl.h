@@ -4,6 +4,7 @@
 #include "cleanMqtt/Config.h"
 #include "cleanMqtt/GlobalMacros.h"
 #include "cleanMqtt/Interfaces/IWebSocket.h"
+#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
 #include "cleanMqtt/Mqtt/ClientError.h"
 #include "cleanMqtt/Mqtt/Enums/ConnectionStatus.h"
 #include "cleanMqtt/Mqtt/Enums/ReconnectionStatus.h"
@@ -47,7 +48,7 @@ namespace cleanMqtt
 		class MqttClientImpl
 		{
 		public:
-			MqttClientImpl(const Config& config, std::unique_ptr<interfaces::IWebSocket> socket);
+			MqttClientImpl(const IMqttEnvironment* const env);
 			~MqttClientImpl();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
@@ -116,7 +117,7 @@ namespace cleanMqtt
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
 
-			std::unique_ptr<interfaces::IWebSocket> m_socket{ nullptr };
+			std::unique_ptr<IWebSocket> m_socket{ nullptr };
 
 			events::Deferrer m_eventDeferrer;
 			ErrorEvent m_errorEvent;

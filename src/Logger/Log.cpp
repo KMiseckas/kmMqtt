@@ -1,5 +1,5 @@
 #include <cleanMqtt/Logger/Log.h>
-#include <cleanMqtt/Settings.h>
+#include <cleanMqtt/Logger/LoggerInstance.h>
 #include <cstdarg>
 
 namespace cleanMqtt
@@ -37,11 +37,11 @@ namespace
 
 #define LOG(logLevel, msg, lastParam)\
 	FORMAT_MSG(msg, lastParam)\
-	settings::getLogger()->Log(logLevel, buffer);\
+	getLogger()->Log(logLevel, buffer);\
 
 #define LOG_CATEGORY(logLevel, category, msg, lastParam)\
 	FORMAT_MSG(msg, lastParam)\
-	settings::getLogger()->Log(logLevel,category, buffer);\
+	getLogger()->Log(logLevel,category, buffer);\
 
 }
 
@@ -148,7 +148,7 @@ namespace
 
 	void LogException(const char* category, const std::exception& e) noexcept(false)
 	{
-		settings::getLogger()->Log(LogLevel::Fatal, category, e.what());
+		getLogger()->Log(LogLevel::Fatal, category, e.what());
 		throw e;
 	}
 }

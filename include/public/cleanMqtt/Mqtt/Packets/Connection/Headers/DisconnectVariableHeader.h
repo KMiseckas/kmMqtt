@@ -12,7 +12,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct DisconnectVariableHeader : public interfaces::IDecodeHeader, public interfaces::IEncodeHeader
+			struct DisconnectVariableHeader : public IDecodeHeader, public IEncodeHeader
 			{
 			public:
 				DisconnectVariableHeader() noexcept;

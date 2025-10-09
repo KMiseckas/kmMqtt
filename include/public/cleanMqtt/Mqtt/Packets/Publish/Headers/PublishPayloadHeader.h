@@ -11,7 +11,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct PublishPayloadHeader : public interfaces::IDecodeHeader, public interfaces::IEncodeHeader
+			struct PublishPayloadHeader : public IDecodeHeader, public IEncodeHeader
 			{
 				PublishPayloadHeader() noexcept;
 				PublishPayloadHeader(BinaryData&& payload) noexcept;

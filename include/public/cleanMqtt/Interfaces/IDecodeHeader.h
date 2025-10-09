@@ -6,13 +6,10 @@
 
 namespace cleanMqtt
 {
-	namespace interfaces
+	class IDecodeHeader
 	{
-		class IDecodeHeader
-		{
-		public:
-			virtual mqtt::packets::DecodeResult decode(const ByteBuffer& buffer) = 0;
-		};
-	}
+	public:
+		virtual mqtt::packets::DecodeResult decode(const ByteBuffer& buffer) = 0;
+	};
 }
 #endif //INCLUDE_CLEANMQTT_INTERFACES_IDECODEHEADER_H

@@ -5,18 +5,18 @@
 #include <memory>
 #include "MockWebSocket.h"
 #include <cleanMqtt/Mqtt/MqttClient.h>
+#include "Environments/TestEnvironment.h"
 
 // Helper to create a connected MqttClient with a mock socket
 struct TestClientContext 
 {
     TestClientContext(const cleanMqtt::Config& config = {}, bool socketConnectResult = true)
     {
-        auto mockSocket{ std::make_unique<MockWebSocket>() };
+        auto env{ TestEnvironment() };
+        client = new cleanMqtt::mqtt::MqttClient(&env);
 
-		socketPtr = mockSocket.get();
+        socketPtr = env.socketPtr;
         socketPtr->connectResult = socketConnectResult;
-
-        client = new cleanMqtt::mqtt::MqttClient{ config, std::move(mockSocket) };
     }
 
     ~TestClientContext()

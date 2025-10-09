@@ -3,14 +3,14 @@
 
 using namespace cleanMqtt::mqtt::packets;
 
-struct MockEncodeHeader : public cleanMqtt::interfaces::IEncodeHeader {
+struct MockEncodeHeader : public cleanMqtt::IEncodeHeader {
     mutable int encodeCalled = 0;
     mutable int sizeCalled = 0;
     void encode(cleanMqtt::ByteBuffer&) const override { ++encodeCalled; }
     std::size_t getEncodedBytesSize() const noexcept override { ++sizeCalled; return 1; }
 };
 
-struct MockDecodeHeader : public cleanMqtt::interfaces::IDecodeHeader {
+struct MockDecodeHeader : public cleanMqtt::IDecodeHeader {
     mutable int decodeCalled = 0;
     cleanMqtt::mqtt::packets::DecodeResult decode(const cleanMqtt::ByteBuffer&) override { ++decodeCalled; return {}; }
 };

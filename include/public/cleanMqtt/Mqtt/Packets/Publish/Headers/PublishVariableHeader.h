@@ -12,7 +12,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct PublishVariableHeader : public interfaces::IDecodeHeader, public interfaces::IEncodeHeader
+			struct PublishVariableHeader : public IDecodeHeader, public IEncodeHeader
 			{
 				PublishVariableHeader() noexcept;
 				PublishVariableHeader(

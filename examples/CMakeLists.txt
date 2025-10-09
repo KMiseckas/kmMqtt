@@ -65,5 +65,4 @@ endif()
 target_link_libraries(examples_shared_lib INTERFACE imgui ${OPENGL_gl_LIBRARY} cleanMqtt)
 
 #Add example projects
-add_subdirectory(adapters/websocket)
 add_subdirectory(mqttClient)

@@ -12,7 +12,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct PubAckVariableHeader : public interfaces::IDecodeHeader, public interfaces::IEncodeHeader
+			struct PubAckVariableHeader : public IDecodeHeader, public IEncodeHeader
 			{
 				PubAckVariableHeader() noexcept;
 				PubAckVariableHeader(

@@ -5,8 +5,16 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		MqttClient::MqttClient(const Config config, std::unique_ptr<interfaces::IWebSocket> socket)
-			: m_impl(std::make_unique<MqttClientImpl>(config, std::move(socket)))
+		MqttClient::MqttClient()
+		{
+			auto envFactory{ DefaultEnvironmentFactory() };
+			auto env{ envFactory.createEnvironment() };
+			m_impl = std::make_unique<MqttClientImpl>(env);
+			delete env;
+		}
+
+		MqttClient::MqttClient(const IMqttEnvironment* const env)
+			: m_impl(std::make_unique<MqttClientImpl>(env))
 		{
 		}
 

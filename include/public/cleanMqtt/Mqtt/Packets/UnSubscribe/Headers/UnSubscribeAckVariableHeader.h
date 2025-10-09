@@ -11,7 +11,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct UnSubscribeAckVariableHeader : interfaces::IDecodeHeader
+			struct UnSubscribeAckVariableHeader : IDecodeHeader
 			{
 				UnSubscribeAckVariableHeader() noexcept = default;
 

@@ -12,7 +12,7 @@ namespace cleanMqtt
 	{
 		namespace packets
 		{
-			struct ConnectPayloadHeader : interfaces::IEncodeHeader
+			struct ConnectPayloadHeader : IEncodeHeader
 			{
 				ConnectPayloadHeader() noexcept;
 				ConnectPayloadHeader(
