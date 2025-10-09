@@ -1,4 +1,4 @@
-#include <cleanMqtt/Mqtt/MqttClient.h>
+#include <cleanMqtt/MqttClient.h>
 #include <cleanMqtt/Mqtt/MqttClientImpl.h>
 
 namespace cleanMqtt

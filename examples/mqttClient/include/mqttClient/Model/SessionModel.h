@@ -7,7 +7,7 @@
 #include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
 #include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
 #include <string>
-#include <cleanMqtt/Mqtt/MqttClient.h>
+#include <cleanMqtt/MqttClient.h>
 #include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
 
 class SessionModel : public ViewModel

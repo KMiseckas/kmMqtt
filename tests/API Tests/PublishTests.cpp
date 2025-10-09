@@ -1,6 +1,6 @@
 
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/MqttClient.h>
+#include <cleanMqtt/MqttClient.h>
 #include <memory>
 #include <string>
 #include "MockWebSocket.h"

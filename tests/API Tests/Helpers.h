@@ -4,7 +4,7 @@
 #include <doctest.h>
 #include <memory>
 #include "MockWebSocket.h"
-#include <cleanMqtt/Mqtt/MqttClient.h>
+#include <cleanMqtt/MqttClient.h>
 #include "Environments/TestEnvironment.h"
 
 // Helper to create a connected MqttClient with a mock socket
