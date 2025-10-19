@@ -4,31 +4,28 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		PingReq::PingReq() noexcept
+			: BasePacket(FixedHeaderFlags(k_PingReqFixedHeaderFlags))
 		{
-			PingReq::PingReq() noexcept
-				: BasePacket(FixedHeaderFlags(k_PingReqFixedHeaderFlags))
-			{
-			}
+		}
 
-			PingReq::PingReq(ByteBuffer&& dataBuffer) noexcept
-				: BasePacket(std::move(dataBuffer))
-			{
-			}
+		PingReq::PingReq(ByteBuffer&& dataBuffer) noexcept
+			: BasePacket(std::move(dataBuffer))
+		{
+		}
 
-			PingReq::PingReq(PingReq&& other) noexcept
-				: BasePacket{ std::move(other) }
-			{
-			}
+		PingReq::PingReq(PingReq&& other) noexcept
+			: BasePacket{ std::move(other) }
+		{
+		}
 
-			PingReq::~PingReq()
-			{
-			}
+		PingReq::~PingReq()
+		{
+		}
 
-			PacketType PingReq::getPacketType() const noexcept
-			{
-				return PacketType::PING_REQUQEST;
-			}
+		PacketType PingReq::getPacketType() const noexcept
+		{
+			return PacketType::PING_REQUQEST;
 		}
 	}
 }

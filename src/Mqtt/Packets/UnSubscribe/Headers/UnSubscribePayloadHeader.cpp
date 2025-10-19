@@ -4,29 +4,26 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		UnSubscribePayloadHeader::UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept
+			: topics(std::move(topics)) {
+		}
+
+		void UnSubscribePayloadHeader::encode(ByteBuffer& buffer) const
 		{
-			UnSubscribePayloadHeader::UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept
-				: topics(std::move(topics)) {
-			}
-
-			void UnSubscribePayloadHeader::encode(ByteBuffer& buffer) const
+			for (const auto& topic : topics)
 			{
-				for (const auto& topic : topics)
-				{
-					topic.encode(buffer);
-				}
+				topic.encode(buffer);
 			}
+		}
 
-			std::size_t UnSubscribePayloadHeader::getEncodedBytesSize() const noexcept
+		std::size_t UnSubscribePayloadHeader::getEncodedBytesSize() const noexcept
+		{
+			std::size_t size = 0;
+			for (const auto& topic : topics)
 			{
-				std::size_t size = 0;
-				for (const auto& topic : topics)
-				{
-					size += topic.encodingSize();
-				}
-				return size;
+				size += topic.encodingSize();
 			}
+			return size;
 		}
 	}
 }

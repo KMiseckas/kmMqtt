@@ -72,13 +72,13 @@ namespace cleanMqtt
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
 
 		private:
-			void pubAck(std::uint16_t packetId, packets::PubAckReasonCode code, PubAckOptions&& options) noexcept;
+			void pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept;
 
-			bool tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const packets::Properties& properties) noexcept;
+			bool tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const Properties& properties) noexcept;
 			void reconnect();
 
-			void handleInternalDisconnect(packets::DisconnectReasonCode reason, const DisconnectArgs& args = {}) noexcept;
-			void handleExternalDisconnect(const packets::Disconnect& packet);
+			void handleInternalDisconnect(DisconnectReasonCode reason, const DisconnectArgs& args = {}) noexcept;
+			void handleExternalDisconnect(const Disconnect& packet);
 			void handleExternalDisconnect(int closeCode = -1, std::string reason = "");
 			void clearState() noexcept;
 
@@ -87,18 +87,18 @@ namespace cleanMqtt
 			void handleSocketPacketReceivedEvent(ByteBuffer&& buffer);
 			void handleSocketErrorEvent(int error);
 
-			void handleReceivedConnectAcknowledge(packets::ConnectAck&& packet);
-			void handleReceivedDisconnect(packets::Disconnect&& packet);
-			void handleReceivedPublish(packets::Publish&& packet);
-			void handleReceivedPublishAck(packets::PublishAck&& packet);
+			void handleReceivedConnectAcknowledge(ConnectAck&& packet);
+			void handleReceivedDisconnect(Disconnect&& packet);
+			void handleReceivedPublish(Publish&& packet);
+			void handleReceivedPublishAck(PublishAck&& packet);
 			//void handleReceivedPublishComplete();
 			//void handleReceivedPublishReceived();
 			//void handleReceivedPublishReleased();
-			void handleReceivedSubscribeAcknowledge(packets::SubscribeAck&& packet);
-			void handleReceivedUnSubscribeAcknowledge(packets::UnSubscribeAck&& packet);
-			void handleReceivedPingResponse(packets::PingResp&& packet);
+			void handleReceivedSubscribeAcknowledge(SubscribeAck&& packet);
+			void handleReceivedUnSubscribeAcknowledge(UnSubscribeAck&& packet);
+			void handleReceivedPingResponse(PingResp&& packet);
 
-			void firePublishReceivedEvent(packets::Publish&& packet) noexcept;
+			void firePublishReceivedEvent(Publish&& packet) noexcept;
 
 			void tickCheckTimeOut();
 			void tickCheckKeepAlive();
@@ -106,13 +106,13 @@ namespace cleanMqtt
 			void tickReceivePackets();
 			void tickPendingPublishMessageRetries();
 
-			void handleFailedReconnect(packets::ConnectAck&& packet);
-			void handleFailedConnect(packets::ConnectAck&& packet);
+			void handleFailedReconnect(ConnectAck&& packet);
+			void handleFailedConnect(ConnectAck&& packet);
 			void handleTimeOutConnect();
 			void handleTimeOutReconnect();
-			void handleDecodeError(const packets::DecodeResult& result) noexcept;
+			void handleDecodeError(const DecodeResult& result) noexcept;
 
-			int sendPacket(const packets::BasePacket& packet);
+			int sendPacket(const BasePacket& packet);
 
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };

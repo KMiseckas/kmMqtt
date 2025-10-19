@@ -1,7 +1,7 @@
 #include <doctest.h>
 #include <cleanMqtt/Mqtt/Packets/BasePacket.h>
 
-using namespace cleanMqtt::mqtt::packets;
+using namespace cleanMqtt::mqtt;
 
 struct MockEncodeHeader : public cleanMqtt::IEncodeHeader {
     mutable int encodeCalled = 0;
@@ -12,7 +12,7 @@ struct MockEncodeHeader : public cleanMqtt::IEncodeHeader {
 
 struct MockDecodeHeader : public cleanMqtt::IDecodeHeader {
     mutable int decodeCalled = 0;
-    cleanMqtt::mqtt::packets::DecodeResult decode(const cleanMqtt::ByteBuffer&) override { ++decodeCalled; return {}; }
+    cleanMqtt::mqtt::DecodeResult decode(const cleanMqtt::ByteBuffer&) override { ++decodeCalled; return {}; }
 };
 
 class TestPacket : public BasePacket 

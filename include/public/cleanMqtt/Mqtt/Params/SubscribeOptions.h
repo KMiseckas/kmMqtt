@@ -58,7 +58,7 @@ namespace cleanMqtt
 				return *this;
 			}
 			 
-			packets::VariableByteInteger subscribeIdentifier;
+			VariableByteInteger subscribeIdentifier;
 			std::map<std::string, std::string> userProperties;
 		};
 	}

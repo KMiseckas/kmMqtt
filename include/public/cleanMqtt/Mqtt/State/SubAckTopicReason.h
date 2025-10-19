@@ -14,7 +14,7 @@ namespace cleanMqtt
 		struct PUBLIC_API SubAckTopicReason
 		{
 			Topic topic;
-			packets::SubAckReasonCode reasonCode{ packets::SubAckReasonCode::UNSPECIFIED_ERROR };
+			SubAckReasonCode reasonCode{ SubAckReasonCode::UNSPECIFIED_ERROR };
 		};
 
 		struct PUBLIC_API SubAckResults
@@ -24,7 +24,7 @@ namespace cleanMqtt
 				return m_allSubscribedSuccesfully;
 			}
 
-			void setTopicReasons(const std::vector<packets::SubAckReasonCode> reasonCodes)
+			void setTopicReasons(const std::vector<SubAckReasonCode> reasonCodes)
 			{
 				assert(reasonCodes.size() == m_topicReasonList.size() && "Reason codes size must match topic list size.");
 
@@ -34,9 +34,9 @@ namespace cleanMqtt
 				{
 					const auto reasonCode{ reasonCodes[i] };
 
-					if(reasonCode != packets::SubAckReasonCode::GRANTED_QOS_0 &&
-						reasonCode != packets::SubAckReasonCode::GRANTED_QOS_1 &&
-						reasonCode != packets::SubAckReasonCode::GRANTED_QOS_2)
+					if(reasonCode != SubAckReasonCode::GRANTED_QOS_0 &&
+						reasonCode != SubAckReasonCode::GRANTED_QOS_1 &&
+						reasonCode != SubAckReasonCode::GRANTED_QOS_2)
 					{
 						m_allSubscribedSuccesfully = false;
 					}
@@ -51,7 +51,7 @@ namespace cleanMqtt
 				m_topicReasonList.reserve(topics.size());
 				for (auto& topic : topics)
 				{
-					m_topicReasonList.push_back({ std::move(topic), packets::SubAckReasonCode::UNSPECIFIED_ERROR });
+					m_topicReasonList.push_back({ std::move(topic), SubAckReasonCode::UNSPECIFIED_ERROR });
 				}
 			}
 

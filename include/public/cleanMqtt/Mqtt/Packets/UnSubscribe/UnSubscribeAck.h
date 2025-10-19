@@ -7,36 +7,33 @@
 
 namespace cleanMqtt
 {
-    namespace mqtt
-    {
-        namespace packets
-        {
-            namespace
-            {
-                constexpr std::uint8_t k_UnSubscribeAckFixedHeaderFlags = 0x00U;
-            }
+	namespace mqtt
+	{
+		namespace
+		{
+			constexpr std::uint8_t k_UnSubscribeAckFixedHeaderFlags = 0x00U;
+		}
 
-            class UnSubscribeAck : public BasePacket
-            {
-            public:
-                UnSubscribeAck(UnSubscribeAckVariableHeader&& variableHeader, UnSubscribeAckPayloadHeader&& payloadHeader) noexcept;
-                UnSubscribeAck(ByteBuffer&& dataBuffer) noexcept;
-                UnSubscribeAck(UnSubscribeAck&& other) noexcept;
-                ~UnSubscribeAck() override;
+		class UnSubscribeAck : public BasePacket
+		{
+		public:
+			UnSubscribeAck(UnSubscribeAckVariableHeader&& variableHeader, UnSubscribeAckPayloadHeader&& payloadHeader) noexcept;
+			UnSubscribeAck(ByteBuffer&& dataBuffer) noexcept;
+			UnSubscribeAck(UnSubscribeAck&& other) noexcept;
+			~UnSubscribeAck() override;
 
-                PacketType getPacketType() const noexcept override;
+			PacketType getPacketType() const noexcept override;
 
-                const UnSubscribeAckVariableHeader& getVariableHeader() const;
-                const UnSubscribeAckPayloadHeader& getPayloadHeader() const;
+			const UnSubscribeAckVariableHeader& getVariableHeader() const;
+			const UnSubscribeAckPayloadHeader& getPayloadHeader() const;
 
-            private:
-                void setUpHeaders() noexcept;
+		private:
+			void setUpHeaders() noexcept;
 
-                UnSubscribeAckVariableHeader* m_variableHeader{ nullptr };
-                UnSubscribeAckPayloadHeader* m_payloadHeader{ nullptr };
-            };
-        }
-    }
+			UnSubscribeAckVariableHeader* m_variableHeader{ nullptr };
+			UnSubscribeAckPayloadHeader* m_payloadHeader{ nullptr };
+		};
+	}
 }
 
 #endif //INCLUDE_CLEANMQTT_MQTT_PACKETS_UNSUBSCRIBE_UNSUBSCRIBEACK_H

@@ -9,18 +9,15 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct SubscribeAckVariableHeader : IDecodeHeader
 		{
-			struct SubscribeAckVariableHeader : IDecodeHeader
-			{
-				SubscribeAckVariableHeader() noexcept = default;
+			SubscribeAckVariableHeader() noexcept = default;
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 
-				std::uint16_t packetId{ 0U };
-				Properties properties;
-			};
-		}
+			std::uint16_t packetId{ 0U };
+			Properties properties;
+		};
 	}
 }
 

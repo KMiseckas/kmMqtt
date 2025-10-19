@@ -31,7 +31,7 @@ namespace cleanMqtt
 			{
 				if (other.correlationData != nullptr)
 				{
-					correlationData = std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+					correlationData = std::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
 				}
 			}
 
@@ -44,7 +44,7 @@ namespace cleanMqtt
 
 				if (other.correlationData != nullptr)
 				{
-					correlationData = std::make_unique<packets::BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+					correlationData = std::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
 				}
 
 				responseTopic = responseTopic;
@@ -101,7 +101,7 @@ namespace cleanMqtt
 				return *this;
 			}
 
-			std::unique_ptr<packets::BinaryData> correlationData{ nullptr };
+			std::unique_ptr<BinaryData> correlationData{ nullptr };
 			std::string responseTopic{ "" };
 			std::uint16_t topicAlias{ 0U };
 			std::uint32_t messageExpiryInterval{ 0U };

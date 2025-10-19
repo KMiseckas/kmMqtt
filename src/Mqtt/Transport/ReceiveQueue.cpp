@@ -8,7 +8,7 @@ namespace cleanMqtt
 	namespace mqtt
 	{
 #define HANDLE_RECEIVED_PACKET(PacketType, callback)\
-packets::PacketType packet{ std::move(m_inProgressData.front()) };\
+PacketType packet{ std::move(m_inProgressData.front()) };\
 decodeResult = packet.decode();\
 \
 if (!decodeResult.isSuccess())\
@@ -39,10 +39,10 @@ if (callback != nullptr)\
 			m_inQueueData.push(std::move(byteBuffer));
 		}
 
-		const packets::DecodeResult ReceiveQueue::receiveNextBatch()
+		const DecodeResult ReceiveQueue::receiveNextBatch()
 		{
-			packets::DecodeResult decodeResult;
-			decodeResult.code = packets::DecodeErrorCode::NO_ERROR;
+			DecodeResult decodeResult;
+			decodeResult.code = DecodeErrorCode::NO_ERROR;
 
 			std::lock_guard<std::mutex > guard{ m_mutex };
 			if (m_inQueueData.empty())
@@ -52,70 +52,70 @@ if (callback != nullptr)\
 
 			std::swap(m_inQueueData, m_inProgressData);
 
-			packets::PacketType packetType{ packets::PacketType::RESERVED };
+			PacketType packetType{ PacketType::RESERVED };
 
 			LogTrace("ReceiveQueue", "Processing queue of %d received packets.", m_inProgressData.size());
 
 			while (!m_inProgressData.empty())
 			{
-				packetType = packets::checkPacketType(m_inProgressData.front().bytes(), m_inProgressData.front().size());
+				packetType = checkPacketType(m_inProgressData.front().bytes(), m_inProgressData.front().size());
 				decodeResult.packetType = packetType;
 
 				LogInfo("ReceiveQueue", "Processing next MQTT packet.");
 
-				if (packetType >= packets::PacketType::_COUNT)
+				if (packetType >= PacketType::_COUNT)
 				{
 					LogTrace("ReceiveQueue", "Binary Buffer: %s", m_inProgressData.front().toString().c_str());
 					LogError("ReceiveQueue", "Could not determine packet type, the packet has packet type value that's outside the range of allowed packet types. PacketType: %d",
 						static_cast<std::uint8_t>(packetType));
-					decodeResult.code = packets::DecodeErrorCode::PROTOCOL_ERROR;
+					decodeResult.code = DecodeErrorCode::PROTOCOL_ERROR;
 				}
 
-				LogInfo("ReceiveQueue", "Type: %s", mqtt::packets::k_packetTypeName[static_cast<std::uint8_t>(packetType)]);
+				LogInfo("ReceiveQueue", "Type: %s", mqtt::k_packetTypeName[static_cast<std::uint8_t>(packetType)]);
 				LogTrace("ReceiveQueue", "Binary Buffer: %s", m_inProgressData.front().toString().c_str());
 
 				switch (packetType)
 				{
-				case packets::PacketType::CONNECT_ACKNOWLEDGE:
+				case PacketType::CONNECT_ACKNOWLEDGE:
 				{
 					HANDLE_RECEIVED_PACKET(ConnectAck, m_conAckCallback);
 					break;
 				}
-				case packets::PacketType::PUBLISH:
+				case PacketType::PUBLISH:
 				{
 					HANDLE_RECEIVED_PACKET(Publish, m_pubCallback);
 					break;
 				}
-				case packets::PacketType::PUBLISH_ACKNOWLEDGE:
+				case PacketType::PUBLISH_ACKNOWLEDGE:
 				{
 					HANDLE_RECEIVED_PACKET(PublishAck, m_pubAckCallback);
 					break;
 				}
-				case packets::PacketType::PUBLISH_COMPLETE:
+				case PacketType::PUBLISH_COMPLETE:
 					//TODO
 					break;
-				case packets::PacketType::PUBLISH_RECEIVED:
+				case PacketType::PUBLISH_RECEIVED:
 					//TODO
 					break;
-				case packets::PacketType::PUBLISH_RELEASED:
+				case PacketType::PUBLISH_RELEASED:
 					//TODO
 					break;
-				case packets::PacketType::SUBSCRIBE_ACKNOWLEDGE:
+				case PacketType::SUBSCRIBE_ACKNOWLEDGE:
 				{
 					HANDLE_RECEIVED_PACKET(SubscribeAck, m_subAckCallback);
 					break;
 				}
-				case packets::PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
+				case PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
 				{
 					HANDLE_RECEIVED_PACKET(UnSubscribeAck, m_unSubAckCallback);
 					break;
 				}
-				case packets::PacketType::PING_RESPONSE:
+				case PacketType::PING_RESPONSE:
 				{
 					HANDLE_RECEIVED_PACKET(PingResp, m_pingRespCallback);
 					break;
 				}
-				case packets::PacketType::DISCONNECT:
+				case PacketType::DISCONNECT:
 				{
 					HANDLE_RECEIVED_PACKET(Disconnect, m_DisconnectCallback);
 					break;

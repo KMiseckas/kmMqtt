@@ -21,7 +21,7 @@ TEST_SUITE("MqttClient Disconnect")
     {
         TestClientContext testContext{ {}, true };
         bool disconnectEventFired{ false };
-        packets::DisconnectReasonCode disconnectReason;
+        DisconnectReasonCode disconnectReason;
 
         testContext.client->onDisconnectEvent().add([&](const mqtt::DisconnectEventDetails& details)
         {
@@ -46,14 +46,14 @@ TEST_SUITE("MqttClient Disconnect")
         CHECK(err.errorCode == ClientErrorCode::No_Error);
 
         CHECK(disconnectEventFired);
-        CHECK(disconnectReason == packets::DisconnectReasonCode::NORMAL_DISCONNECTION);
+        CHECK(disconnectReason == DisconnectReasonCode::NORMAL_DISCONNECTION);
     }
 
     TEST_CASE("Disconnect with willPublish triggers correct reason code")
     {
         TestClientContext testContext{ {}, true };
         bool disconnectEventFired = false;
-        packets::DisconnectReasonCode disconnectReason;
+        DisconnectReasonCode disconnectReason;
 
         testContext.client->onDisconnectEvent().add([&](const mqtt::DisconnectEventDetails& details)
         {
@@ -78,7 +78,7 @@ TEST_SUITE("MqttClient Disconnect")
         CHECK(err.errorCode == ClientErrorCode::No_Error);
 
         CHECK(disconnectEventFired);
-        CHECK(disconnectReason == packets::DisconnectReasonCode::DISCONNECT_WITH_WILL_MESSAGE);
+        CHECK(disconnectReason == DisconnectReasonCode::DISCONNECT_WITH_WILL_MESSAGE);
     }
 
     TEST_CASE("Shutdown when not connected returns MQTT_Not_Active")
@@ -96,7 +96,7 @@ TEST_SUITE("MqttClient Disconnect")
         testContext.client->onDisconnectEvent().add([&](const mqtt::DisconnectEventDetails& details)
         {
             disconnectEventFired = true;
-            CHECK(details.reasonCode == packets::DisconnectReasonCode::NORMAL_DISCONNECTION);
+            CHECK(details.reasonCode == DisconnectReasonCode::NORMAL_DISCONNECTION);
         });
 
         testContext.tryConnect();
@@ -119,7 +119,7 @@ TEST_SUITE("MqttClient Disconnect")
     {
         TestClientContext testContext{ {}, true };
         bool disconnectEventFired = false;
-        packets::DisconnectReasonCode disconnectReason;
+        DisconnectReasonCode disconnectReason;
 
         testContext.client->onDisconnectEvent().add([&](const mqtt::DisconnectEventDetails& details)
         {
@@ -149,7 +149,7 @@ TEST_SUITE("MqttClient Disconnect")
         testContext.client->tick(.1f);
 
         CHECK(disconnectEventFired);
-        CHECK(disconnectReason == packets::DisconnectReasonCode::NORMAL_DISCONNECTION);
+        CHECK(disconnectReason == DisconnectReasonCode::NORMAL_DISCONNECTION);
     }
 
     TEST_CASE("External disconnect (socket error)")
@@ -160,7 +160,7 @@ TEST_SUITE("MqttClient Disconnect")
         testContext.client->onDisconnectEvent().add([&](const mqtt::DisconnectEventDetails& details)
         {
             disconnectEventFired = true;
-            CHECK(details.reasonCode == packets::DisconnectReasonCode::UNSPECIFIED_ERROR);
+            CHECK(details.reasonCode == DisconnectReasonCode::UNSPECIFIED_ERROR);
             CHECK(details.error.errorCode == ClientErrorCode::Socket_Error);
         });
 

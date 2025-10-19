@@ -7,7 +7,7 @@ namespace cleanMqtt
 	{
 		SendResultData SendPingJob::send() noexcept
 		{
-			packets::PingReq packet{ createPingRequestPacket() };
+			PingReq packet{ createPingRequestPacket() };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())

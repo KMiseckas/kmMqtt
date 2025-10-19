@@ -7,24 +7,21 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		namespace
 		{
-			namespace
-			{
-				constexpr std::uint8_t k_PingReqFixedHeaderFlags = 0U;
-			}
-
-			class PingReq : public BasePacket
-			{
-			public:
-				PingReq() noexcept;
-				PingReq(ByteBuffer&& dataBuffer) noexcept;
-				PingReq(PingReq&& other) noexcept;
-				~PingReq() override;
-
-				PacketType getPacketType() const noexcept override;
-			};
+			constexpr std::uint8_t k_PingReqFixedHeaderFlags = 0U;
 		}
+
+		class PingReq : public BasePacket
+		{
+		public:
+			PingReq() noexcept;
+			PingReq(ByteBuffer&& dataBuffer) noexcept;
+			PingReq(PingReq&& other) noexcept;
+			~PingReq() override;
+
+			PacketType getPacketType() const noexcept override;
+		};
 	}
 }
 

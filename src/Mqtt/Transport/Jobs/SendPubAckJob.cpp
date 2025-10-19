@@ -7,7 +7,7 @@ namespace cleanMqtt
 	{
 		SendResultData SendPubAckJob::send() noexcept
 		{
-			packets::PublishAck packet{ createPubAckPacket(m_publishPacketId, m_reasonCode, m_options) };
+			PublishAck packet{ createPubAckPacket(m_publishPacketId, m_reasonCode, m_options) };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())

@@ -9,21 +9,18 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct SubscribeVariableHeader : IEncodeHeader
 		{
-			struct SubscribeVariableHeader : IEncodeHeader
-			{
-			public:
-				SubscribeVariableHeader() noexcept;
-				SubscribeVariableHeader(std::uint16_t packetId, Properties&& properties) noexcept;
+		public:
+			SubscribeVariableHeader() noexcept;
+			SubscribeVariableHeader(std::uint16_t packetId, Properties&& properties) noexcept;
 
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept;
 
-				std::uint16_t packetId{ 0 };
-				Properties properties;
-			};
-		}
+			std::uint16_t packetId{ 0 };
+			Properties properties;
+		};
 	}
 }
 

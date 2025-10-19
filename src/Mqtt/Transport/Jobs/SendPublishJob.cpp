@@ -23,7 +23,7 @@ namespace cleanMqtt
 
 		SendResultData SendPublishJob::send() noexcept
 		{
-			packets::Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic, m_payload, m_publishOptions, m_packetId)};
+			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic, m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())

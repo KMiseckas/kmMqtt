@@ -10,27 +10,24 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct PublishVariableHeader : public IDecodeHeader, public IEncodeHeader
 		{
-			struct PublishVariableHeader : public IDecodeHeader, public IEncodeHeader
-			{
-				PublishVariableHeader() noexcept;
-				PublishVariableHeader(
-					const char* topicName,
-					std::uint16_t packetId,
-					Properties&& properties,
-					Qos publishQOS) noexcept;
+			PublishVariableHeader() noexcept;
+			PublishVariableHeader(
+				const char* topicName,
+				std::uint16_t packetId,
+				Properties&& properties,
+				Qos publishQOS) noexcept;
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
-				UTF8String topicName{ "" };
-				std::uint16_t packetIdentifier{ 0U };
-				Properties properties;
-				Qos qos{ Qos::QOS_0 };
-			};
-		}
+			UTF8String topicName{ "" };
+			std::uint16_t packetIdentifier{ 0U };
+			Properties properties;
+			Qos qos{ Qos::QOS_0 };
+		};
 	}
 }
 

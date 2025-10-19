@@ -10,23 +10,20 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct DisconnectVariableHeader : public IDecodeHeader, public IEncodeHeader
 		{
-			struct DisconnectVariableHeader : public IDecodeHeader, public IEncodeHeader
-			{
-			public:
-				DisconnectVariableHeader() noexcept;
-				DisconnectVariableHeader(DisconnectReasonCode disconnectReasonCode, Properties&& disconnectProperties) noexcept;
+		public:
+			DisconnectVariableHeader() noexcept;
+			DisconnectVariableHeader(DisconnectReasonCode disconnectReasonCode, Properties&& disconnectProperties) noexcept;
 
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept override;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 
-				DisconnectReasonCode reasonCode;
-				Properties properties;
-			};
-		}
+			DisconnectReasonCode reasonCode;
+			Properties properties;
+		};
 	}
 }
 

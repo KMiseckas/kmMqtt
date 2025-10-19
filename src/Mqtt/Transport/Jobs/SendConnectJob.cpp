@@ -7,7 +7,7 @@ namespace cleanMqtt
 	{
 		SendResultData SendConnectJob::send() noexcept
 		{
-			packets::Connect packet{ createConnectPacket(*m_mqttConnectionInfo) };
+			Connect packet{ createConnectPacket(*m_mqttConnectionInfo) };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())

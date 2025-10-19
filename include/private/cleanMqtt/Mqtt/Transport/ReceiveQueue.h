@@ -20,18 +20,18 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		using FailedDecodeResults = std::vector<packets::DecodeResult>;
+		using FailedDecodeResults = std::vector<DecodeResult>;
 
-		using ConAckCallback = std::function<void(packets::ConnectAck&&)>;
-		using DisconnectCallback = std::function<void(packets::Disconnect&&)>;
-		using PubCallback = std::function<void(packets::Publish&&)>;
-		using PubAckCallback = std::function<void(packets::PublishAck&&)>;
-		//using PubCompCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		//using PubRecvCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		//using PubRelCallback = void (MqttClient::*)(const packets::ConnectAck&);
-		using SubAckCallback = std::function<void(packets::SubscribeAck&&)>;
-		using UnSubAckCallback = std::function<void(packets::UnSubscribeAck&&)>;
-		using PingRespCallback = std::function<void(packets::PingResp&&)>;
+		using ConAckCallback = std::function<void(ConnectAck&&)>;
+		using DisconnectCallback = std::function<void(Disconnect&&)>;
+		using PubCallback = std::function<void(Publish&&)>;
+		using PubAckCallback = std::function<void(PublishAck&&)>;
+		//using PubCompCallback = void (MqttClient::*)(const ConnectAck&);
+		//using PubRecvCallback = void (MqttClient::*)(const ConnectAck&);
+		//using PubRelCallback = void (MqttClient::*)(const ConnectAck&);
+		using SubAckCallback = std::function<void(SubscribeAck&&)>;
+		using UnSubAckCallback = std::function<void(UnSubscribeAck&&)>;
+		using PingRespCallback = std::function<void(PingResp&&)>;
 
 		class ReceiveQueue
 		{
@@ -43,7 +43,7 @@ namespace cleanMqtt
 			~ReceiveQueue();
 
 			void addToQueue(ByteBuffer&& byteBuffer);
-			const packets::DecodeResult receiveNextBatch();
+			const DecodeResult receiveNextBatch();
 			void clear() noexcept;
 
 			void setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept;
@@ -59,7 +59,7 @@ namespace cleanMqtt
 			//TODO: Add more callbacks as needed
 
 		private:
-			bool tryAddFailedResult(packets::DecodeResult&& result) noexcept;
+			bool tryAddFailedResult(DecodeResult&& result) noexcept;
 
 			std::queue<ByteBuffer> m_inQueueData;
 			std::queue<ByteBuffer> m_inProgressData;

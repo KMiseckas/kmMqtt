@@ -24,12 +24,12 @@ TEST_SUITE("MqttClient Subscribe")
         std::uint16_t ackedPacketId{ 0 };
         SubAckResults ackResults{};
 
-        testContext.client->onSubscribeAckEvent().add([&](const SubscribeAckEventDetails& details, const mqtt::packets::SubscribeAck& packet)
+        testContext.client->onSubscribeAckEvent().add([&](const SubscribeAckEventDetails& details, const mqtt::SubscribeAck& packet)
         {
             subAckEventFired = true;
             ackedPacketId = details.packetId;
             ackResults = details.results;
-            CHECK(packet.getPacketType() == packets::PacketType::SUBSCRIBE_ACKNOWLEDGE);
+            CHECK(packet.getPacketType() == PacketType::SUBSCRIBE_ACKNOWLEDGE);
         });
 
         auto err = testContext.client->subscribe(topics, std::move(options));
@@ -50,7 +50,7 @@ TEST_SUITE("MqttClient Subscribe")
         CHECK(ackedPacketId == 1);
         CHECK(ackResults.allSubscribedSuccesfully() == true);
         CHECK(ackResults.getTopicReasons().size() == 1);
-        CHECK(ackResults.getTopicReasons()[0].reasonCode == packets::SubAckReasonCode::GRANTED_QOS_0); // QOS 0
+        CHECK(ackResults.getTopicReasons()[0].reasonCode == SubAckReasonCode::GRANTED_QOS_0); // QOS 0
     }
 
     TEST_CASE("Subscribe fails when not connected")
@@ -75,17 +75,17 @@ TEST_SUITE("MqttClient Subscribe")
         topics.push_back({ "topic/2", Qos::QOS_2 });
 
         SubscribeOptions options{};
-        options.subscribeIdentifier = packets::VariableByteInteger::tryCreateFromValue(5);
+        options.subscribeIdentifier = VariableByteInteger::tryCreateFromValue(5);
 
         bool subAckEventFired{ false };
         SubAckResults ackResults{};
 
-        testContext.client->onSubscribeAckEvent().add([&](const SubscribeAckEventDetails& details, const mqtt::packets::SubscribeAck& ackPacket)
+        testContext.client->onSubscribeAckEvent().add([&](const SubscribeAckEventDetails& details, const mqtt::SubscribeAck& ackPacket)
         {
             subAckEventFired = true;
             ackResults = details.results;
 
-			CHECK(ackPacket.getPacketType() == packets::PacketType::SUBSCRIBE_ACKNOWLEDGE);
+			CHECK(ackPacket.getPacketType() == PacketType::SUBSCRIBE_ACKNOWLEDGE);
         });
 
         auto err = testContext.client->subscribe(topics, std::move(options));
@@ -119,7 +119,7 @@ TEST_SUITE("MqttClient Subscribe")
                 CHECK(topicReason.topic.options.retainAsPublished == false);
 
                 //Check response
-                CHECK(topicReason.reasonCode == packets::SubAckReasonCode::GRANTED_QOS_1);
+                CHECK(topicReason.reasonCode == SubAckReasonCode::GRANTED_QOS_1);
             }
             else if (topicReason.topic.topicFilter == "topic/2")
             {
@@ -131,7 +131,7 @@ TEST_SUITE("MqttClient Subscribe")
                 CHECK(topicReason.topic.options.retainAsPublished == false);
 
                 //Check response
-				CHECK(topicReason.reasonCode == packets::SubAckReasonCode::GRANTED_QOS_2);
+				CHECK(topicReason.reasonCode == SubAckReasonCode::GRANTED_QOS_2);
             }
         }
     }
@@ -154,7 +154,7 @@ TEST_SUITE("MqttClient Subscribe")
         CHECK(testContext.tryConnectWithResponse().noError());
 
         bool subAckEventFired{ false };
-        testContext.client->onSubscribeAckEvent().add([&](const SubscribeAckEventDetails&, const mqtt::packets::SubscribeAck&)
+        testContext.client->onSubscribeAckEvent().add([&](const SubscribeAckEventDetails&, const mqtt::SubscribeAck&)
         {
             subAckEventFired = true;
         });

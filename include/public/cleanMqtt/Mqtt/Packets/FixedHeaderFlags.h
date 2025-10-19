@@ -9,17 +9,14 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct FixedHeaderFlags : public Flags<std::uint8_t, std::uint8_t, 15>
 		{
-			struct FixedHeaderFlags : public Flags<std::uint8_t, std::uint8_t, 15>
+			FixedHeaderFlags() = delete;
+			FixedHeaderFlags(std::uint8_t flags = 0U) noexcept
+				: Flags(flags)
 			{
-				FixedHeaderFlags() = delete;
-				FixedHeaderFlags(std::uint8_t flags = 0U) noexcept
-					: Flags(flags)
-				{
-				};
 			};
-		}
+		};
 	}
 }
 

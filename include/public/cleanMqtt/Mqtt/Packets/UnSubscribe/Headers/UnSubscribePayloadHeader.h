@@ -10,19 +10,16 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct UnSubscribePayloadHeader : IEncodeHeader
 		{
-			struct UnSubscribePayloadHeader : IEncodeHeader
-			{
-				UnSubscribePayloadHeader() noexcept = default;
-				UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept;
+			UnSubscribePayloadHeader() noexcept = default;
+			UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept;
 
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept;
 
-				std::vector<UTF8String> topics;
-			};
-		}
+			std::vector<UTF8String> topics;
+		};
 	}
 }
 

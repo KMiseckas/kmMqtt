@@ -11,21 +11,18 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct Subscription
 		{
-			struct Subscription
-			{
-				Subscription() noexcept = default;
-				Subscription(const char* topic, EncodedSubscribeOptionsFlags opts) noexcept;
+			Subscription() noexcept = default;
+			Subscription(const char* topic, EncodedSubscribeOptionsFlags opts) noexcept;
 
-				std::size_t getEncodedBytesSize() const noexcept;
+			std::size_t getEncodedBytesSize() const noexcept;
 
-				void encode(ByteBuffer& buffer) const;
+			void encode(ByteBuffer& buffer) const;
 
-				UTF8String topicFilter;
-				EncodedSubscribeOptionsFlags options;
-			};
-		}
+			UTF8String topicFilter;
+			EncodedSubscribeOptionsFlags options;
+		};
 	}
 }
 

@@ -10,20 +10,17 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct ConnectAckVariableHeader : public IDecodeHeader
 		{
-			struct ConnectAckVariableHeader : public IDecodeHeader
-			{
-			public:
-				ConnectAckVariableHeader() noexcept;
+		public:
+			ConnectAckVariableHeader() noexcept;
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 
-				EncodedConnectAcknowledgeFlags flags;
-				ConnectReasonCode reasonCode;
-				Properties properties;
-			};
-		}
+			EncodedConnectAcknowledgeFlags flags;
+			ConnectReasonCode reasonCode;
+			Properties properties;
+		};
 	}
 }
 

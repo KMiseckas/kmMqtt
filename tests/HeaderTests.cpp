@@ -8,11 +8,11 @@
 
 TEST_SUITE("Header Tests")
 {
-	using cleanMqtt::mqtt::packets::FixedHeader;
-	using cleanMqtt::mqtt::packets::FixedHeaderFlags;
-	using cleanMqtt::mqtt::packets::PacketType;
-	using cleanMqtt::mqtt::packets::VariableByteInteger;
-	using cleanMqtt::mqtt::packets::ConnectVariableHeader;
+	using cleanMqtt::mqtt::FixedHeader;
+	using cleanMqtt::mqtt::FixedHeaderFlags;
+	using cleanMqtt::mqtt::PacketType;
+	using cleanMqtt::mqtt::VariableByteInteger;
+	using cleanMqtt::mqtt::ConnectVariableHeader;
 	using cleanMqtt::ByteBuffer;
 	using cleanMqtt::mqtt::MqttVersion;
 
@@ -38,7 +38,7 @@ TEST_SUITE("Header Tests")
 			FixedHeaderFlags flags{ 0 };
 			VariableByteInteger varByte;
 
-			CHECK(cleanMqtt::mqtt::packets::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
+			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
 			CHECK(buffer[0] == 0b00011101);
 			varByte.decode(&buffer[1]);
 			CHECK(varByte.uint32Value() == 3123);
@@ -77,7 +77,6 @@ TEST_SUITE("Header Tests")
 
 			SUBCASE("Params 1")
 			{
-				using namespace cleanMqtt::mqtt::packets;
 				using namespace cleanMqtt::mqtt;
 
 				EncodedConnectFlags flags;
@@ -132,7 +131,6 @@ TEST_SUITE("Header Tests")
 
 			SUBCASE("Params - Properties")
 			{
-				using namespace cleanMqtt::mqtt::packets;
 				using namespace cleanMqtt::mqtt;
 
 				EncodedConnectFlags flags;
@@ -268,7 +266,6 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("Connect Payload Header")
 	{
-		using namespace cleanMqtt::mqtt::packets;
 		using namespace cleanMqtt::mqtt;
 
 		SUBCASE("Encoding")
@@ -399,8 +396,8 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("Publish Payload Header")
 	{
-		using cleanMqtt::mqtt::packets::PublishPayloadHeader;
-		using cleanMqtt::mqtt::packets::BinaryData;
+		using cleanMqtt::mqtt::PublishPayloadHeader;
+		using cleanMqtt::mqtt::BinaryData;
 
 		SUBCASE("Encoding Default")
 		{
@@ -455,7 +452,7 @@ TEST_SUITE("Header Tests")
 			ByteBuffer buffer{ 2 };
 			buffer += 0b00010000; // CONNECT packet type
 			buffer += 0; // Remaining length
-			CHECK(cleanMqtt::mqtt::packets::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
+			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
 		}
 
 		SUBCASE("Check Packet Type RESERVED")
@@ -463,7 +460,7 @@ TEST_SUITE("Header Tests")
 			ByteBuffer buffer{ 2 };
 			buffer += 0b00000000; // Invalid packet type
 			buffer += 0; // Remaining length
-			CHECK(cleanMqtt::mqtt::packets::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
+			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
 		}
 	}
 }

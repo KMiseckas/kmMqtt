@@ -9,20 +9,17 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct PublishPayloadHeader : public IDecodeHeader, public IEncodeHeader
 		{
-			struct PublishPayloadHeader : public IDecodeHeader, public IEncodeHeader
-			{
-				PublishPayloadHeader() noexcept;
-				PublishPayloadHeader(BinaryData&& payload) noexcept;
+			PublishPayloadHeader() noexcept;
+			PublishPayloadHeader(BinaryData&& payload) noexcept;
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
-				BinaryData payload;
-			};
-		}
+			BinaryData payload;
+		};
 	}
 }
 

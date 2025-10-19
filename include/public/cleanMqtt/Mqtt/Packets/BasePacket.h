@@ -19,45 +19,42 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		class BasePacket
 		{
-			class BasePacket
-			{
-			public:
-				DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(BasePacket)
+		public:
+			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(BasePacket)
 
 				BasePacket() = delete;
-				BasePacket(const FixedHeaderFlags& flags) noexcept;
-				BasePacket(ByteBuffer&& dataBuffer) noexcept;
-				BasePacket(BasePacket&& other) noexcept;
-				virtual ~BasePacket();
+			BasePacket(const FixedHeaderFlags& flags) noexcept;
+			BasePacket(ByteBuffer&& dataBuffer) noexcept;
+			BasePacket(BasePacket&& other) noexcept;
+			virtual ~BasePacket();
 
-				BasePacket& operator=(BasePacket&& other) noexcept;
+			BasePacket& operator=(BasePacket&& other) noexcept;
 
-				virtual PacketType getPacketType() const noexcept = 0;
+			virtual PacketType getPacketType() const noexcept = 0;
 
-				EncodeResult encode();
-				DecodeResult decode();
+			EncodeResult encode();
+			DecodeResult decode();
 
-				const FixedHeader& getFixedHeader() const;
-				const ByteBuffer* getDataBuffer() const;
+			const FixedHeader& getFixedHeader() const;
+			const ByteBuffer* getDataBuffer() const;
 
-			protected:
-				std::size_t calculateFixedHeaderRemainingLength() const;
+		protected:
+			std::size_t calculateFixedHeaderRemainingLength() const;
 
-				virtual void onFixedHeaderDecoded() const;
+			virtual void onFixedHeaderDecoded() const;
 
-				void addEncodeHeader(const IEncodeHeader* header);
-				void addDecodeHeader(IDecodeHeader* header);
+			void addEncodeHeader(const IEncodeHeader* header);
+			void addDecodeHeader(IDecodeHeader* header);
 
-			private:
-				FixedHeader m_fixedHeader;
+		private:
+			FixedHeader m_fixedHeader;
 
-				std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
-				std::vector<IDecodeHeader*> m_otherDecodeHeaders;
-				ByteBuffer* m_dataBuffer{ nullptr };
-			};
-		}
+			std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
+			std::vector<IDecodeHeader*> m_otherDecodeHeaders;
+			ByteBuffer* m_dataBuffer{ nullptr };
+		};
 	}
 }
 

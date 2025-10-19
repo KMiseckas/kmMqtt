@@ -10,25 +10,22 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct PubAckVariableHeader : public IDecodeHeader, public IEncodeHeader
 		{
-			struct PubAckVariableHeader : public IDecodeHeader, public IEncodeHeader
-			{
-				PubAckVariableHeader() noexcept;
-				PubAckVariableHeader(
-					std::uint16_t packetId,
-					PubAckReasonCode reasonCode,
-					Properties&& properties) noexcept;
+			PubAckVariableHeader() noexcept;
+			PubAckVariableHeader(
+				std::uint16_t packetId,
+				PubAckReasonCode reasonCode,
+				Properties&& properties) noexcept;
 
-				DecodeResult decode(const ByteBuffer& buffer) noexcept override;
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
-				std::uint16_t packetId{ 0U };
-				PubAckReasonCode reasonCode{ PubAckReasonCode::SUCCESS };
-				Properties properties;
-			};
-		}
+			std::uint16_t packetId{ 0U };
+			PubAckReasonCode reasonCode{ PubAckReasonCode::SUCCESS };
+			Properties properties;
+		};
 	}
 }
 

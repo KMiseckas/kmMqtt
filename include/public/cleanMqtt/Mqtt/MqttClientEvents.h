@@ -47,7 +47,7 @@ namespace cleanMqtt
 
 		struct DisconnectEventDetails
 		{
-			packets::DisconnectReasonCode reasonCode;
+			DisconnectReasonCode reasonCode;
 			bool isBrokerInduced{ false };
 			bool isGraceful{ false };
 			ClientError error{};
@@ -56,7 +56,7 @@ namespace cleanMqtt
 		struct PublishEventDetails
 		{
 			std::string topic{ "" };
-			const packets::BinaryData* payload{ nullptr };
+			const BinaryData* payload{ nullptr };
 		};
 
 		struct PublishAckEventDetails
@@ -78,13 +78,13 @@ namespace cleanMqtt
 
 		//Public events
 		using ErrorEvent = events::Event<ClientError, SendResultData>;
-		using ConnectEvent = events::Event<const ConnectEventDetails&, const packets::ConnectAck&>;
-		using ReconnectEvent = events::Event<const ReconnectEventDetails&, const packets::ConnectAck&>;
+		using ConnectEvent = events::Event<const ConnectEventDetails&, const ConnectAck&>;
+		using ReconnectEvent = events::Event<const ReconnectEventDetails&, const ConnectAck&>;
 		using DisconnectEvent = events::Event<const DisconnectEventDetails&>;
-		using PublishEvent = events::Event<const PublishEventDetails&, const packets::Publish&>;
-		using PublishAckEvent = events::Event<const PublishAckEventDetails&, const packets::PublishAck&>;
-		using SubscribeAckEvent = events::Event<const SubscribeAckEventDetails&, const packets::SubscribeAck&>;
-		using UnSubscribeAckEvent = events::Event<const UnSubscribeAckEventDetails&, const packets::UnSubscribeAck&>;
+		using PublishEvent = events::Event<const PublishEventDetails&, const Publish&>;
+		using PublishAckEvent = events::Event<const PublishAckEventDetails&, const PublishAck&>;
+		using SubscribeAckEvent = events::Event<const SubscribeAckEventDetails&, const SubscribeAck&>;
+		using UnSubscribeAckEvent = events::Event<const UnSubscribeAckEventDetails&, const UnSubscribeAck&>;
 	}
 }
 

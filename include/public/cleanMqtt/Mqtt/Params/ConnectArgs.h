@@ -51,14 +51,14 @@ namespace cleanMqtt
 			{
 				if (other.correlationData != nullptr)
 				{
-					packets::BinaryData copyCorrelationData = *other.correlationData.get();
-					correlationData = std::make_unique<packets::BinaryData>(std::move(copyCorrelationData));
+					BinaryData copyCorrelationData = *other.correlationData.get();
+					correlationData = std::make_unique<BinaryData>(std::move(copyCorrelationData));
 				}
 
 				if (other.payload != nullptr)
 				{
-					packets::BinaryData payloadData = *other.payload.get();
-					payload = std::make_unique<packets::BinaryData>(std::move(payloadData));
+					BinaryData payloadData = *other.payload.get();
+					payload = std::make_unique<BinaryData>(std::move(payloadData));
 				}
 			}
 
@@ -107,10 +107,10 @@ namespace cleanMqtt
 				messageExpiryInterval = other.messageExpiryInterval;
 				contentType = other.contentType;
 				responseTopic = other.responseTopic;
-				correlationData = other.correlationData == nullptr ? nullptr : std::make_unique<packets::BinaryData>(*other.correlationData.get());
+				correlationData = other.correlationData == nullptr ? nullptr : std::make_unique<BinaryData>(*other.correlationData.get());
 				willTopic = other.willTopic;
 				payloadFormat = other.payloadFormat;
-				payload = other.payload == nullptr ? nullptr : std::make_unique<packets::BinaryData>(*other.payload.get());
+				payload = other.payload == nullptr ? nullptr : std::make_unique<BinaryData>(*other.payload.get());
 				userProperties = other.userProperties;
 
 
@@ -123,10 +123,10 @@ namespace cleanMqtt
 			std::uint32_t messageExpiryInterval{ 0U };
 			std::string contentType{};
 			std::string responseTopic;
-			std::unique_ptr<packets::BinaryData> correlationData{ nullptr };
+			std::unique_ptr<BinaryData> correlationData{ nullptr };
 			std::string willTopic;
 			PayloadFormatIndicator payloadFormat{ PayloadFormatIndicator::BINARY };
-			std::unique_ptr<packets::BinaryData> payload{ nullptr };
+			std::unique_ptr<BinaryData> payload{ nullptr };
 			std::map<std::string, std::string> userProperties;
 		};
 
@@ -179,7 +179,7 @@ namespace cleanMqtt
 				if (other.extendedAuthenticationData != nullptr)
 				{
 					auto copy = *other.extendedAuthenticationData.get();
-					extendedAuthenticationData = std::make_unique<packets::BinaryData>(std::move(copy));
+					extendedAuthenticationData = std::make_unique<BinaryData>(std::move(copy));
 				}
 			}
 
@@ -232,7 +232,7 @@ namespace cleanMqtt
 				username = other.username;
 				password = other.password;
 				extendedAuthenticationMethod = other.extendedAuthenticationMethod;
-				extendedAuthenticationData = other.extendedAuthenticationData != nullptr ? std::make_unique<packets::BinaryData>(*other.extendedAuthenticationData.get()) : nullptr;
+				extendedAuthenticationData = other.extendedAuthenticationData != nullptr ? std::make_unique<BinaryData>(*other.extendedAuthenticationData.get()) : nullptr;
 				version = other.version;
 				protocolName = other.protocolName;
 				keepAliveInSec = other.keepAliveInSec;
@@ -252,7 +252,7 @@ namespace cleanMqtt
 			std::string username;
 			std::string password;
 			std::string extendedAuthenticationMethod;
-			std::unique_ptr<packets::BinaryData> extendedAuthenticationData{nullptr};
+			std::unique_ptr<BinaryData> extendedAuthenticationData{nullptr};
 			MqttVersion version{ MqttVersion::MQTT_5_0 };
 			std::string protocolName{ "MQTT" };
 			std::uint16_t keepAliveInSec{ 60U };

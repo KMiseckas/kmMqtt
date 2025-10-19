@@ -4,58 +4,55 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		PublishAck::PublishAck(PubAckVariableHeader&& variableHeader) noexcept
+			: m_variableHeader{ new PubAckVariableHeader(std::move(variableHeader)) },
+			BasePacket(FixedHeaderFlags(0U))
 		{
-			PublishAck::PublishAck(PubAckVariableHeader&& variableHeader) noexcept
-				: m_variableHeader{ new PubAckVariableHeader(std::move(variableHeader)) },
-				BasePacket(FixedHeaderFlags(0U))
+			setUpHeaders();
+		}
+
+		PublishAck::PublishAck(ByteBuffer&& dataBuffer) noexcept
+			: BasePacket(std::move(dataBuffer))
+		{
+			setUpHeaders();
+		}
+
+		PublishAck::PublishAck(PublishAck&& other) noexcept
+			: BasePacket(std::move(other)),
+			m_variableHeader(other.m_variableHeader)
+		{
+			other.m_variableHeader = nullptr;
+		}
+
+		PublishAck::~PublishAck()
+		{
+			delete m_variableHeader;
+		}
+
+		PacketType PublishAck::getPacketType() const noexcept
+		{
+			return PacketType::PUBLISH_ACKNOWLEDGE;
+		}
+
+		const PubAckVariableHeader& PublishAck::getVariableHeader() const
+		{
+			return *m_variableHeader;
+		}
+
+		void PublishAck::setUpHeaders() noexcept
+		{
+			if (m_variableHeader == nullptr)
 			{
-				setUpHeaders();
+				m_variableHeader = new PubAckVariableHeader();
 			}
 
-			PublishAck::PublishAck(ByteBuffer&& dataBuffer) noexcept
-				: BasePacket(std::move(dataBuffer))
-			{
-				setUpHeaders();
-			}
+			addEncodeHeader(m_variableHeader);
+			addDecodeHeader(m_variableHeader);
+		}
 
-			PublishAck::PublishAck(PublishAck&& other) noexcept
-				: BasePacket(std::move(other)),
-				m_variableHeader(other.m_variableHeader)
-			{
-				other.m_variableHeader = nullptr;
-			}
-
-			PublishAck::~PublishAck()
-			{
-				delete m_variableHeader;
-			}
-
-			PacketType PublishAck::getPacketType() const noexcept
-			{
-				return PacketType::PUBLISH_ACKNOWLEDGE;
-			}
-
-			const PubAckVariableHeader& PublishAck::getVariableHeader() const
-			{
-				return *m_variableHeader;
-			}
-
-			void PublishAck::setUpHeaders() noexcept
-			{
-				if (m_variableHeader == nullptr)
-				{
-					m_variableHeader = new PubAckVariableHeader();
-				}
-
-				addEncodeHeader(m_variableHeader);
-				addDecodeHeader(m_variableHeader);
-			}
-
-			void PublishAck::onFixedHeaderDecoded() const
-			{
-				// No additional logic required for PUBACK fixed header
-			}
+		void PublishAck::onFixedHeaderDecoded() const
+		{
+			// No additional logic required for PUBACK fixed header
 		}
 	}
 }

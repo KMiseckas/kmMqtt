@@ -62,7 +62,7 @@ namespace cleanMqtt
 			assert(buffer.readCursor() == 0);
 
 			buffer.incrementReadCursor(packetStart + 1);//Ignore the first byte (packet type and flags).
-			mqtt::packets::VariableByteInteger remainingLength{ mqtt::packets::VariableByteInteger::tryCreateFromBuffer(buffer) };
+			mqtt::VariableByteInteger remainingLength{ mqtt::VariableByteInteger::tryCreateFromBuffer(buffer) };
 
 			size_t packetSize{ remainingLength.uint32Value() + 2}; // Length includes the header bytes.
 

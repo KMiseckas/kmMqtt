@@ -50,21 +50,21 @@ namespace cleanMqtt
 			{
 			}
 
-			inline packets::PacketType getRetryPacketType() const noexcept
+			inline PacketType getRetryPacketType() const noexcept
 			{
 				switch(data.status)
 				{
 					case PublishMessageStatus::WaitingForAck:
 					case PublishMessageStatus::WaitingForPubRec:
-						return packets::PacketType::PUBLISH;
+						return PacketType::PUBLISH;
 					case PublishMessageStatus::WaitingForPubRel:
-						return packets::PacketType::PUBLISH_RECEIVED;
+						return PacketType::PUBLISH_RECEIVED;
 					case PublishMessageStatus::WaitingForPubComp:
-						return packets::PacketType::PUBLISH_RELEASED;
+						return PacketType::PUBLISH_RELEASED;
 					case PublishMessageStatus::NeedToSendPubComp:
 					case PublishMessageStatus::NeedToSendPubRel:
 					default:
-						return packets::PacketType::RESERVED; // Should not happen, but just in case
+						return PacketType::RESERVED; // Should not happen, but just in case
 				}
 			}
 

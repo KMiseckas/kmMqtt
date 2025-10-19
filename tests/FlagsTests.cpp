@@ -15,7 +15,7 @@ TEST_SUITE("Flags Tests")
 		};
 		ENUM_FLAG_OPERATORS(TestFlagsEnum)
 
-		using cleanMqtt::mqtt::packets::Flags;
+		using cleanMqtt::mqtt::Flags;
 
 		struct TestFlags : public Flags<std::uint8_t, TestFlagsEnum, 15>
 		{

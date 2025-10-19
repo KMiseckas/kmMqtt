@@ -8,27 +8,24 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		class PublishAck : public BasePacket
 		{
-			class PublishAck : public BasePacket
-			{
-			public:
-				PublishAck(PubAckVariableHeader&& variableHeader) noexcept;
-				PublishAck(ByteBuffer&& dataBuffer) noexcept;
-				PublishAck(PublishAck&& other) noexcept;
-				~PublishAck() override;
+		public:
+			PublishAck(PubAckVariableHeader&& variableHeader) noexcept;
+			PublishAck(ByteBuffer&& dataBuffer) noexcept;
+			PublishAck(PublishAck&& other) noexcept;
+			~PublishAck() override;
 
-				PacketType getPacketType() const noexcept override;
+			PacketType getPacketType() const noexcept override;
 
-				const PubAckVariableHeader& getVariableHeader() const;
+			const PubAckVariableHeader& getVariableHeader() const;
 
-			protected:
-				void setUpHeaders() noexcept;
-				void onFixedHeaderDecoded() const override;
+		protected:
+			void setUpHeaders() noexcept;
+			void onFixedHeaderDecoded() const override;
 
-				PubAckVariableHeader* m_variableHeader{ nullptr };
-			};
-		}
+			PubAckVariableHeader* m_variableHeader{ nullptr };
+		};
 	}
 }
 

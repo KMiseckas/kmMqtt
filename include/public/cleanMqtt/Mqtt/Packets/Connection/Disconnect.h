@@ -8,31 +8,28 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		namespace
 		{
-			namespace
-			{
-				constexpr std::uint8_t k_DisconnectFixedHeaderFlags = 0U;
-			}
-
-			class Disconnect : public BasePacket
-			{
-			public:
-				Disconnect(DisconnectVariableHeader&& varHeader) noexcept;
-				Disconnect(ByteBuffer&& dataBuffer) noexcept;
-				Disconnect(Disconnect&& other) noexcept;
-				~Disconnect() override;
-
-				PacketType getPacketType() const noexcept override;
-
-				const DisconnectVariableHeader& getVariableHeader() const;
-
-				void setUpHeaders() noexcept;
-
-			private:
-				DisconnectVariableHeader* m_variableHeader{ nullptr };
-			};
+			constexpr std::uint8_t k_DisconnectFixedHeaderFlags = 0U;
 		}
+
+		class Disconnect : public BasePacket
+		{
+		public:
+			Disconnect(DisconnectVariableHeader&& varHeader) noexcept;
+			Disconnect(ByteBuffer&& dataBuffer) noexcept;
+			Disconnect(Disconnect&& other) noexcept;
+			~Disconnect() override;
+
+			PacketType getPacketType() const noexcept override;
+
+			const DisconnectVariableHeader& getVariableHeader() const;
+
+			void setUpHeaders() noexcept;
+
+		private:
+			DisconnectVariableHeader* m_variableHeader{ nullptr };
+		};
 	}
 }
 

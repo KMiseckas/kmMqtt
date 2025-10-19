@@ -2,30 +2,27 @@
 
 namespace cleanMqtt
 {
-    namespace mqtt
-    {
-        namespace packets
-        {
-            DecodeResult UnSubscribeAckVariableHeader::decode(const ByteBuffer& buffer) noexcept
-            {
-                DecodeResult result;
+	namespace mqtt
+	{
+		DecodeResult UnSubscribeAckVariableHeader::decode(const ByteBuffer& buffer) noexcept
+		{
+			DecodeResult result;
 
-                packetId = buffer.readUInt16();
+			packetId = buffer.readUInt16();
 
-                if (packetId == 0)
-                {
-                    result.code = DecodeErrorCode::PROTOCOL_ERROR;
-                    result.reason = "Packet ID cannot be zero in UNSUBACK";
-                    return result;
-                }
+			if (packetId == 0)
+			{
+				result.code = DecodeErrorCode::PROTOCOL_ERROR;
+				result.reason = "Packet ID cannot be zero in UNSUBACK";
+				return result;
+			}
 
-                if (buffer.readHeadroom() > 0)
-                {
-                    result = properties.decode(buffer);
-                }
+			if (buffer.readHeadroom() > 0)
+			{
+				result = properties.decode(buffer);
+			}
 
-                return result;
-            }
-        }
-    }
+			return result;
+		}
+	}
 }

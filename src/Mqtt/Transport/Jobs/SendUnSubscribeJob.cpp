@@ -22,7 +22,7 @@ namespace cleanMqtt
 
 		SendResultData SendUnSubscribeJob::send() noexcept
 		{
-			packets::UnSubscribe packet{ createUnSubscribePacket(m_packetId, m_topics, m_unSubscribeOptions) };
+			UnSubscribe packet{ createUnSubscribePacket(m_packetId, m_topics, m_unSubscribeOptions) };
 			EncodeResult result{ packet.encode() };
 
 			if (!result.isSuccess())

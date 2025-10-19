@@ -4,24 +4,21 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		ConnectAckVariableHeader::ConnectAckVariableHeader() noexcept
 		{
-			ConnectAckVariableHeader::ConnectAckVariableHeader() noexcept
-			{
-				flags.setFlagValue(ConnectAcknowledgeFlags::RESERVED, 0);
-			}
+			flags.setFlagValue(ConnectAcknowledgeFlags::RESERVED, 0);
+		}
 
-			DecodeResult ConnectAckVariableHeader::decode(const ByteBuffer& buffer) noexcept
-			{
-				DecodeResult result;
+		DecodeResult ConnectAckVariableHeader::decode(const ByteBuffer& buffer) noexcept
+		{
+			DecodeResult result;
 
-				flags.overrideFlags(buffer.readUint8());
-				reasonCode = static_cast<ConnectReasonCode>(buffer.readUint8());
+			flags.overrideFlags(buffer.readUint8());
+			reasonCode = static_cast<ConnectReasonCode>(buffer.readUint8());
 
-				result = std::move(properties.decode(buffer));
+			result = std::move(properties.decode(buffer));
 
-				return result;
-			}
+			return result;
 		}
 	}
 }

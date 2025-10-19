@@ -30,7 +30,7 @@ namespace cleanMqtt
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(ISendJob)
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ISendJob)
 
-			using PacketSendDelegate = std::function<int(const packets::BasePacket& packet)>;
+			using PacketSendDelegate = std::function<int(const BasePacket& packet)>;
 
 			ISendJob(MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback) noexcept

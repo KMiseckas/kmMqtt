@@ -7,36 +7,33 @@
 
 namespace cleanMqtt
 {
-    namespace mqtt
-    {
-        namespace packets
-        {
-            namespace
-            {
-                constexpr std::uint8_t k_SubscribeFixedHeaderFlags = 0x02U;
-            }
+	namespace mqtt
+	{
+		namespace
+		{
+			constexpr std::uint8_t k_SubscribeFixedHeaderFlags = 0x02U;
+		}
 
-            class Subscribe : public BasePacket
-            {
-            public:
-                Subscribe(SubscribeVariableHeader&& variableHeader, SubscribePayloadHeader&& payloadHeader) noexcept;
-                Subscribe(ByteBuffer&& dataBuffer) noexcept;
-                Subscribe(Subscribe&& other) noexcept;
-                ~Subscribe() override;
+		class Subscribe : public BasePacket
+		{
+		public:
+			Subscribe(SubscribeVariableHeader&& variableHeader, SubscribePayloadHeader&& payloadHeader) noexcept;
+			Subscribe(ByteBuffer&& dataBuffer) noexcept;
+			Subscribe(Subscribe&& other) noexcept;
+			~Subscribe() override;
 
-                PacketType getPacketType() const noexcept override;
+			PacketType getPacketType() const noexcept override;
 
-                const SubscribeVariableHeader& getVariableHeader() const;
-                const SubscribePayloadHeader& getPayloadHeader() const;
+			const SubscribeVariableHeader& getVariableHeader() const;
+			const SubscribePayloadHeader& getPayloadHeader() const;
 
-            private:
-                void setUpHeaders() noexcept;
+		private:
+			void setUpHeaders() noexcept;
 
-                SubscribeVariableHeader* m_variableHeader{ nullptr };
-                SubscribePayloadHeader* m_payloadHeader{ nullptr };
-            };
-        }
-    }
+			SubscribeVariableHeader* m_variableHeader{ nullptr };
+			SubscribePayloadHeader* m_payloadHeader{ nullptr };
+		};
+	}
 }
 
 #endif //INCLUDE_CLEANMQTT_MQTT_PACKETS_SUBSCRIBE_SUBSCRIBE_H

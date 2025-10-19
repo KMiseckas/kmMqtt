@@ -10,18 +10,15 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		enum class ConnectAcknowledgeFlags : std::uint8_t
 		{
-			enum class ConnectAcknowledgeFlags : std::uint8_t
-			{
-				SESSION_PRESENT = 1 << 0,
-				RESERVED = 0b11111110
-			};
+			SESSION_PRESENT = 1 << 0,
+			RESERVED = 0b11111110
+		};
 
-			ENUM_FLAG_OPERATORS(ConnectAcknowledgeFlags)
+		ENUM_FLAG_OPERATORS(ConnectAcknowledgeFlags)
 
 			using EncodedConnectAcknowledgeFlags = Flags<std::uint8_t, ConnectAcknowledgeFlags, 255>;
-		}
 	}
 }
 

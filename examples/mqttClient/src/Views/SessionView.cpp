@@ -365,8 +365,8 @@ void SessionView::drawConnectAdvancedArgs()
 	if (ImGui::InputText("##ExtendedAuthData", UIData.extendedAuthData, sizeof(UIData.extendedAuthData)))
 	{
 		m_model->connectArgs.extendedAuthenticationData = std::move(
-			std::make_unique<cleanMqtt::mqtt::packets::BinaryData>(
-				cleanMqtt::mqtt::packets::BinaryData(
+			std::make_unique<cleanMqtt::mqtt::BinaryData>(
+				cleanMqtt::mqtt::BinaryData(
 					static_cast<std::uint16_t>(std::strlen(UIData.extendedAuthData)),
 					(const uint8_t*)UIData.extendedAuthData)));
 	}
@@ -520,7 +520,7 @@ void SessionView::drawWillArgs()
 
 		if (!showPayloadEditor)
 		{
-			m_model->connectArgs.will->payload = std::make_unique<cleanMqtt::mqtt::packets::BinaryData>(cleanMqtt::mqtt::packets::BinaryData(std::strlen(UIData.willPayload), reinterpret_cast<const uint8_t*>(UIData.willPayload)));
+			m_model->connectArgs.will->payload = std::make_unique<cleanMqtt::mqtt::BinaryData>(cleanMqtt::mqtt::BinaryData(std::strlen(UIData.willPayload), reinterpret_cast<const uint8_t*>(UIData.willPayload)));
 		}
 	}
 

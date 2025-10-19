@@ -58,7 +58,7 @@ TEST_SUITE("MqttClient Publish")
         bool pubAckEventFired = false;
         std::uint16_t ackedPacketId = 0;
 
-		testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::packets::PublishAck&)
+		testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck&)
 			{
 				pubAckEventFired = true;
 				ackedPacketId = details.packetId;

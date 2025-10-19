@@ -4,35 +4,32 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		PublishPayloadHeader::PublishPayloadHeader() noexcept
 		{
-			PublishPayloadHeader::PublishPayloadHeader() noexcept
-			{
-			}
+		}
 
-			PublishPayloadHeader::PublishPayloadHeader(BinaryData&& payload) noexcept
-				: payload{std::move(payload)}
-			{
-			}
+		PublishPayloadHeader::PublishPayloadHeader(BinaryData&& payload) noexcept
+			: payload{ std::move(payload) }
+		{
+		}
 
-			DecodeResult PublishPayloadHeader::decode(const ByteBuffer& buffer) noexcept
-			{
-				DecodeResult result;
+		DecodeResult PublishPayloadHeader::decode(const ByteBuffer& buffer) noexcept
+		{
+			DecodeResult result;
 
-				payload.decode(buffer);
+			payload.decode(buffer);
 
-				return result;
-			}
+			return result;
+		}
 
-			void PublishPayloadHeader::encode(ByteBuffer& buffer) const
-			{
-				payload.encode(buffer);
-			}
+		void PublishPayloadHeader::encode(ByteBuffer& buffer) const
+		{
+			payload.encode(buffer);
+		}
 
-			std::size_t PublishPayloadHeader::getEncodedBytesSize() const noexcept
-			{
-				return payload.encodingSize();
-			}
+		std::size_t PublishPayloadHeader::getEncodedBytesSize() const noexcept
+		{
+			return payload.encodingSize();
 		}
 	}
 }

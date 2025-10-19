@@ -23,8 +23,6 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{	
-		using namespace packets;
-
 		Connect createConnectPacket(const MqttConnectionInfo& connectionInfo) noexcept;
 		Disconnect createDisconnectPacket(const MqttConnectionInfo& connectionInfo, const DisconnectArgs& args, DisconnectReasonCode reason) noexcept;
 		PingReq createPingRequestPacket() noexcept;

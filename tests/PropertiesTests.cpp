@@ -8,7 +8,7 @@
 
 TEST_SUITE("Properties Tests")
 {
-	using namespace cleanMqtt::mqtt::packets;
+	using namespace cleanMqtt::mqtt;
 
 	TEST_CASE("Adding/Getting property")
 	{

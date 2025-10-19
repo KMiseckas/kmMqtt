@@ -79,29 +79,29 @@ namespace cleanMqtt
 
 		Disconnect createDisconnectPacket(const MqttConnectionInfo& connectionInfo, const DisconnectArgs& args, DisconnectReasonCode reason) noexcept
 		{
-			packets::Properties properties;
-			properties.tryAddProperty(packets::PropertyType::SESSION_EXPIRY_INTERVAL, args.sessionExpiryInterval, connectionInfo.connectArgs.sessionExpiryInterval != 0);
-			properties.tryAddProperty(packets::PropertyType::REASON_STRING, UTF8String{ args.disconnectReasonText }, !args.disconnectReasonText.empty());
+			Properties properties;
+			properties.tryAddProperty(PropertyType::SESSION_EXPIRY_INTERVAL, args.sessionExpiryInterval, connectionInfo.connectArgs.sessionExpiryInterval != 0);
+			properties.tryAddProperty(PropertyType::REASON_STRING, UTF8String{ args.disconnectReasonText }, !args.disconnectReasonText.empty());
 
 			for (const auto& property : args.userProperties)
 			{
 				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
 			}
 
-			packets::DisconnectVariableHeader header{ reason, std::move(properties) };
-			packets::Disconnect disconnectPacket{ std::move(header) };
+			DisconnectVariableHeader header{ reason, std::move(properties) };
+			Disconnect disconnectPacket{ std::move(header) };
 
 			return disconnectPacket;
 		}
 
 		PingReq createPingRequestPacket() noexcept
 		{
-			return packets::PingReq{};
+			return PingReq{};
 		}
 
 		PingResp createPingResponsePacket() noexcept
 		{
-			return packets::PingResp{};
+			return PingResp{};
 		}
 
 		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, std::uint16_t packetId) noexcept
@@ -111,7 +111,7 @@ namespace cleanMqtt
 			PublishVariableHeader varHeader;
 			PublishPayloadHeader payloadHeader;
 
-			packets::Properties properties;
+			Properties properties;
 			properties.tryAddProperty(PropertyType::PAYLOAD_FORMAT_INDICATOR, options.payloadFormatIndicator);
 			properties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, options.messageExpiryInterval, options.addMessageExpiryInterval);
 			properties.tryAddProperty(PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
@@ -136,13 +136,13 @@ namespace cleanMqtt
 
 			EncodedPublishFlags flags{ false, options.qos, options.retain };
 
-			return packets::Publish{ std::move(payloadHeader), std::move(varHeader), flags };
+			return Publish{ std::move(payloadHeader), std::move(varHeader), flags };
 		}
 
 		
 		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept
 		{
-			packets::Properties properties;
+			Properties properties;
 			properties.tryAddProperty(PropertyType::REASON_STRING, options.reasonString, !options.reasonString.empty());
 
 			for (const auto& property : options.userProperties)
@@ -151,12 +151,12 @@ namespace cleanMqtt
 			}
 
 			PubAckVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
-			return packets::PublishAck{ std::move(varHeader) };
+			return PublishAck{ std::move(varHeader) };
 		}
 
 		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept
 		{
-			packets::Properties properties;
+			Properties properties;
 			properties.tryAddProperty(PropertyType::SUBSCRIPTION_IDENTIFIER, VariableByteInteger(options.subscribeIdentifier), options.subscribeIdentifier.uint32Value() != 0);
 
 			for (const auto& property : options.userProperties)
@@ -181,12 +181,12 @@ namespace cleanMqtt
 			SubscribeVariableHeader varHeader{ packetId, std::move(properties) };
 			SubscribePayloadHeader payloadHeader{ std::move(subscriptions) };
 
-			return packets::Subscribe{ std::move(varHeader), std::move(payloadHeader)};
+			return Subscribe{ std::move(varHeader), std::move(payloadHeader)};
 		}
 
 		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept
 		{
-			packets::Properties properties;
+			Properties properties;
 			for (const auto& property : options.userProperties)
 			{
 				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
@@ -203,7 +203,7 @@ namespace cleanMqtt
 			UnSubscribeVariableHeader varHeader{ packetId, std::move(properties) };
 			UnSubscribePayloadHeader payloadHeader{ std::move(topicsFilter) };
 
-			return packets::UnSubscribe{ std::move(varHeader), std::move(payloadHeader) };
+			return UnSubscribe{ std::move(varHeader), std::move(payloadHeader) };
 		}
 	}
 }

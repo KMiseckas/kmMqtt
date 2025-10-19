@@ -13,64 +13,61 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		template<typename TSizeType, typename TFlagBitsEnum, std::size_t MaxFlagSize>
+		struct Flags
 		{
-			template<typename TSizeType, typename TFlagBitsEnum, std::size_t MaxFlagSize>
-			struct Flags
+			Flags() noexcept = default;
+			Flags(TSizeType flags) noexcept : m_flags(flags) {}
+
+			TSizeType getFlags() const
 			{
-				Flags() noexcept = default;
-				Flags(TSizeType flags) noexcept : m_flags(flags) {}
+				return m_flags;
+			}
 
-				TSizeType getFlags() const
+			template<typename TReturnType = TSizeType>
+			TReturnType getFlagValue(const TFlagBitsEnum& flagToCheck) const
+			{
+				const TSizeType bitmask = static_cast<TSizeType>(flagToCheck);
+				assert(arePositiveBitsContiguous<TSizeType>(bitmask));
+
+				return static_cast<TReturnType>((m_flags & bitmask) >> getFirstBitPosition<TSizeType>(bitmask));
+			}
+
+			void setFlagValue(const TFlagBitsEnum& flagToSet, TSizeType val)
+			{
+				if (static_cast<std::size_t>(flagToSet) > MaxFlagSize)
 				{
-					return m_flags;
+					LogException("Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
 				}
 
-				template<typename TReturnType = TSizeType>
-				TReturnType getFlagValue(const TFlagBitsEnum& flagToCheck) const
-				{
-					const TSizeType bitmask = static_cast<TSizeType>(flagToCheck);
-					assert(arePositiveBitsContiguous<TSizeType>(bitmask));
+				const TSizeType bitmask = static_cast<TSizeType>(flagToSet);
+				assert(arePositiveBitsContiguous<TSizeType>(bitmask));
 
-					return static_cast<TReturnType>((m_flags & bitmask) >> getFirstBitPosition<TSizeType>(bitmask));
+				m_flags &= ~bitmask;
+				m_flags |= (val << getFirstBitPosition<TSizeType>(bitmask)) & bitmask;
+			}
+
+			void setMultipleFlagsValue(const TFlagBitsEnum& flagToSet, bool val)
+			{
+				if (static_cast<std::size_t>(flagToSet) > MaxFlagSize)
+				{
+					LogException("Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
 				}
 
-				void setFlagValue(const TFlagBitsEnum& flagToSet, TSizeType val)
-				{
-					if (static_cast<std::size_t>(flagToSet) > MaxFlagSize)
-					{
-						LogException("Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
-					}
+				const TSizeType bitmask = static_cast<TSizeType>(flagToSet);
 
-					const TSizeType bitmask = static_cast<TSizeType>(flagToSet);
-					assert(arePositiveBitsContiguous<TSizeType>(bitmask));
+				m_flags = val ? m_flags | bitmask : m_flags & ~bitmask;
+			}
 
-					m_flags &= ~bitmask;
-					m_flags |= (val << getFirstBitPosition<TSizeType>(bitmask)) & bitmask;
-				}
+			void overrideFlags(TSizeType bitmask) noexcept
+			{
+				m_flags = bitmask;
+			}
 
-				void setMultipleFlagsValue(const TFlagBitsEnum& flagToSet, bool val)
-				{
-					if (static_cast<std::size_t>(flagToSet) > MaxFlagSize)
-					{
-						LogException("Flags", std::runtime_error("Cannot set flag that exceeds MaxFlagSize."));
-					}
+		private:
 
-					const TSizeType bitmask = static_cast<TSizeType>(flagToSet);
-
-					m_flags = val ? m_flags | bitmask : m_flags & ~bitmask;
-				}
-
-				void overrideFlags(TSizeType bitmask) noexcept
-				{
-					m_flags = bitmask;
-				}
-
-			private:
-
-				TSizeType m_flags{ 0 };
-			};
-		}
+			TSizeType m_flags{ 0 };
+		};
 	}
 }
 

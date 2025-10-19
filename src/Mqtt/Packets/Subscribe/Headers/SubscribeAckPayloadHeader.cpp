@@ -3,21 +3,18 @@
 
 namespace cleanMqtt
 {
-    namespace mqtt
-    {
-        namespace packets
-        {
-            DecodeResult SubscribeAckPayloadHeader::decode(const ByteBuffer& buffer) noexcept
-            {
-                reasonCodes.clear();
+	namespace mqtt
+	{
+		DecodeResult SubscribeAckPayloadHeader::decode(const ByteBuffer& buffer) noexcept
+		{
+			reasonCodes.clear();
 
-                while (buffer.readHeadroom() > 0)
-                {
-                    reasonCodes.push_back(static_cast<SubAckReasonCode>(buffer.readUint8()));
-                }
+			while (buffer.readHeadroom() > 0)
+			{
+				reasonCodes.push_back(static_cast<SubAckReasonCode>(buffer.readUint8()));
+			}
 
-                return DecodeResult{ DecodeErrorCode::NO_ERROR };
-            }
-        }
-    }
+			return DecodeResult{ DecodeErrorCode::NO_ERROR };
+		}
+	}
 }

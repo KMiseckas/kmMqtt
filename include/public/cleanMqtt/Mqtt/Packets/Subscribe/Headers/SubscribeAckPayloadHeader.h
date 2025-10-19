@@ -8,20 +8,17 @@
 
 namespace cleanMqtt
 {
-    namespace mqtt
-    {
-        namespace packets
-        {
-            struct SubscribeAckPayloadHeader : public IDecodeHeader
-            {
-                SubscribeAckPayloadHeader() noexcept = default;
+	namespace mqtt
+	{
+		struct SubscribeAckPayloadHeader : public IDecodeHeader
+		{
+			SubscribeAckPayloadHeader() noexcept = default;
 
-                DecodeResult decode(const ByteBuffer& buffer) noexcept override;
+			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 
-                std::vector<SubAckReasonCode> reasonCodes;
-            };
-        }
-    }
+			std::vector<SubAckReasonCode> reasonCodes;
+		};
+	}
 }
 
 #endif // INTERFACE_CLEANMQTT_MQTT_PACKETS_SUBSCRIBE_HEADERS_SUBSCRIBEACKPAYLOADHEADER_H

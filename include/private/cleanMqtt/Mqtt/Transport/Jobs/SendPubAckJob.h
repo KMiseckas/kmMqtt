@@ -15,7 +15,7 @@ namespace cleanMqtt
 			SendPubAckJob(mqtt::MqttConnectionInfo* connectionInfo,
 				PacketSendDelegate sendPacketCallback,
 				std::uint16_t publishPacketId,
-				packets::PubAckReasonCode reasonCode,
+				PubAckReasonCode reasonCode,
 				PubAckOptions&& options) noexcept
 				: ISendJob(connectionInfo, sendPacketCallback),
 				m_publishPacketId(publishPacketId),
@@ -29,7 +29,7 @@ namespace cleanMqtt
 
 		private:
 			std::uint16_t m_publishPacketId;
-			packets::PubAckReasonCode m_reasonCode;
+			PubAckReasonCode m_reasonCode;
 			PubAckOptions m_options;
 		};
 	}

@@ -8,33 +8,30 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		namespace
 		{
-			namespace
-			{
-				constexpr std::uint8_t k_ConnectAckFixedHeaderFlags = 0U;
-			}
-			
-			class ConnectAck : public BasePacket
-			{
-			public:
-				ConnectAck() noexcept;
-				ConnectAck(ByteBuffer&& dataBuffer) noexcept;
-				ConnectAck(ConnectAck&& other) noexcept;
-				~ConnectAck() override;
-
-				ConnectAck& operator=(ConnectAck&& other) noexcept;
-
-				PacketType getPacketType() const noexcept override;
-
-				const ConnectAckVariableHeader& getVariableHeader() const noexcept;
-
-			protected:
-				void setUpHeaders() noexcept;
-
-				ConnectAckVariableHeader* m_variableHeader{ nullptr };
-			};
+			constexpr std::uint8_t k_ConnectAckFixedHeaderFlags = 0U;
 		}
+
+		class ConnectAck : public BasePacket
+		{
+		public:
+			ConnectAck() noexcept;
+			ConnectAck(ByteBuffer&& dataBuffer) noexcept;
+			ConnectAck(ConnectAck&& other) noexcept;
+			~ConnectAck() override;
+
+			ConnectAck& operator=(ConnectAck&& other) noexcept;
+
+			PacketType getPacketType() const noexcept override;
+
+			const ConnectAckVariableHeader& getVariableHeader() const noexcept;
+
+		protected:
+			void setUpHeaders() noexcept;
+
+			ConnectAckVariableHeader* m_variableHeader{ nullptr };
+		};
 	}
 }
 

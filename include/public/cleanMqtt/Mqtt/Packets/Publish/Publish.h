@@ -10,29 +10,26 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		class Publish : public BasePacket
 		{
-			class Publish : public BasePacket
-			{
-			public:
-				Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept;
-				Publish(ByteBuffer&& dataBuffer) noexcept;
-				Publish(Publish&& other) noexcept;
-				~Publish() override;
+		public:
+			Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept;
+			Publish(ByteBuffer&& dataBuffer) noexcept;
+			Publish(Publish&& other) noexcept;
+			~Publish() override;
 
-				PacketType getPacketType() const noexcept override;
+			PacketType getPacketType() const noexcept override;
 
-				const PublishVariableHeader& getVariableHeader() const;
-				const PublishPayloadHeader& getPayloadHeader() const;
+			const PublishVariableHeader& getVariableHeader() const;
+			const PublishPayloadHeader& getPayloadHeader() const;
 
-			protected:
-				void setUpHeaders() noexcept;
-				void onFixedHeaderDecoded() const override;
+		protected:
+			void setUpHeaders() noexcept;
+			void onFixedHeaderDecoded() const override;
 
-				PublishVariableHeader* m_variableHeader{ nullptr };
-				PublishPayloadHeader* m_payloadHeader{ nullptr };
-			};
-		}
+			PublishVariableHeader* m_variableHeader{ nullptr };
+			PublishPayloadHeader* m_payloadHeader{ nullptr };
+		};
 	}
 }
 

@@ -10,30 +10,27 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		struct ConnectPayloadHeader : IEncodeHeader
 		{
-			struct ConnectPayloadHeader : IEncodeHeader
-			{
-				ConnectPayloadHeader() noexcept;
-				ConnectPayloadHeader(
-					UTF8String&& clientId,
-					Properties&& willProperties,
-					UTF8String&& willTopic,
-					BinaryData&& willPayload,
-					UTF8String&& userName,
-					BinaryData&& password) noexcept;
+			ConnectPayloadHeader() noexcept;
+			ConnectPayloadHeader(
+				UTF8String&& clientId,
+				Properties&& willProperties,
+				UTF8String&& willTopic,
+				BinaryData&& willPayload,
+				UTF8String&& userName,
+				BinaryData&& password) noexcept;
 
-				void encode(ByteBuffer& buffer) const override;
-				std::size_t getEncodedBytesSize() const noexcept;
+			void encode(ByteBuffer& buffer) const override;
+			std::size_t getEncodedBytesSize() const noexcept;
 
-				UTF8String clientId;	
-				Properties willProperties;
-				UTF8String willTopic;
-				BinaryData willPayload;
-				UTF8String userName;
-				BinaryData password;
-			};
-		}
+			UTF8String clientId;
+			Properties willProperties;
+			UTF8String willTopic;
+			BinaryData willPayload;
+			UTF8String userName;
+			BinaryData password;
+		};
 	}
 }
 

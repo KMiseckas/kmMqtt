@@ -50,7 +50,7 @@ TEST_SUITE("MqttClient Connect")
         mqtt::ClientError connectEventError = { mqtt::ClientErrorCode::No_Error };
 		bool hasReceivedConnectAck = false;
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck&)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
             {
                 connectEventFired = true;
                 connectEventSuccess = details.isSuccessful;
@@ -84,7 +84,7 @@ TEST_SUITE("MqttClient Connect")
         mqtt::ClientError connectEventError = { mqtt::ClientErrorCode::No_Error };
         bool hasReceivedConnectAck = false;
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck&)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
             {
                 connectEventFired = true;
                 connectEventSuccess = details.isSuccessful;
@@ -127,7 +127,7 @@ TEST_SUITE("MqttClient Connect")
         mqtt::ClientError connectEventError = { mqtt::ClientErrorCode::No_Error };
         bool hasReceivedConnectAck = false;
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck&)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
             {
                 connectEventFired = true;
                 connectEventSuccess = details.isSuccessful;
@@ -169,14 +169,14 @@ TEST_SUITE("MqttClient Connect")
         mqtt::ClientError connectEventError = { mqtt::ClientErrorCode::No_Error };
         bool hasReceivedConnectAck = false;
 
-		testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck& packet)
+		testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck& packet)
 			{
 				connectEventFired = true;
 				connectEventSuccess = details.isSuccessful;
 				connectEventError = details.error;
 				hasReceivedConnectAck = details.hasReceivedAck;
 
-				CHECK(packet.getVariableHeader().reasonCode == packets::ConnectReasonCode::UNSPECIFIED_ERROR);
+				CHECK(packet.getVariableHeader().reasonCode == ConnectReasonCode::UNSPECIFIED_ERROR);
 			});
 
         testContext.tryConnect();
@@ -201,7 +201,7 @@ TEST_SUITE("MqttClient Connect")
     {
         TestClientContext testContext{ {}, true };
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck&)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
             {
                 CHECK(false); // Should not onConnectEvent
             });
@@ -225,7 +225,7 @@ TEST_SUITE("MqttClient Connect")
     {
         TestClientContext testContext{ {}, true };
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck&)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
             {
                
             });
@@ -261,7 +261,7 @@ TEST_SUITE("MqttClient Connect")
         mqtt::ClientError connectEventError = { mqtt::ClientErrorCode::No_Error };
         bool hasReceivedConnectAck = false;
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck&)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
             {
                 connectEventFired = true;
                 connectEventSuccess = details.isSuccessful;
@@ -325,7 +325,7 @@ TEST_SUITE("MqttClient Connect")
         auto args = TestClientContext::getDefaultConnectArgs();
         args.will = std::make_unique<cleanMqtt::mqtt::Will>("will/topic");
         static constexpr uint8_t data[] = { 1,2,3 };
-        args.will->payload = std::make_unique<cleanMqtt::mqtt::packets::BinaryData>(sizeof(data), data);
+        args.will->payload = std::make_unique<cleanMqtt::mqtt::BinaryData>(sizeof(data), data);
         args.will->willQos = cleanMqtt::mqtt::Qos::QOS_1;
         args.will->retainWillMessage = true;
         testContext.tryConnect(cleanMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
@@ -346,13 +346,13 @@ TEST_SUITE("MqttClient Connect")
     {
         TestClientContext testContext{ {}, true };
         bool connectEventFired = false;
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck& ack)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck& ack)
             {
                 connectEventFired = true;
                 CHECK(details.isSuccessful);
                 CHECK(details.hasReceivedAck);
                 const uint32_t* interval;
-                CHECK(ack.getVariableHeader().properties.tryGetProperty(mqtt::packets::PropertyType::SESSION_EXPIRY_INTERVAL, interval));
+                CHECK(ack.getVariableHeader().properties.tryGetProperty(mqtt::PropertyType::SESSION_EXPIRY_INTERVAL, interval));
 				CHECK(*interval == 1);
             });
 
@@ -378,7 +378,7 @@ TEST_SUITE("MqttClient Connect")
         TestClientContext testContext{ {}, true };
         bool connectEventFired = false;
 		bool disconnectCalled = false;
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck& ack)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck& ack)
             {
                 CHECK(!disconnectCalled); //Connect event trigger first.
                 connectEventFired = true;
@@ -390,7 +390,7 @@ TEST_SUITE("MqttClient Connect")
             {
                 disconnectCalled = true;
                 CHECK(details.error.errorCode == mqtt::ClientErrorCode::No_Error);
-				CHECK(details.reasonCode == mqtt::packets::DisconnectReasonCode::MALFORMED_PACKET);
+				CHECK(details.reasonCode == mqtt::DisconnectReasonCode::MALFORMED_PACKET);
                 CHECK(!details.isBrokerInduced);
             });
 
@@ -420,14 +420,14 @@ TEST_SUITE("MqttClient Connect")
         mqtt::ClientError connectEventError = { mqtt::ClientErrorCode::No_Error };
         bool hasReceivedConnectAck = false;
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck& packet)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck& packet)
             {
                 connectEventFired = true;
                 connectEventSuccess = details.isSuccessful;
                 connectEventError = details.error;
                 hasReceivedConnectAck = details.hasReceivedAck;
 
-                CHECK(packet.getVariableHeader().reasonCode == mqtt::packets::ConnectReasonCode::NOT_AUTHORIZED);
+                CHECK(packet.getVariableHeader().reasonCode == mqtt::ConnectReasonCode::NOT_AUTHORIZED);
             });
 
         testContext.tryConnect();
@@ -452,11 +452,11 @@ TEST_SUITE("MqttClient Connect")
         TestClientContext testContext{ {}, true };
         bool connectEventFired = false;
 
-        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::packets::ConnectAck& packet)
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck& packet)
             {
                 connectEventFired = true;
                 CHECK(!details.isSuccessful);
-                CHECK(packet.getVariableHeader().reasonCode == mqtt::packets::ConnectReasonCode::PROTOCOL_ERROR);
+                CHECK(packet.getVariableHeader().reasonCode == mqtt::ConnectReasonCode::PROTOCOL_ERROR);
             });
 
         testContext.tryConnect();

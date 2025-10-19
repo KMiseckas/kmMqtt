@@ -4,7 +4,6 @@
 
 TEST_SUITE("Connect Packet Tests")
 {
-	using namespace cleanMqtt::mqtt::packets;
 	using namespace cleanMqtt::mqtt;
 
 	TEST_CASE("Packet")

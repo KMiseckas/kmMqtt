@@ -11,23 +11,20 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		namespace packets
+		enum class ConnectFlags : std::uint8_t
 		{
-				enum class ConnectFlags : std::uint8_t
-				{
-					RESERVED = 1 << 0,
-					CLEAN_START = 1 << 1,
-					WILL_FLAG = 1 << 2,
-					WILL_QOS = 1 << 3 | 1<< 4,
-					WILL_RETAIN = 1 << 5,
-					PASSWORD = 1 << 6,
-					USER_NAME = 1 << 7,
-				};
+			RESERVED = 1 << 0,
+			CLEAN_START = 1 << 1,
+			WILL_FLAG = 1 << 2,
+			WILL_QOS = 1 << 3 | 1 << 4,
+			WILL_RETAIN = 1 << 5,
+			PASSWORD = 1 << 6,
+			USER_NAME = 1 << 7,
+		};
 
-				ENUM_FLAG_OPERATORS(ConnectFlags)
+		ENUM_FLAG_OPERATORS(ConnectFlags)
 
-				using EncodedConnectFlags = Flags<std::uint8_t, ConnectFlags, 255>;
-		}
+			using EncodedConnectFlags = Flags<std::uint8_t, ConnectFlags, 255>;
 	}
 }
 
