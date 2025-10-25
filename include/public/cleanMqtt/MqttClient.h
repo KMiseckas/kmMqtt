@@ -33,7 +33,7 @@ namespace cleanMqtt
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
 
 			MqttClient();
-			MqttClient(const IMqttEnvironment* const env);
+			MqttClient(const IMqttEnvironment* const env, bool tickAsync);
 			~MqttClient();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
@@ -43,7 +43,7 @@ namespace cleanMqtt
 			ClientError disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
-			void tick(float deltaTime) noexcept;
+			ClientError tick() noexcept;
 
 			ErrorEvent& onErrorEvent() noexcept;
 			ConnectEvent& onConnectEvent() noexcept;
@@ -55,6 +55,7 @@ namespace cleanMqtt
 
 			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
+			bool getIsTickAsync() const noexcept;
 
 		private:
 			std::unique_ptr<MqttClientImpl> m_impl{ nullptr };

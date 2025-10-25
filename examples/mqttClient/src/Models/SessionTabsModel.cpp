@@ -18,7 +18,7 @@ bool SessionTabsModel::addSession(SessionAddedCallback callback)
 	model->setIndex(static_cast<std::uint8_t>(m_sessions.size()));
 	model->setName("New Session");
 
-	m_sessions.push_back(model);
+	m_sessions.push_back(std::move(model));
 	setOpenSession(static_cast<std::uint8_t>(m_sessions.size() - 1));
 
 	if (callback != nullptr)

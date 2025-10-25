@@ -42,7 +42,7 @@ TEST_SUITE("MqttClient Disconnect")
         testContext.receiveResponse(ackBuffer);
 
         auto err = testContext.client->disconnect();
-        testContext.client->tick(.1f);
+        testContext.client->tick();
         CHECK(err.errorCode == ClientErrorCode::No_Error);
 
         CHECK(disconnectEventFired);
@@ -74,7 +74,7 @@ TEST_SUITE("MqttClient Disconnect")
         DisconnectArgs args;
         args.willPublish = true;
         auto err = testContext.client->disconnect(std::move(args));
-        testContext.client->tick(.1f);
+        testContext.client->tick();
         CHECK(err.errorCode == ClientErrorCode::No_Error);
 
         CHECK(disconnectEventFired);
@@ -146,7 +146,7 @@ TEST_SUITE("MqttClient Disconnect")
         disconnectBuffer += 0;   //Reason (NORMAL_DISCONNECTION)
         disconnectBuffer += 0;   //Property Length
         testContext.receiveResponse(disconnectBuffer);
-        testContext.client->tick(.1f);
+        testContext.client->tick();
 
         CHECK(disconnectEventFired);
         CHECK(disconnectReason == DisconnectReasonCode::NORMAL_DISCONNECTION);
@@ -178,7 +178,7 @@ TEST_SUITE("MqttClient Disconnect")
 		testContext.socketPtr->lastCloseCode = 1001; // Normal closure
 		testContext.socketPtr->lastCloseReason = "Socket closed";
         testContext.socketPtr->close();
-        testContext.client->tick(.1f);
+        testContext.client->tick();
 
         CHECK(disconnectEventFired);
     }

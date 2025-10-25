@@ -41,6 +41,7 @@ TEXT(session_connect_cleanstart, "Clean Start?")
 TEXT(session_connect_show_advanced_options, "Show Advanced Options")
 TEXT(session_connect_hide_advanced_options, "Hide Advanced Options")
 TEXT(session_connect_advanced_text_title, "Advanced Options")
+TEXT(session_mqtt_tick_async, "Tick Async?")
 
 //Advanced connect settings
 TEXT(session_connect_adv_keepalivesec, "Keep Alive in Sec")

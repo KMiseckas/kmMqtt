@@ -13,7 +13,7 @@ struct TestClientContext
     TestClientContext(const cleanMqtt::Config& config = {}, bool socketConnectResult = true)
     {
         auto env{ TestEnvironment() };
-        client = new cleanMqtt::mqtt::MqttClient(&env);
+        client = new cleanMqtt::mqtt::MqttClient(&env, false);
 
         socketPtr = env.socketPtr;
         socketPtr->connectResult = socketConnectResult;
@@ -30,8 +30,8 @@ struct TestClientContext
     void receiveResponse(const cleanMqtt::ByteBuffer& data)
     {
 		socketPtr->queueMockResponse(data);
-		client->tick(.0f); //Initial tick to process the response on socket layer and move mqtt layer
-		client->tick(.0f); //Second tick to process queue of received messages in the mqtt layer
+		client->tick(); //Initial tick to process the response on socket layer and move mqtt layer
+		client->tick(); //Second tick to process queue of received messages in the mqtt layer
     }
 
     static cleanMqtt::mqtt::ConnectArgs getDefaultConnectArgs()

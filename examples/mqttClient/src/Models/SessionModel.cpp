@@ -38,7 +38,8 @@ void SessionModel::connect()
 {
 	failedLastConnect = false;
 
-	m_mqttClient = new cleanMqtt::mqtt::MqttClient{};
+	cleanMqtt::DefaultEnvironmentFactory factory;
+	m_mqttClient = new cleanMqtt::mqtt::MqttClient{ factory.createEnvironment(), useTickAsync};
 
 	auto connectArgsCpy{ connectArgs };
 	auto connectAddressCpy{ connectAddress };
@@ -74,7 +75,12 @@ void SessionModel::tickMqtt()
 {
 	if (m_mqttClient != nullptr)
 	{
-		m_mqttClient->tick(0);
+		if (m_mqttClient->getIsTickAsync())
+		{
+			return; //Ticking internally in own thread.
+		}
+
+		m_mqttClient->tick();
 	}
 }
 

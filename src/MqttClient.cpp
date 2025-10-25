@@ -9,13 +9,17 @@ namespace cleanMqtt
 		{
 			auto envFactory{ DefaultEnvironmentFactory() };
 			auto env{ envFactory.createEnvironment() };
-			m_impl = std::make_unique<MqttClientImpl>(env);
+			m_impl = std::make_unique<MqttClientImpl>(env, false);
 			delete env;
 		}
 
-		MqttClient::MqttClient(const IMqttEnvironment* const env)
-			: m_impl(std::make_unique<MqttClientImpl>(env))
+		MqttClient::MqttClient(const IMqttEnvironment* const env, bool tickAsync)
+			: m_impl(std::make_unique<MqttClientImpl>(env, tickAsync))
 		{
+			if (tickAsync)
+			{
+				m_impl->tickAsync();
+			}
 		}
 
 		MqttClient::~MqttClient() = default;
@@ -50,9 +54,9 @@ namespace cleanMqtt
 			return m_impl->shutdown();
 		}
 
-		void MqttClient::tick(float deltaTime) noexcept
+		ClientError MqttClient::tick() noexcept
 		{
-			m_impl->tick(deltaTime);
+			return m_impl->tick();
 		}
 
 		ErrorEvent& MqttClient::onErrorEvent() noexcept
@@ -98,6 +102,11 @@ namespace cleanMqtt
 		const MqttConnectionInfo& MqttClient::getConnectionInfo() const noexcept
 		{
 			return m_impl->getConnectionInfo();
+		}
+
+		bool MqttClient::getIsTickAsync() const noexcept
+		{
+			return m_impl->getIsTickingAsync();
 		}
 	}
 }

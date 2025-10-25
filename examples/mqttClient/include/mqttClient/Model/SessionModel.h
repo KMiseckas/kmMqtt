@@ -34,8 +34,12 @@ public:
 	cleanMqtt::mqtt::ConnectArgs connectArgs{ "Client ID" };
 	cleanMqtt::mqtt::DisconnectArgs disconnectArgs{ false, true };
 
+	bool useTickAsync{ false };
+
 	struct UIData
 	{
+		int tickAsync{ 0 };
+
 		char addressBuffer[512]{ "" };
 		char usernameBuffer[512]{ "" };
 		char passwordBuffer[512]{ "" };

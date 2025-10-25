@@ -9,7 +9,7 @@ void SessionTabsView::draw()
 {
 	ui::sessionTabBarStyle();
 
-	const std::size_t numberSessions = m_model->getNumberOfSession();
+	std::size_t numberSessions{ m_model->getNumberOfSession() };
 
 	if (ImGui::BeginTabBar("SessionTabBar", ImGuiTabBarFlags_AutoSelectNewTabs))
 	{
@@ -46,7 +46,7 @@ void SessionTabsView::draw()
 			}
 		}
 
-		if (numberSessions != m_model->k_maxSessionsAllowed)
+		if (m_model->getNumberOfSession() != m_model->k_maxSessionsAllowed)
 		{
 			if (ImGui::TabItemButton("+"))
 			{
@@ -54,6 +54,12 @@ void SessionTabsView::draw()
 			}
 		}
 		ImGui::EndTabBar();
+	}
+
+	numberSessions = m_model->getNumberOfSession();
+	if (numberSessions <= 0)
+	{
+		m_activeSessionView.setModel(nullptr);
 	}
 
 	ui::sessionContentWindowStyle();

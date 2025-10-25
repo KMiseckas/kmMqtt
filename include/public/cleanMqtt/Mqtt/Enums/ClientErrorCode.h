@@ -21,6 +21,7 @@ namespace cleanMqtt
 			Failed_Writing_To_Persistent_Storage = 8U,
 			Failed_Decoding_Packet = 9U,
 			TimeOut = 8U,
+			Using_Tick_Async = 9U,
 
 			//Connect Errors
 			ConnectError = 1000U,

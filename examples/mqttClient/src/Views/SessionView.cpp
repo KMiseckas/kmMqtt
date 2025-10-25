@@ -249,6 +249,8 @@ void SessionView::drawConnectBasicArgs()
 	ImGui::Text(text::session_connect_username);
 	ImGui::SameLine(ratioWidth, spacingX);
 	ImGui::Text(text::session_connect_password);
+	ImGui::SameLine(ratioWidth * 2, spacingX * 2);
+	ImGui::Text(text::session_mqtt_tick_async);
 
 	ImGui::SetNextItemWidth(ratioWidth);
 	if (ImGui::InputText("##UsernameInput", UIData.usernameBuffer, sizeof(UIData.usernameBuffer)))
@@ -261,6 +263,20 @@ void SessionView::drawConnectBasicArgs()
 	if (ImGui::InputText("##PasswordInput", UIData.passwordBuffer, sizeof(UIData.passwordBuffer), ImGuiInputTextFlags_Password))
 	{
 		m_model->connectArgs.password = UIData.passwordBuffer;
+	}
+
+	ImGui::SameLine(ratioWidth * 2, spacingX * 2);
+	if (ImGui::RadioButton("No##TickAsync", UIData.tickAsync == 0))
+	{
+		UIData.tickAsync = 0;
+		m_model->useTickAsync = false;
+	}
+
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Yes##TickAsync", UIData.tickAsync == 1))
+	{
+		UIData.tickAsync = 1;
+		m_model->useTickAsync = true;
 	}
 }
 

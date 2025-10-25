@@ -48,7 +48,7 @@ namespace cleanMqtt
 		class MqttClientImpl
 		{
 		public:
-			MqttClientImpl(const IMqttEnvironment* const env);
+			explicit MqttClientImpl(const IMqttEnvironment* const env, bool tickAsync = false);
 			~MqttClientImpl();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
@@ -58,7 +58,8 @@ namespace cleanMqtt
 			ClientError disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
-			void tick(float deltaTime) noexcept;
+			ClientError tick() noexcept;
+			void tickAsync() noexcept;
 
 			ErrorEvent& onErrorEvent() noexcept;
 			ConnectEvent& onConnectEvent() noexcept;
@@ -70,6 +71,7 @@ namespace cleanMqtt
 
 			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;
+			bool getIsTickingAsync() const noexcept;
 
 		private:
 			void pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept;
@@ -113,6 +115,14 @@ namespace cleanMqtt
 			void handleDecodeError(const DecodeResult& result) noexcept;
 
 			int sendPacket(const BasePacket& packet);
+
+			ClientError shutdownAsync() noexcept;
+			ClientError shutdownCleanup() noexcept;
+
+			const bool m_tickAsync{ false };
+			std::thread m_mqttMainThread;
+			std::condition_variable m_mqttMainThreadCondition;
+			std::atomic<bool> m_isRunningAsync{ false };
 
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
