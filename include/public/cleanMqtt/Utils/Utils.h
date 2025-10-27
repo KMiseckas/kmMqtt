@@ -41,7 +41,7 @@ namespace cleanMqtt
 	 * 
 	 * @param buffer The ByteBuffer containing the MQTT packets.
 	 * @param packets A vector to store the separated packets.
-	 * @param leftOver A position in buffer from which left over bytes begin.
+	 * @param leftOverPosition A position in buffer from which left over bytes begin.
 	 * 
 	 * @return Returns true if the separation was successful, false if the buffer does not contain complete packets.
 	 */

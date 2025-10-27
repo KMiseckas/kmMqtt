@@ -12,7 +12,6 @@ namespace cleanMqtt
 {
 	namespace
 	{
-		//TODO remove throws/exceptions
 #define BYTEBUFFER_HEADROOM_CHECK(spaceRequired) \
 		if (headroom() < spaceRequired)\
 		{\
