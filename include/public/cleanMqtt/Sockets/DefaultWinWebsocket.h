@@ -34,7 +34,7 @@ namespace cleanMqtt
 
 		void setOnConnectCallback(OnConnectCallback callback) noexcept override { m_onConnectCallback = std::move(callback); }
 		void setOnDisconnectCallback(OnDisconnectCallback callback) noexcept override { m_onDisconnectCallback = std::move(callback); }
-		void setOnPacketRecvdCallback(OnPacketRecvdCallback callback) noexcept override { m_onPacketRecvdCallback = std::move(callback); }
+		void setOnRecvdCallback(OnRecvdCallback callback) noexcept override { m_onRecvdCallback = std::move(callback); }
 		void setOnErrorCallback(OnErrorCallback callback) noexcept override { m_onErrorCallback = std::move(callback); }
 
 	private:
@@ -67,7 +67,7 @@ namespace cleanMqtt
 
 		OnConnectCallback m_onConnectCallback;
 		OnDisconnectCallback m_onDisconnectCallback;
-		OnPacketRecvdCallback m_onPacketRecvdCallback;
+		OnRecvdCallback m_onRecvdCallback;
 		OnErrorCallback m_onErrorCallback;
 	};
 }

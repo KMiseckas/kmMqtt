@@ -15,6 +15,7 @@ namespace cleanMqtt
 
 		void SendQueue::addToQueue(PacketSendJobPtr packetSendJob)
 		{
+			LockGuard guard{ m_mutex };
 			m_queuedJobs.push(std::move(packetSendJob));
 		}
 
@@ -38,6 +39,7 @@ namespace cleanMqtt
 
 			m_currentLocalRetry = 0;
 
+			LockGuard guard{ m_mutex };
 			while (m_currentLocalRetry < maxLocalRetries)
 			{
 				++m_currentLocalRetry;
@@ -93,6 +95,7 @@ namespace cleanMqtt
 
 		void SendQueue::clearQueue() noexcept
 		{
+			LockGuard guard{ m_mutex };
 			while (!m_queuedJobs.empty())
 			{
 				m_queuedJobs.front()->cancel();

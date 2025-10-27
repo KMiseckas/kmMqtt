@@ -9,7 +9,7 @@ namespace cleanMqtt
 {
 	using OnConnectCallback = std::function<void(bool)>;
 	using OnDisconnectCallback = std::function<void()>;
-	using OnPacketRecvdCallback = std::function<void(ByteBuffer&&)>;
+	using OnRecvdCallback = std::function<void(ByteBuffer&&)>;
 	using OnErrorCallback = std::function<void(std::uint16_t)>;
 
 	class PUBLIC_API IWebSocket
@@ -31,7 +31,7 @@ namespace cleanMqtt
 
 		virtual void setOnConnectCallback(OnConnectCallback callback) noexcept = 0;
 		virtual void setOnDisconnectCallback(OnDisconnectCallback callback) noexcept = 0;
-		virtual void setOnPacketRecvdCallback(OnPacketRecvdCallback callback) noexcept = 0;
+		virtual void setOnRecvdCallback(OnRecvdCallback callback) noexcept = 0;
 		virtual void setOnErrorCallback(OnErrorCallback callback) noexcept = 0;
 	};
 }

@@ -22,6 +22,21 @@ if (callback != nullptr)\
 	callback(std::move(packet));\
 }\
 
+		struct InProgressDataGuard
+		{
+			InProgressDataGuard(std::queue<ByteBuffer>& inProgressData) noexcept
+				: container{ inProgressData }
+			{
+			}
+
+			~InProgressDataGuard() noexcept
+			{
+				std::queue<ByteBuffer> emptyContainer;
+				container.swap(emptyContainer);
+			}
+
+			std::queue<ByteBuffer>& container;
+		};
 
 		ReceiveQueue::ReceiveQueue() noexcept
 		{
@@ -44,14 +59,17 @@ if (callback != nullptr)\
 			DecodeResult decodeResult;
 			decodeResult.code = DecodeErrorCode::NO_ERROR;
 
-			std::lock_guard<std::mutex > guard{ m_mutex };
-			if (m_inQueueData.empty())
 			{
-				return decodeResult;
+				LockGuard guard{ m_mutex };
+				if (m_inQueueData.empty())
+				{
+					return decodeResult;
+				}
+
+				std::swap(m_inQueueData, m_inProgressData);
 			}
 
-			std::swap(m_inQueueData, m_inProgressData);
-
+			InProgressDataGuard inProgressDataGuard{ m_inProgressData };
 			PacketType packetType{ PacketType::RESERVED };
 
 			LogTrace("ReceiveQueue", "Processing queue of %d received packets.", m_inProgressData.size());

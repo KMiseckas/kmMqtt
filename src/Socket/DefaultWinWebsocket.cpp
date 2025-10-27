@@ -188,9 +188,9 @@ namespace cleanMqtt
 				ByteBuffer byteBuffer{ static_cast<std::size_t>(bytesReceived) };
 				byteBuffer.append(reinterpret_cast<const std::uint8_t*>(buffer), bytesReceived);
 
-				if (m_onPacketRecvdCallback)
+				if (m_onRecvdCallback)
 				{
-					m_onPacketRecvdCallback(std::move(byteBuffer));
+					m_onRecvdCallback(std::move(byteBuffer));
 				}
 			}
 			else if (bytesReceived == 0)

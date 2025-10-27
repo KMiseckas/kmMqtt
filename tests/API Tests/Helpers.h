@@ -14,7 +14,9 @@ struct TestClientContext
     {
         MqttClientOptions options;
         options.setTickAsync(false, nullptr);
+
         auto env{ TestEnvironment() };
+
         client = new cleanMqtt::mqtt::MqttClient(&env, options);
 
         socketPtr = env.socketPtr;

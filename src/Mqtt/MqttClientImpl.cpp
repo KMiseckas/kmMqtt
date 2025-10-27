@@ -29,7 +29,7 @@ namespace cleanMqtt
 
 			m_socket->setOnConnectCallback([this](bool success) {handleSocketConnectEvent(success); });
 			m_socket->setOnDisconnectCallback([this]() { handleSocketDisconnectEvent(); });
-			m_socket->setOnPacketRecvdCallback([this](ByteBuffer&& buffer) { handleSocketPacketReceivedEvent(std::move(buffer)); });
+			m_socket->setOnRecvdCallback([this](ByteBuffer&& buffer) { handleSocketDataReceivedEvent(std::move(buffer)); });
 			m_socket->setOnErrorCallback([this](std::uint16_t error) { handleSocketErrorEvent(error); });
 
 			m_sendPubAckEvent.add([this](std::uint16_t packetId) { pubAck(packetId, PubAckReasonCode::SUCCESS, PubAckOptions{}); });
@@ -129,48 +129,44 @@ namespace cleanMqtt
 
 		ClientError MqttClientImpl::publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept
 		{
+			LogTrace("MqttClient", "Started publish(): Topic: %s", topic);
+
+			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
-				LockGuard guard{ m_mutex };
-
-				LogTrace("MqttClient", "Started publish(): Topic: %s", topic);
-
-				if (m_connectionStatus != ConnectionStatus::CONNECTED)
-				{
-					LogError("MqttClient", "Client not connected, cannot publish()!");
-					return { ClientErrorCode::Not_Connected, "Client not connected, cannot publish()!" };
-				}
-
-				if (options.topicAlias > m_connectionInfo.maxServerTopicAlias)
-				{
-					LogError("MqttClient", "Topic alias exceeds `max server topic alias` received from broker.");
-				}
-
-				std::uint16_t packetId{ 0U };
-				if (options.qos >= mqtt::Qos::QOS_1)
-				{
-					packetId = m_packetIdPool.getId();
-
-					ByteBuffer payloadCopy{ payload.size() };
-					payloadCopy.append(payload);
-					PublishMessageData msgData{ topic, std::move(payloadCopy), options };
-
-					const auto error{ m_connectionInfo.sessionState.addMessage(packetId, std::move(msgData)) };
-					if (error != ClientErrorCode::No_Error)
-					{
-						return { error, "Failed to add message to session state." };
-					}
-				}
-
-				m_sendQueue.addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
-					[this](const BasePacket& packet) {return sendPacket(packet); },
-					&m_packetIdPool,
-					packetId,
-					topic,
-					std::move(payload),
-					std::move(options)));
-
-				LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
+				LogError("MqttClient", "Client not connected, cannot publish()!");
+				return { ClientErrorCode::Not_Connected, "Client not connected, cannot publish()!" };
 			}
+
+			if (options.topicAlias > m_connectionInfo.maxServerTopicAlias)
+			{
+				LogError("MqttClient", "Topic alias exceeds `max server topic alias` received from broker.");
+			}
+
+			std::uint16_t packetId{ 0U };
+			if (options.qos >= mqtt::Qos::QOS_1)
+			{
+				packetId = m_packetIdPool.getId();
+
+				ByteBuffer payloadCopy{ payload.size() };
+				payloadCopy.append(payload);
+				PublishMessageData msgData{ topic, std::move(payloadCopy), options };
+
+				const auto error{ m_connectionInfo.sessionState.addMessage(packetId, std::move(msgData)) };
+				if (error != ClientErrorCode::No_Error)
+				{
+					return { error, "Failed to add message to session state." };
+				}
+			}
+
+			m_sendQueue.addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
+				[this](const BasePacket& packet) {return sendPacket(packet); },
+				&m_packetIdPool,
+				packetId,
+				topic,
+				std::move(payload),
+				std::move(options)));
+
+			LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
 
 			m_mqttMainThreadCondition.notify_all();
 
@@ -179,34 +175,33 @@ namespace cleanMqtt
 
 		ClientError MqttClientImpl::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
 		{
+			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
-				LockGuard guard{ m_mutex };
-
-				if (m_connectionStatus != ConnectionStatus::CONNECTED)
-				{
-					LogError("MqttClient", "Client not connected, cannot subscribe()!");
-					return { ClientErrorCode::Not_Connected, "Client not connected, cannot subscribe()!" };
-				}
-
-				if (topics.empty())
-				{
-					LogError("MqttClient", "Cannot subscribe to an empty list of topics!");
-					return { ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
-				}
-
-				auto id{ m_packetIdPool.getId() };
-				m_connectionInfo.pendingSubscriptions.push_back(PendingSubscription{ id, topics });
-
-				m_sendQueue.addToQueue(std::make_unique<SendSubscribeJob>(&m_connectionInfo,
-					[this](const BasePacket& packet) {return sendPacket(packet); },
-					&m_packetIdPool,
-					id,
-					topics,
-					std::move(options)));
-
-				LogTrace("MqttClient", "Started subscribe: Subscribing to; %s", allTopicsToStr(topics).c_str());
+				LogError("MqttClient", "Client not connected, cannot subscribe()!");
+				return { ClientErrorCode::Not_Connected, "Client not connected, cannot subscribe()!" };
 			}
 
+			if (topics.empty())
+			{
+				LogError("MqttClient", "Cannot subscribe to an empty list of topics!");
+				return { ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
+			}
+
+			auto id{ m_packetIdPool.getId() };
+
+			{
+				LockGuard guard{ m_mutex };
+				m_connectionInfo.pendingSubscriptions.push_back(PendingSubscription{ id, topics });
+			}
+
+			m_sendQueue.addToQueue(std::make_unique<SendSubscribeJob>(&m_connectionInfo,
+				[this](const BasePacket& packet) {return sendPacket(packet); },
+				&m_packetIdPool,
+				id,
+				topics,
+				std::move(options)));
+
+			LogTrace("MqttClient", "Started subscribe: Subscribing to; %s", allTopicsToStr(topics).c_str());
 			m_mqttMainThreadCondition.notify_all();
 
 			return ClientErrorCode::No_Error;
@@ -214,31 +209,31 @@ namespace cleanMqtt
 
 		ClientError MqttClientImpl::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
 		{
+			if (m_connectionStatus != ConnectionStatus::CONNECTED)
+			{
+				LogWarning("MqttClient", "Client not connected, cannot unSubscribe()!");
+				return { ClientErrorCode::Not_Connected, "Client not connected, cannot unSubscribe()!" };
+			}
+
+			if (topics.empty())
+			{
+				LogError("MqttClient", "Cannot unsubscribe with an empty list of topics!");
+				return { ClientErrorCode::Invalid_Argument, "Cannot unsubscribe with an empty list of topics!" };
+			}
+
+			auto id{ m_packetIdPool.getId() };
+
 			{
 				LockGuard guard{ m_mutex };
-
-				if (m_connectionStatus != ConnectionStatus::CONNECTED)
-				{
-					LogWarning("MqttClient", "Client not connected, cannot unSubscribe()!");
-					return { ClientErrorCode::Not_Connected, "Client not connected, cannot unSubscribe()!" };
-				}
-
-				if (topics.empty())
-				{
-					LogError("MqttClient", "Cannot unsubscribe with an empty list of topics!");
-					return { ClientErrorCode::Invalid_Argument, "Cannot unsubscribe with an empty list of topics!" };
-				}
-
-				auto id{ m_packetIdPool.getId() };
 				m_connectionInfo.pendingUnSubscriptions.push_back(PendingUnSubscription{ id, topics });
-
-				m_sendQueue.addToQueue(std::make_unique<SendUnSubscribeJob>(&m_connectionInfo,
-					[this](const BasePacket& packet) {return sendPacket(packet); },
-					&m_packetIdPool,
-					id,
-					topics,
-					std::move(options)));
 			}
+
+			m_sendQueue.addToQueue(std::make_unique<SendUnSubscribeJob>(&m_connectionInfo,
+				[this](const BasePacket& packet) {return sendPacket(packet); },
+				&m_packetIdPool,
+				id,
+				topics,
+				std::move(options)));
 
 			LogTrace("MqttClient", "Started unSubscribe: Unsubscribing from %s", allTopicsToStr(topics).c_str());
 
@@ -249,19 +244,15 @@ namespace cleanMqtt
 
 		ClientError MqttClientImpl::disconnect(DisconnectArgs&& args) noexcept
 		{
+			if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
 			{
-				LockGuard guard{ m_mutex };
-
-				if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
-				{
-					LogWarning("MqttClient", "Client already disconnected, cannot disconnect()!");
-					return { ClientErrorCode::Not_Connected, "Client not connected, cannot disconnect()!" };
-				}
-
-				handleInternalDisconnect(
-					args.willPublish ? DisconnectReasonCode::DISCONNECT_WITH_WILL_MESSAGE : DisconnectReasonCode::NORMAL_DISCONNECTION,
-					args);
+				LogWarning("MqttClient", "Client already disconnected, cannot disconnect()!");
+				return { ClientErrorCode::Not_Connected, "Client not connected, cannot disconnect()!" };
 			}
+
+			handleInternalDisconnect(
+				args.willPublish ? DisconnectReasonCode::DISCONNECT_WITH_WILL_MESSAGE : DisconnectReasonCode::NORMAL_DISCONNECTION,
+				args);
 
 			m_mqttMainThreadCondition.notify_all();
 
@@ -274,8 +265,6 @@ namespace cleanMqtt
 			{
 				return shutdownAsync();
 			}
-
-			LockGuard guard{ m_mutex };
 
 			if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
 			{
@@ -352,8 +341,6 @@ namespace cleanMqtt
 
 			assert(m_socket != nullptr);
 
-			LockGuard guard{ m_mutex };
-
 			tickCheckTimeOut();
 
 			if (m_connectionStatus != ConnectionStatus::DISCONNECTED)
@@ -369,7 +356,11 @@ namespace cleanMqtt
 				m_socket->tick();
 			}
 
-			m_eventDeferrer.invokeEvents();
+			if (m_clientOptions.isUsingInternalCallbackDeferrer())
+			{
+				LockGuard guard{ m_mutex };
+				m_eventDeferrer.invokeEvents();
+			}
 
 			return ClientErrorCode::No_Error;
 		}
@@ -419,7 +410,11 @@ namespace cleanMqtt
 							m_socket->tick();
 						}
 
-						m_eventDeferrer.invokeEvents();
+						if(m_clientOptions.isUsingInternalCallbackDeferrer())
+						{
+							LockGuard guard{ m_mutex };
+							m_eventDeferrer.invokeEvents();
+						}
 					}
 					});
 			}
@@ -582,94 +577,119 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleInternalDisconnect(DisconnectReasonCode reason, const DisconnectArgs& args) noexcept
 		{
-			LogInfo("MqttClient", "Starting internal disconnect: %s", args.disconnectReasonText.c_str());
-
-			//Bypass send queue and send packet ASAP to not wait for next tick before performing disconnect.
-			Disconnect packet{ createDisconnectPacket(m_connectionInfo, args, reason) };
-			auto encodeResult{ packet.encode() };
-
-			if (encodeResult.isSuccess())
 			{
-				if (sendPacket(packet) != 0)
+				LockGuard guard{ m_mutex };
+
+				LogInfo("MqttClient", "Starting internal disconnect: %s", args.disconnectReasonText.c_str());
+
+				if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
 				{
-					LogWarning("MqttClient", "Failed to send disconnect packet during internal disconnect. Skipping sending to broker.");
+					LogWarning("MqttClient", "Client not connected, cannot perform internal disconnect. Ignoring.");
+					return;
 				}
+
+				//Bypass send queue and send packet ASAP to not wait for next tick before performing disconnect.
+				Disconnect packet{ createDisconnectPacket(m_connectionInfo, args, reason) };
+				auto encodeResult{ packet.encode() };
+
+				if (encodeResult.isSuccess())
+				{
+					if (sendPacket(packet) != 0)
+					{
+						LogWarning("MqttClient", "Failed to send disconnect packet during internal disconnect. Skipping sending to broker.");
+					}
+				}
+				else
+				{
+					LogWarning("MqttClient", "Failed to encode disconnect packet during internal disconnect. Skipping sending to broker.");
+				}
+
+				//TODO add graceful disconnect handling, e.g. wait for all packets to be sent before closing socket. Means we cant just clear the queue here.
+				//Maybe new function.
+				if (args.clearQueue)
+				{
+					m_sendQueue.clearQueue();
+				}
+
+				m_connectionStatus = ConnectionStatus::DISCONNECTED;
+
+				m_socket->setOnDisconnectCallback(nullptr);
+
+				if (!m_socket->close())
+				{
+					LogError("MqttClient", "Error closing socket properly during internal disconnect: %d", m_socket->getLastError());
+
+					//TODO maybe self force termination? Add terminate event?
+				}
+
+				clearState();
 			}
-			else
-			{
-				LogWarning("MqttClient", "Failed to encode disconnect packet during internal disconnect. Skipping sending to broker.");
-			}
-
-			//TODO add graceful disconnect handling, e.g. wait for all packets to be sent before closing socket. Means we cant just clear the queue here.
-			//Maybe new function.
-			if (args.clearQueue)
-			{
-				m_sendQueue.clearQueue();
-			}
-
-			m_connectionStatus = ConnectionStatus::DISCONNECTED;
-
-			m_socket->setOnDisconnectCallback(nullptr);
-
-			if (!m_socket->close())
-			{
-				LogError("MqttClient", "Error closing socket properly during internal disconnect: %d", m_socket->getLastError());
-
-				//TODO maybe self force termination? Add terminate event?
-			}
-
-			clearState();
 
 			DISPATCH_EVENT_TO_CONSUMER([&, reasonCode = reason]() {m_disconnectEvent({ reasonCode, false, false, ClientErrorCode::No_Error }); });
 		}
 
 		void MqttClientImpl::handleExternalDisconnect(const Disconnect& packet)
 		{
-			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
-				return;
+				LockGuard guard{ m_mutex };
+
+				if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
+				{
+					LogWarning("MqttClient", "Client not connected, cannot perform internal disconnect. Ignoring.");
+					return;
+				}
+
+				const DisconnectReasonCode code{ packet.getVariableHeader().reasonCode };
+
+				LogInfo("MqttClient",
+					"Starting disconnect from received Disconnect packet with reason code: %d",
+					static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
+
+				const UTF8String* reasonText;
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::REASON_STRING, reasonText))
+				{
+					LogDebug("MqttClient", "Disconnect Reason String: %s", reasonText->getString().c_str());
+				}
+
+				m_socket->setOnDisconnectCallback(nullptr);
+				m_socket->close();
+				m_receiveQueue.clear();
+
+				const bool brokerRedirectionStarted = tryStartBrokerRedirection(static_cast<std::uint8_t>(code), packet.getVariableHeader().properties);
+				if (brokerRedirectionStarted)
+				{
+					return;
+				}
+
+				m_connectionStatus = ConnectionStatus::DISCONNECTED;
+				m_sendQueue.clearQueue();
+				clearState();
 			}
-
-			const DisconnectReasonCode code{ packet.getVariableHeader().reasonCode };
-
-			LogInfo("MqttClient",
-				"Starting disconnect from received Disconnect packet with reason code: %d",
-				static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
-
-			const UTF8String* reasonText;
-			if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::REASON_STRING, reasonText))
-			{
-				LogDebug("MqttClient", "Disconnect Reason String: %s", reasonText->getString().c_str());
-			}
-
-			m_socket->setOnDisconnectCallback(nullptr);
-			m_socket->close();
-			m_receiveQueue.clear();
-
-			const bool brokerRedirectionStarted = tryStartBrokerRedirection(static_cast<std::uint8_t>(code), packet.getVariableHeader().properties);
-			if (brokerRedirectionStarted)
-			{
-				return;
-			}
-
-			m_connectionStatus = ConnectionStatus::DISCONNECTED;
-			m_sendQueue.clearQueue();
-			clearState();
 
 			DISPATCH_EVENT_TO_CONSUMER([&, reasonCode = packet.getVariableHeader().reasonCode]() {m_disconnectEvent({ reasonCode, true, false, ClientErrorCode::No_Error }); });
 		}
 
 		void MqttClientImpl::handleExternalDisconnect(int closeCode, std::string reason)
 		{
-			LogInfo("MqttClient",
-				"Starting external disconnect due to socket error code: %d, reason: %s",
-				closeCode,
-				reason.c_str());
+			{
+				LockGuard guard{ m_mutex };
 
-			m_connectionStatus = ConnectionStatus::DISCONNECTED;
-			m_socket->close();
-			m_sendQueue.clearQueue();
-			clearState();
+				if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
+				{
+					LogWarning("MqttClient", "Client not connected, cannot perform internal disconnect. Ignoring.");
+					return;
+				}
+
+				LogInfo("MqttClient",
+					"Starting external disconnect due to socket error code: %d, reason: %s",
+					closeCode,
+					reason.c_str());
+
+				m_connectionStatus = ConnectionStatus::DISCONNECTED;
+				m_socket->close();
+				m_sendQueue.clearQueue();
+				clearState();
+			}
 
 			DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ DisconnectReasonCode::UNSPECIFIED_ERROR, true, false, ClientErrorCode::Socket_Error }); });
 		}
@@ -735,7 +755,7 @@ namespace cleanMqtt
 			handleExternalDisconnect(m_socket->getLastError(), m_socket->getLastCloseReason());
 		}
 
-		void MqttClientImpl::handleSocketPacketReceivedEvent(ByteBuffer&& buffer)
+		void MqttClientImpl::handleSocketDataReceivedEvent(ByteBuffer&& buffer)
 		{
 			LockGuard guard{ m_receiverMutex };
 

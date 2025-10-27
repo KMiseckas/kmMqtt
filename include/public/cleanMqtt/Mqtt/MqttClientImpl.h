@@ -98,7 +98,7 @@ else\
 
 			void handleSocketConnectEvent(bool success);
 			void handleSocketDisconnectEvent();
-			void handleSocketPacketReceivedEvent(ByteBuffer&& buffer);
+			void handleSocketDataReceivedEvent(ByteBuffer&& buffer);
 			void handleSocketErrorEvent(int error);
 
 			void handleReceivedConnectAcknowledge(ConnectAck&& packet);

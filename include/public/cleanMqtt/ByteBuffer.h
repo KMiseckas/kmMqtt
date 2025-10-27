@@ -29,9 +29,11 @@ namespace cleanMqtt
 	struct PUBLIC_API ByteBuffer
 	{
 	public:
-		DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ByteBuffer)
+		ByteBuffer() noexcept : m_capacity(0), m_size(0U), m_bytes(nullptr)
+		{
+		}
 
-		explicit ByteBuffer(std::size_t capacity) noexcept
+		ByteBuffer(std::size_t capacity) noexcept
 			: m_capacity(capacity), m_size(0U), m_bytes(new std::uint8_t[capacity])
 		{
 		}
@@ -41,12 +43,32 @@ namespace cleanMqtt
 			delete[] m_bytes;
 		}
 
+		ByteBuffer(const ByteBuffer& other) noexcept
+			: m_size(other.m_size), m_capacity(other.m_capacity), m_bytes(new std::uint8_t[other.m_capacity])
+		{
+			std::memcpy(m_bytes, other.m_bytes, other.m_size);
+		}
+
 		ByteBuffer(ByteBuffer&& other) noexcept
 			: m_size(other.m_size), m_capacity(other.m_capacity), m_bytes(other.m_bytes)
 		{
 			other.m_bytes = nullptr;
 			other.m_capacity = 0U;
 			other.m_size = 0U;
+		}
+
+		ByteBuffer& operator=(const ByteBuffer& other) noexcept
+		{
+			if (this == &other)
+			{
+				return *this;
+			}
+			delete[] m_bytes;
+			m_size = other.m_size;
+			m_capacity = other.m_capacity;
+			m_bytes = new std::uint8_t[other.m_capacity];
+			std::memcpy(m_bytes, other.m_bytes, other.m_size);
+			return *this;
 		}
 
 		ByteBuffer& operator=(ByteBuffer&& other) noexcept

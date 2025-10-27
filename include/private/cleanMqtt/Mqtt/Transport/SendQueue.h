@@ -36,9 +36,9 @@ namespace cleanMqtt
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
 			void clearQueue() noexcept;
-			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
 
 		private:
+			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
 
 			std::uint8_t m_currentLocalRetry{ 0U };
 			SendResultData m_lastSendData{ 0, true, NoSendReason::NONE,{}, 0 };
@@ -49,6 +49,8 @@ namespace cleanMqtt
 			std::chrono::steady_clock::time_point m_lastRetryTime;
 
 			std::queue<PacketSendJobPtr> m_queuedJobs;
+
+			std::mutex m_mutex;
 		};
 	}
 }

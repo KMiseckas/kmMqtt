@@ -19,7 +19,7 @@ public:
     std::string lastCloseReason = "none";
     OnConnectCallback onConnectCb;
     OnDisconnectCallback onDisconnectCb;
-    OnPacketRecvdCallback onPacketCb;
+    OnRecvdCallback onPacketCb;
     OnErrorCallback onErrorCb;
 
     // Internal state for simulating send/receive
@@ -98,7 +98,7 @@ public:
     const char* getLastCloseReason() const noexcept override { return lastCloseReason.c_str(); }
     void setOnConnectCallback(OnConnectCallback cb) noexcept override { onConnectCb = cb; }
     void setOnDisconnectCallback(OnDisconnectCallback cb) noexcept override { onDisconnectCb = cb; }
-    void setOnPacketRecvdCallback(OnPacketRecvdCallback cb) noexcept override { onPacketCb = cb; }
+    void setOnRecvdCallback(OnRecvdCallback cb) noexcept override { onPacketCb = cb; }
     void setOnErrorCallback(OnErrorCallback cb) noexcept override { onErrorCb = cb; }
 
     // Test helper: queue a response to be "received" on next tick

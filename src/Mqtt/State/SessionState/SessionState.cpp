@@ -8,7 +8,7 @@ namespace cleanMqtt
 		SessionState::SessionState(const char* clientId,
 			std::uint32_t sessionExpiryInterval,
 			std::uint32_t retryInterval,
-			ISessionStatePersistantStore* persistantStore) :
+			ISessionStatePersistantStore* persistantStore) noexcept :
 			m_clientId{ clientId },
 			m_retryInterval{ Milliseconds(retryInterval)},
 			m_persistantStore { persistantStore },
@@ -16,81 +16,126 @@ namespace cleanMqtt
 		{
 		}
 
+		SessionState::SessionState(const SessionState& other) noexcept
+		{
+			if(this != &other)
+			{
+				LockGuard guardThis{ m_mutex };
+				LockGuard guardOther{ other.m_mutex };
+				m_clientId = other.m_clientId;
+				m_retryInterval = other.m_retryInterval;
+				m_persistantStore = other.m_persistantStore;
+				m_sessionExpiryInterval = other.m_sessionExpiryInterval;
+				m_messages = other.m_messages;
+			}
+		}
+
+		SessionState& SessionState::operator=(const SessionState& other) noexcept
+		{
+			if (this != &other)
+			{
+				LockGuard guardThis{ m_mutex };
+				LockGuard guardOther{ other.m_mutex };
+				m_clientId = other.m_clientId;
+				m_retryInterval = other.m_retryInterval;
+				m_persistantStore = other.m_persistantStore;
+				m_sessionExpiryInterval = other.m_sessionExpiryInterval;
+				m_messages = other.m_messages;
+			}
+			return *this;
+		}
+
 		ClientErrorCode SessionState::addMessage(const std::uint16_t packetId, PublishMessageData publishMsgData) noexcept
 		{
 			TimePoint nextRetryTime{ std::chrono::steady_clock::now() + m_retryInterval };
 			MessageContainerData data{ packetId, std::move(publishMsgData), std::move(nextRetryTime), m_retryInterval.count() > 0};
 
-			if (m_persistantStore != nullptr)
 			{
-				if (!m_persistantStore->write(m_clientId, static_cast<std::uint32_t>(m_sessionExpiryInterval.count()), data.data))
+				LockGuard guard{ m_mutex };
+
+				if (m_persistantStore != nullptr)
 				{
-					LogError("SessionState", "Failed to write to session state message to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
-					return ClientErrorCode::Failed_Writing_To_Persistent_Storage;
+					if (!m_persistantStore->write(m_clientId, static_cast<std::uint32_t>(m_sessionExpiryInterval.count()), data.data))
+					{
+						LogError("SessionState", "Failed to write to session state message to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+						return ClientErrorCode::Failed_Writing_To_Persistent_Storage;
+					}
+
+					LogTrace("SessionState", "Session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
 				}
 
-				LogTrace("SessionState", "Session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+				const auto iter{ m_messages.push(std::move(data)) };
 			}
-
-			const auto iter{ m_messages.push(std::move(data)) };
 
 			return ClientErrorCode::No_Error;
 		}
 
 		void SessionState::updateMessage(const std::uint16_t packetId, PublishMessageStatus newStatus) noexcept
 		{
-			auto iter{ *(m_messages.get(packetId)) };
-			if (iter == m_messages.end())
 			{
-				LogWarning("SessionState", "Failed to update message, Packet ID: %d not found in session state", packetId);
-				return;
+				LockGuard guard{ m_mutex };
+
+				auto iter{ *(m_messages.get(packetId)) };
+				if (iter == m_messages.end())
+				{
+					LogWarning("SessionState", "Failed to update message, Packet ID: %d not found in session state", packetId);
+					return;
+				}
+
+				iter->nextRetryTime = std::chrono::steady_clock::now() + m_retryInterval;
+
+				if (newStatus == iter->data.status)
+				{
+					return;
+				}
+
+				iter->data.status = newStatus;
+
+				const bool bringToFront{ shouldBringToFront(iter->data.status, newStatus) };
+				if (bringToFront)
+				{
+					m_messages.moveToEnd(packetId);
+				}
+
+				m_persistantStore->updateMessage(m_clientId, packetId, newStatus, bringToFront);
 			}
-
-			iter->nextRetryTime = std::chrono::steady_clock::now() + m_retryInterval;
-
-			if (newStatus == iter->data.status)
-			{
-				return;
-			}
-
-			iter->data.status = newStatus;
-
-			const bool bringToFront{ shouldBringToFront(iter->data.status, newStatus) };
-			if(bringToFront)
-			{
-				m_messages.moveToEnd(packetId);
-			}
-
-			m_persistantStore->updateMessage(m_clientId, packetId, newStatus, bringToFront);
 		}
 		
 		void SessionState::removeMessage(const std::uint16_t packetId) noexcept
 		{
-			m_messages.erase(packetId);
-
-			if (m_persistantStore != nullptr)
 			{
-				if (!m_persistantStore->removeMessage(m_clientId, packetId))
-				{
-					LogWarning("SessionState", "Failed to remove session state message from persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
-				}
+				LockGuard guard{ m_mutex };
 
-				LogTrace("SessionState", "Session state message removed from persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+				m_messages.erase(packetId);
+
+				if (m_persistantStore != nullptr)
+				{
+					if (!m_persistantStore->removeMessage(m_clientId, packetId))
+					{
+						LogWarning("SessionState", "Failed to remove session state message from persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+					}
+
+					LogTrace("SessionState", "Session state message removed from persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+				}
 			}
 		}
 
 		void SessionState::clear() noexcept
 		{
-			m_messages.clear();
-
-			if (m_persistantStore != nullptr)
 			{
-				if (!m_persistantStore->removeFromStore(m_clientId))
-				{
-					LogWarning("SessionState", "Failed to clear session state messages from persistant storage, Client ID: %s", m_clientId);
-				}
+				LockGuard guard{ m_mutex };
 
-				LogTrace("SessionState", "Session state messages cleared from persistant storage, Client ID: %s", m_clientId);
+				m_messages.clear();
+
+				if (m_persistantStore != nullptr)
+				{
+					if (!m_persistantStore->removeFromStore(m_clientId))
+					{
+						LogWarning("SessionState", "Failed to clear session state messages from persistant storage, Client ID: %s", m_clientId);
+					}
+
+					LogTrace("SessionState", "Session state messages cleared from persistant storage, Client ID: %s", m_clientId);
+				}
 			}
 		}
 

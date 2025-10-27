@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.14)
 
 project ("cleanMqttTests" LANGUAGES CXX)
 
-file(GLOB_RECURSE test_source_files "*.cpp")
+file(GLOB_RECURSE test_source_files "*.cpp" "*.h")
 add_executable(${PROJECT_NAME} ${test_source_files})
 
 include(FetchContent)

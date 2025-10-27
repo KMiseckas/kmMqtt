@@ -25,7 +25,16 @@ namespace cleanMqtt
             SessionState(const char* clientId,
                 std::uint32_t sessionExpiryInterval,
                 std::uint32_t retryInterval = 0U,
-                ISessionStatePersistantStore* persistantStore = nullptr);
+                ISessionStatePersistantStore* persistantStore = nullptr) noexcept;
+
+            /**
+			 * @brief Copy constructor.
+			 * 
+			 * @param other The SessionState object to copy from.
+             */
+			SessionState(const SessionState&) noexcept;
+
+			SessionState& operator=(const SessionState&) noexcept;
 
             /**
             * @brief Adds a message to the session state.
@@ -72,6 +81,7 @@ namespace cleanMqtt
             Milliseconds m_retryInterval;
 			ISessionStatePersistantStore* m_persistantStore{ nullptr };
             MessageContainer m_messages{};
+			mutable std::mutex m_mutex{};
 		};
 	}
 }

@@ -3,17 +3,17 @@
 #include "cleanMqtt/MqttClientOptions.h"
 #include "cleanMqtt/GlobalMacros.h"
 #include "cleanMqtt/Config.h"
-#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
+#include "cleanMqtt/Interfaces/IMqttEnvironment.h"
 #include "cleanMqtt/Interfaces/IWebSocket.h"
-#include <cleanMqtt/Environments/DefaultEnvironmentFactory.h>
-#include <cleanMqtt/Mqtt/ClientError.h>
-#include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
+#include "cleanMqtt/Environments/DefaultEnvironmentFactory.h"
+#include "cleanMqtt/Mqtt/ClientError.h"
+#include "cleanMqtt/Mqtt/MqttConnectionInfo.h"
 #include "cleanMqtt/Mqtt/MqttClientEvents.h"
 #include "cleanMqtt/Mqtt/Enums/ConnectionStatus.h"
-#include <cleanMqtt/Mqtt/Enums/ReconnectionStatus.h>
-#include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
+#include "cleanMqtt/Mqtt/Enums/ReconnectionStatus.h"
+#include "cleanMqtt/Mqtt/Params/ConnectArgs.h"
+#include "cleanMqtt/Mqtt/Params/DisconnectArgs.h"
+#include "cleanMqtt/Mqtt/Params/PublishOptions.h"
 #include "cleanMqtt/Mqtt/Params/PubAckOptions.h"
 #include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/UnSubscribeOptions.h"
@@ -60,6 +60,12 @@ namespace cleanMqtt
 			* @param clientOptions The options for configuring the MQTT client.
 			*/
 			MqttClient(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions);
+
+			/**
+			 * @brief Destructor for the MqttClient class.
+			 * Cleans up resources and ensures proper shutdown of the MQTT client.
+			 * Safe to call without shutdown() first.
+			 */
 			~MqttClient();
 
 			/**

@@ -60,11 +60,15 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-if(BUILD_TESTS)
+if(BUILD_UNIT_TESTS)
     add_subdirectory(tests)
 
-    if(ENABLE_TESTS)
+    if(ENABLE_UNIT_TESTS)
         enable_testing()
     endif()
+endif()
+
+if(BUILD_BENCHMARKING)
+    add_subdirectory(benchmarks)
 endif()
 
