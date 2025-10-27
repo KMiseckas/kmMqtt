@@ -31,6 +31,7 @@
 #include "cleanMqtt/Mqtt/Transport/SendQueue.h"
 #include "cleanMqtt/Utils/Deferrer.h"
 #include "cleanMqtt/Utils/PacketIdPool.h" 
+#include "cleanMqtt/MqttClientOptions.h"
 
 #include <cstring>
 #include <memory>
@@ -40,6 +41,17 @@
 
 namespace cleanMqtt
 {
+#define DISPATCH_EVENT_TO_CONSUMER(...)\
+if(m_clientOptions.isUsingInternalCallbackDeferrer())\
+{\
+	m_eventDeferrer.defer(__VA_ARGS__);\
+}\
+else\
+{\
+	m_clientOptions.getCallbackDispatcher()->dispatch(__VA_ARGS__);\
+}\
+\
+
 	namespace mqtt
 	{
 		//Internal Events
@@ -48,7 +60,7 @@ namespace cleanMqtt
 		class MqttClientImpl
 		{
 		public:
-			explicit MqttClientImpl(const IMqttEnvironment* const env, bool tickAsync = false);
+			explicit MqttClientImpl(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions);
 			~MqttClientImpl();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
@@ -119,11 +131,11 @@ namespace cleanMqtt
 			ClientError shutdownAsync() noexcept;
 			ClientError shutdownCleanup() noexcept;
 
-			const bool m_tickAsync{ false };
 			std::thread m_mqttMainThread;
 			std::condition_variable m_mqttMainThreadCondition;
 			std::atomic<bool> m_isRunningAsync{ false };
 
+			MqttClientOptions m_clientOptions;
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
 

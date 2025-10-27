@@ -36,6 +36,11 @@ public:
 
 	bool useTickAsync{ false };
 
+	bool isMqttConnected{ false };
+	std::string connectionFailureReason{ "" };
+	std::string disconnectioReason{ "" };
+	cleanMqtt::mqtt::ConnectionStatus currentConnectionStatus{ cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED };
+
 	struct UIData
 	{
 		int tickAsync{ 0 };
@@ -65,7 +70,6 @@ public:
 		char willResponseTopic[512]{ "" };
 	} uiData;
 
-	bool failedLastConnect{ false };
 private:
 	std::uint8_t m_index{ 0 };
 	std::string m_name{ "New Session" };

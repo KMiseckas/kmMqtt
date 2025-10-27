@@ -108,22 +108,22 @@ void SessionView::drawStatus()
 	const char* statusTxt{ nullptr };
 	ImVec4 color;
 
-	if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
+	if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
 	{
 		color = k_green;
 		statusTxt = text::session_connection_status_connected;
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
 	{
 		color = k_green;
 		statusTxt = text::session_connection_status_connecting;
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
+	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
 	{
 		color = k_red;
 		statusTxt = text::session_connection_status_disconnected;
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
+	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
 	{
 		color = k_yellow;
 		statusTxt = text::session_connection_status_reconnecting;
@@ -145,28 +145,28 @@ void SessionView::drawStatus()
 
 void SessionView::drawConnect()
 {
-	if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
+	if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
 	{
 		if (ImGui::Button(text::session_connection_disconnect_button_label))
 		{
 			m_model->disconnect();
 		}
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
 	{
 		if (ImGui::Button(text::session_connection_cancel_button_label))
 		{
 			m_model->cancel();
 		}
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
+	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
 	{
 		if (ImGui::Button(text::session_connection_connect_button_label))
 		{
 			m_model->connect();
 		}
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
+	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
 	{
 		if (ImGui::Button(text::session_connection_cancel_button_label))
 		{

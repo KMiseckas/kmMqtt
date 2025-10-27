@@ -32,8 +32,11 @@ namespace cleanMqtt
 				: isSuccessful(isSuccessful), hasReceivedAck(hasReceivedAck), error(error) {
 			}
 
+			//Whether the connection attempt was successful. Can fail internally without receiving a CONNACK packet.
 			bool isSuccessful{ false };
+			//Whether a CONNACK packet was received from the broker regardless of failure or success.
 			bool hasReceivedAck{ false };
+			//Error code if any error occurred during internally during connection attempt.
 			ClientError error{};
 		};
 

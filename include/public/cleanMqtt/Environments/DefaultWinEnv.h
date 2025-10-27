@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTWINENV_H
 #define INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTWINENV_H
 
+#include "cleanMqtt/GlobalMacros.h"
 #include <cleanMqtt/Interfaces/IMqttEnvironment.h>
 #include <cleanMqtt/Sockets/DefaultWinWebsocket.h>
 #include <cleanMqtt/Logger/DefaultLogger.h>
@@ -9,7 +10,7 @@
 
 namespace cleanMqtt
 {
-    class DefaultWinEnv : public IMqttEnvironment
+    class PUBLIC_API DefaultWinEnv : public IMqttEnvironment
     {
     public:
         ~DefaultWinEnv() override = default;

@@ -36,23 +36,67 @@ const std::string& SessionModel::getName() const noexcept
 
 void SessionModel::connect()
 {
-	failedLastConnect = false;
-
-	cleanMqtt::DefaultEnvironmentFactory factory;
-	m_mqttClient = new cleanMqtt::mqtt::MqttClient{ factory.createEnvironment(), useTickAsync};
-
 	auto connectArgsCpy{ connectArgs };
 	auto connectAddressCpy{ connectAddress };
 
-	m_mqttClient->connect(std::move(connectArgsCpy), std::move(connectAddressCpy));
+	/**
+	 * Create MQTT Client.
+	 */
+	cleanMqtt::DefaultEnvironmentFactory factory;
+	cleanMqtt::MqttClientOptions options;
+	options.setTickAsync(useTickAsync, std::make_shared<cleanMqtt::DeferToTickEndDispatcher>()); 
 
-	if(m_mqttClient->getConnectionStatus() != cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	m_mqttClient = new cleanMqtt::mqtt::MqttClient{ factory.createEnvironment(), options };
+
+	/**
+	 * Try to connect.
+	 */
+	if(!m_mqttClient->connect(std::move(connectArgsCpy), std::move(connectAddressCpy)).noError())
 	{
 		delete m_mqttClient;
 		m_mqttClient = nullptr;
-
-		failedLastConnect = true;
+		return;
 	}
+
+	/**
+	 * Register to connection events.
+	 */
+	m_mqttClient->onConnectEvent().add([this](const cleanMqtt::mqtt::ConnectEventDetails& details, const cleanMqtt::mqtt::ConnectAck& ack)
+		{
+			isMqttConnected = details.isSuccessful;
+
+			if (details.isSuccessful)
+			{
+				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)) };
+				connectionFailureReason = details.hasReceivedAck ? reasonCode.c_str() : details.error.errorMsg;
+			}
+			else
+			{
+				connectionFailureReason = "";
+			}
+
+			currentConnectionStatus = m_mqttClient->getConnectionStatus();
+		});
+
+	/**
+	 * Register to disconnection events.
+	 */
+	m_mqttClient->onDisconnectEvent().add([this](const cleanMqtt::mqtt::DisconnectEventDetails& details)
+		{
+			isMqttConnected = false;
+
+			if(details.isBrokerInduced)
+			{
+				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)) };
+				disconnectioReason = reasonCode.c_str();
+			}
+			else
+			{
+				disconnectioReason = details.error.errorMsg;
+			}
+
+			currentConnectionStatus = m_mqttClient->getConnectionStatus();
+		});
 }
 
 void SessionModel::disconnect()
@@ -81,17 +125,5 @@ void SessionModel::tickMqtt()
 		}
 
 		m_mqttClient->tick();
-	}
-}
-
-cleanMqtt::mqtt::ConnectionStatus SessionModel::getConnectionStatus() const
-{
-	if (m_mqttClient != nullptr)
-	{
-		return m_mqttClient->getConnectionStatus();
-	}
-	else
-	{
-		return cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED;
 	}
 }

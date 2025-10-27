@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_INTERFACES_IMQTTENVIRONMENT_H
 #define INCLUDE_CLEANMQTT_INTERFACES_IMQTTENVIRONMENT_H
 
+#include "cleanMqtt/GlobalMacros.h"
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 #include <cleanMqtt/Interfaces/ILogger.h>
 #include <cleanMqtt/Config.h>
@@ -9,7 +10,7 @@
 
 namespace cleanMqtt
 {
-	class IMqttEnvironment
+	class PUBLIC_API IMqttEnvironment
 	{
 	public:
 		virtual ~IMqttEnvironment() = default;

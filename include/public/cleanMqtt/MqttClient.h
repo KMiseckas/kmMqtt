@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cleanMqtt/MqttClientOptions.h"
 #include "cleanMqtt/GlobalMacros.h"
 #include "cleanMqtt/Config.h"
 #include <cleanMqtt/Interfaces/IMqttEnvironment.h>
@@ -33,7 +34,7 @@ namespace cleanMqtt
 			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
 
 			MqttClient();
-			MqttClient(const IMqttEnvironment* const env, bool tickAsync);
+			MqttClient(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions);
 			~MqttClient();
 
 			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;

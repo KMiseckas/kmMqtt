@@ -53,7 +53,7 @@ namespace cleanMqtt
 			template<typename TFunc>
 			void defer(TFunc&& event)
 			{
-				m_events.emplace(new Callable<TFunc>(std::forward<TFunc>(event)));
+				m_events.emplace(std::make_unique<Callable<TFunc>>(std::forward<TFunc>(event)));
 			}
 
 			void invokeEvents() noexcept;
@@ -66,7 +66,6 @@ namespace cleanMqtt
 
 		private:
 			std::queue<std::unique_ptr<ICallable>> m_events;
-			std::mutex m_mutex;
 		};
 	}
 }

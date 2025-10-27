@@ -1,11 +1,12 @@
 #ifndef CLEANMQTT_LOGGER_DEFAULTLOGGER_H
 #define CLEANMQTT_LOGGER_DEFAULTLOGGER_H
 
+#include "cleanMqtt/GlobalMacros.h"
 #include <cleanMqtt/Interfaces/ILogger.h>
 
 namespace cleanMqtt
 {
-	class DefaultLogger : public ILogger
+	class PUBLIC_API DefaultLogger : public ILogger
 	{
 	public:
 		DefaultLogger() noexcept;

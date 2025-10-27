@@ -24,7 +24,7 @@ namespace cleanMqtt
 		public:
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(BasePacket)
 
-				BasePacket() = delete;
+			BasePacket() = delete;
 			BasePacket(const FixedHeaderFlags& flags) noexcept;
 			BasePacket(ByteBuffer&& dataBuffer) noexcept;
 			BasePacket(BasePacket&& other) noexcept;

@@ -9,14 +9,14 @@ namespace cleanMqtt
 		{
 			auto envFactory{ DefaultEnvironmentFactory() };
 			auto env{ envFactory.createEnvironment() };
-			m_impl = std::make_unique<MqttClientImpl>(env, false);
+			m_impl = std::make_unique<MqttClientImpl>(env, MqttClientOptions{});
 			delete env;
 		}
 
-		MqttClient::MqttClient(const IMqttEnvironment* const env, bool tickAsync)
-			: m_impl(std::make_unique<MqttClientImpl>(env, tickAsync))
+		MqttClient::MqttClient(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions)
+			: m_impl(std::make_unique<MqttClientImpl>(env, clientOptions))
 		{
-			if (tickAsync)
+			if (clientOptions.isTickAsync())
 			{
 				m_impl->tickAsync();
 			}

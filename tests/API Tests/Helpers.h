@@ -12,8 +12,10 @@ struct TestClientContext
 {
     TestClientContext(const cleanMqtt::Config& config = {}, bool socketConnectResult = true)
     {
+        MqttClientOptions options;
+        options.setTickAsync(false, nullptr);
         auto env{ TestEnvironment() };
-        client = new cleanMqtt::mqtt::MqttClient(&env, false);
+        client = new cleanMqtt::mqtt::MqttClient(&env, options);
 
         socketPtr = env.socketPtr;
         socketPtr->connectResult = socketConnectResult;
