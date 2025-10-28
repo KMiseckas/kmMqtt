@@ -10,15 +10,16 @@ static void BM_SBO_ByteBuffer(benchmark::State& state)
 
     for (auto _ : state)
     {
-        ByteBuffer buf(bufferSize);
-        for (std::size_t i = 0; i < bufferSize; ++i)
+		for (std::size_t i = 0; i < 1000; ++i);
         {
-            buf += static_cast<std::uint8_t>(i & 0xFF);
+            ByteBuffer buf(bufferSize);
+            for (std::size_t i = 0; i < bufferSize; ++i)
+            {
+                buf += static_cast<std::uint8_t>(i & 0xFF);
+            }
+
+            benchmark::DoNotOptimize(buf);
         }
-
-		state.counters["Alloc Bytes"] = sizeof(buf) + buf.size();
-
-        benchmark::DoNotOptimize(buf);
     }
 
 }
@@ -38,3 +39,5 @@ BENCHMARK(BM_SBO_ByteBuffer)
 ->Arg(4096)
 ->Arg(8192)
 ->Arg(16384);
+
+
