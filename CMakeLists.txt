@@ -25,11 +25,11 @@ target_include_directories( ${PROJECT_NAME} PUBLIC include/public)
 target_include_directories( ${PROJECT_NAME} PRIVATE include/private)
 
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE PUBLIC_API_EXPORT)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC PUBLIC_API_EXPORT)
 endif()
 
 if(FORCE_ADD_PROPERTIES)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE FORCE_ADD_PROPERTIES)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC FORCE_ADD_PROPERTIES)
 endif()
 
 if(ENABLE_LOGS)
@@ -39,7 +39,14 @@ if(ENABLE_LOGS)
     ENABLE_LOGS)
 endif()
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE LOG_BUFFER_SIZE=${LOG_BUFFER_SIZE})
+target_compile_definitions(${PROJECT_NAME} PUBLIC LOG_BUFFER_SIZE=${LOG_BUFFER_SIZE})
+
+if(ENABLE_BYTEBUFFER_SBO)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC BYTEBUFFER_SBO_MAX_SIZE=${BYTEBUFFER_SBO_MAX_SIZE})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_BYTEBUFFER_SBO)
+else()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC BYTEBUFFER_SBO_MAX_SIZE=0)
+endif()
 
 if(ENABLE_WARNINGS_AS_ERRORS)
     if(MSVC)
