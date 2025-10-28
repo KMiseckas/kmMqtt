@@ -8,6 +8,8 @@ option(ENABLE_CODE_COVERAGE "Should enable code coverage to run?" ON)
 option(BUILD_EXAMPLES "Should examples be built?" ON)
 option(ENABLE_WARNINGS_AS_ERRORS "Should enable max warnings level as errors?" ON)
 option(ENABLE_LOGS "Should logging be enabled?" ON)
+option(ENABLE_ASAN "Should AddressSanitizer be enabled?" OFF)
+option(ENABLE_UBSAN "Should UndefinedBehaviorSanitizer be enabled?" OFF)
 
 option(ENABLE_BYTEBUFFER_SBO "Enable the SBO for ByteBuffer class. Buffer SBO size set to 256 bytes as default." ON)
 
@@ -27,6 +29,8 @@ message(STATUS "  ENABLE_WARNINGS_AS_ERRORS: ${ENABLE_WARNINGS_AS_ERRORS}")
 message(STATUS "  FORCE_ADD_PROPERTIES: ${FORCE_ADD_PROPERTIES}")
 message(STATUS "  ENABLE_LOGS: ${ENABLE_LOGS}")
 message(STATUS "  ENABLE_BYTEBUFFER_SBO: ${ENABLE_BYTEBUFFER_SBO}")
+message(STATUS "  ENABLE_ASAN: ${ENABLE_ASAN}")
+message(STATUS "  ENABLE_UBSAN: ${ENABLE_UBSAN}")
 
 
 # Sets

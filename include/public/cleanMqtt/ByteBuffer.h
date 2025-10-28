@@ -286,13 +286,11 @@ namespace cleanMqtt
 			if (size == 0)
 			{
 				throw std::runtime_error("Tried to append bytes with size 0.");
-				return *this;
 			}
 
 			if (bytes == nullptr)
 			{
 				throw std::runtime_error("Tried to append nullptr bytes with size above 0.");
-				return *this;
 			}
 
 			BYTEBUFFER_HEADROOM_CHECK(size)

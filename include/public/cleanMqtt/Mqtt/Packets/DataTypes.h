@@ -1,7 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_MQTT_PACKETS_DATATYPES_H
 #define INCLUDE_CLEANMQTT_MQTT_PACKETS_DATATYPES_H
 
-#include <cleanMqtt/Interfaces/ILogger.h>
+#include <cleanMqtt/Logger/Log.h>
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/ByteBuffer.h>
 
