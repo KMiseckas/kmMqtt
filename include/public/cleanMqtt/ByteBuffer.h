@@ -2,7 +2,6 @@
 #define INCLUDE_CLEANMQTT_BYTEBUFFER_H
 
 #include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Logger/Log.h>
 #include <cstdint>
 #include <stdexcept>
 #include <exception>
@@ -15,43 +14,81 @@ namespace cleanMqtt
 #define BYTEBUFFER_HEADROOM_CHECK(spaceRequired) \
 		if (headroom() < spaceRequired)\
 		{\
-			LogException("ByteBuffer", std::out_of_range("The required size for encoding the bytes exceeds the headroom of buffer."));\
+			throw std::out_of_range("The required size for encoding the bytes exceeds the headroom of buffer.");\
 		}\
 
 #define BYTEBUFFER_READ_CHECK(readCursor) \
 		if (size() <= readCursor)\
 		{\
-			LogException("ByteBuffer", std::out_of_range("The buffer read is outside the bounds of buffer size."));\
+			throw std::out_of_range("The buffer read is outside the bounds of buffer size.");\
 		}\
 
 	}
 
 	struct PUBLIC_API ByteBuffer
 	{
+
+#ifdef ENABLE_BYTEBUFFER_SBO
+#if BYTEBUFFER_SBO_MAX_SIZE < 8U
+#define BYTEBUFFER_SBO_MAX_SIZE 64U
+#endif
+#else
+#define BYTEBUFFER_SBO_MAX_SIZE 0U
+#endif
+
 	public:
-		ByteBuffer() noexcept : m_capacity(0), m_size(0U), m_bytes(nullptr)
+		ByteBuffer() noexcept : m_capacity(BYTEBUFFER_SBO_MAX_SIZE), m_size(0U)
 		{
 		}
 
 		ByteBuffer(std::size_t capacity) noexcept
-			: m_capacity(capacity), m_size(0U), m_bytes(new std::uint8_t[capacity])
+			: m_capacity(capacity), m_size(0U)
 		{
+			if (capacity > BYTEBUFFER_SBO_MAX_SIZE)
+			{
+				m_bytes = new std::uint8_t[capacity];
+			}
 		}
 
 		~ByteBuffer()
 		{
+#ifdef ENABLE_BYTEBUFFER_SBO
+			if (m_bytes != m_sboBytes)
+			{
+				delete[] m_bytes;
+			}
+#else
 			delete[] m_bytes;
+#endif
 		}
 
 		ByteBuffer(const ByteBuffer& other) noexcept
-			: m_size(other.m_size), m_capacity(other.m_capacity), m_bytes(new std::uint8_t[other.m_capacity])
+			: m_size(other.m_size), m_capacity(other.m_capacity)
 		{
+			if(other.m_capacity > BYTEBUFFER_SBO_MAX_SIZE)
+			{
+				m_bytes = new std::uint8_t[other.m_capacity];
+			}
+
 			std::memcpy(m_bytes, other.m_bytes, other.m_size);
 		}
 
 		ByteBuffer(ByteBuffer&& other) noexcept
-			: m_size(other.m_size), m_capacity(other.m_capacity), m_bytes(other.m_bytes)
+			: m_size(other.m_size), m_capacity(other.m_capacity)
 		{
+#ifdef ENABLE_BYTEBUFFER_SBO
+			if(other.m_bytes == other.m_sboBytes)
+			{
+				std::memcpy(m_sboBytes, other.m_sboBytes, other.m_size);
+				m_bytes = m_sboBytes;
+			}
+			else
+			{
+				m_bytes = other.m_bytes;
+			}
+#else
+			m_bytes = other.m_bytes;
+#endif
 			other.m_bytes = nullptr;
 			other.m_capacity = 0U;
 			other.m_size = 0U;
@@ -66,7 +103,18 @@ namespace cleanMqtt
 			delete[] m_bytes;
 			m_size = other.m_size;
 			m_capacity = other.m_capacity;
+#ifdef ENABLE_BYTEBUFFER_SBO
+			if(other.m_capacity > BYTEBUFFER_SBO_MAX_SIZE)
+			{
+				m_bytes = new std::uint8_t[other.m_capacity];
+			}
+			else
+			{
+				m_bytes = m_sboBytes;
+			}
+#else
 			m_bytes = new std::uint8_t[other.m_capacity];
+#endif
 			std::memcpy(m_bytes, other.m_bytes, other.m_size);
 			return *this;
 		}
@@ -80,7 +128,20 @@ namespace cleanMqtt
 
 			m_size = other.m_size;
 			m_capacity = other.m_capacity;
+			
+#ifdef ENABLE_BYTEBUFFER_SBO
+			if (other.m_bytes == other.m_sboBytes)
+			{
+				std::memcpy(m_sboBytes, other.m_sboBytes, other.m_size);
+				m_bytes = m_sboBytes;
+			}
+			else
+			{
+				m_bytes = other.m_bytes;
+			}
+#else
 			m_bytes = other.m_bytes;
+#endif
 
 			other.m_bytes = nullptr;
 			other.m_capacity = 0U;
@@ -166,13 +227,13 @@ namespace cleanMqtt
 		{
 			if (size == 0)
 			{
-				LogWarning("ByteBuffer", "Tried to append bytes with size 0.");
+				throw std::runtime_error("Tried to append bytes with size 0.");
 				return *this;
 			}
 
 			if (bytes == nullptr)
 			{
-				LogException("ByteBuffer", std::runtime_error("Tried to append nullptr bytes with size above 0."));
+				throw std::runtime_error("Tried to append nullptr bytes with size above 0.");
 				return *this;
 			}
 
@@ -233,8 +294,13 @@ namespace cleanMqtt
 		}
 
 	private:
+#ifdef ENABLE_BYTEBUFFER_SBO
+		std::uint8_t m_sboBytes[BYTEBUFFER_SBO_MAX_SIZE];
+		std::uint8_t* m_bytes{ &m_sboBytes[0]};
+#else
 		std::uint8_t* m_bytes{ nullptr };
-		std::size_t m_capacity{ 0U };
+#endif
+		std::size_t m_capacity{ BYTEBUFFER_SBO_MAX_SIZE };
 		std::size_t m_size{ 0U };
 		mutable std::size_t m_readCursor{ 0U };
 	};

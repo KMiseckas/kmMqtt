@@ -3,6 +3,7 @@
 
 #include "cleanMqtt/Mqtt/Packets/DataTypes.h"
 #include "cleanMqtt/ByteBuffer.h"
+#include "cleanMqtt/Logger/Log.h"
 
 #include <cstring>
 #include <vector>
@@ -43,7 +44,7 @@ namespace cleanMqtt
 	 * @param packets A vector to store the separated packets.
 	 * @param leftOverPosition A position in buffer from which left over bytes begin.
 	 * 
-	 * @return Returns true if the separation was successful, false if the buffer does not contain complete packets.
+	 * @return Returns true if the separation was successful, false if the buffer does not contain complete packets or failed separation.
 	 */
 	inline bool separateMqttPacketByteBuffers(const ByteBuffer& buffer, std::vector<ByteBuffer>& packets, std::size_t& leftOverPosition)
 	{
@@ -74,7 +75,17 @@ namespace cleanMqtt
 			}
 
 			ByteBuffer packetBuffer(packetSize);
-			packetBuffer.append(buffer.bytes() + packetStart, packetSize);
+
+			try
+			{
+				packetBuffer.append(buffer.bytes() + packetStart, packetSize);
+			}
+			catch (const std::exception& e)
+			{
+				LogError("Utils", "separateMqttPacketByteBuffers(), Failed to separate MQTT packets: %s", e.what());
+				return false;
+			}
+
 			packets.push_back(std::move(packetBuffer));
 
 			packetStart += packetSize;
