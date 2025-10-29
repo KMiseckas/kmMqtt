@@ -285,7 +285,7 @@ namespace cleanMqtt
 		{
 			if (size == 0)
 			{
-				throw std::runtime_error("Tried to append bytes with size 0.");
+				return *this;
 			}
 
 			if (bytes == nullptr)

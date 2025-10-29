@@ -35,4 +35,4 @@ message(STATUS "  ENABLE_UBSAN: ${ENABLE_UBSAN}")
 
 # Sets
 set(LOG_BUFFER_SIZE 2048 CACHE STRING "Fixed log buffer size in bytes")
-set(BYTEBUFFER_SBO_MAX_SIZE 256 CACHE STRING "Fixed buffer on stack max size for ByteBuffer class (Used by packets on receive and send)")
+set(BYTEBUFFER_SBO_MAX_SIZE 128 CACHE STRING "Fixed buffer on stack max size for ByteBuffer class (Used by packets on receive and send)")

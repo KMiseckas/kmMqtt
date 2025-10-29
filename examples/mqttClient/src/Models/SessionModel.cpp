@@ -103,7 +103,7 @@ void SessionModel::disconnect()
 {
 	if (m_mqttClient != nullptr)
 	{
-		m_mqttClient->disconnect(std::move(disconnectArgs));
+		m_mqttClient->disconnect();
 	}
 }
 

@@ -1,6 +1,5 @@
 ﻿cmake_minimum_required (VERSION 3.14)
 
-#Include initial CMake files
 include(cmake/options.cmake)
 
 project (
