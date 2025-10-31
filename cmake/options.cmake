@@ -10,8 +10,12 @@ option(ENABLE_WARNINGS_AS_ERRORS "Should enable max warnings level as errors?" O
 option(ENABLE_LOGS "Should logging be enabled?" ON)
 option(ENABLE_ASAN "Should AddressSanitizer be enabled?" OFF)
 option(ENABLE_UBSAN "Should UndefinedBehaviorSanitizer be enabled?" OFF)
+option(ENABLE_TSAN "Should ThreadSanitizer be enabled?" OFF)
+option(ENABLE_MSAN "Should MemorySanitizer be enabled?" OFF)
 
-option(ENABLE_BYTEBUFFER_SBO "Enable the SBO for ByteBuffer class. Buffer SBO size set to 256 bytes as default." ON)
+#SBO
+option(ENABLE_BYTEBUFFER_SBO "Enable the SBO for ByteBuffer class. Buffer SBO size set to 128 (BYTEBUFFER_SBO_MAX_SIZE) bytes as default." ON)
+option(ENABLE_UNIQUEFUNCTION_SBO "Enable the SBO for UniqueFunction class. Buffer SBO size set to 32 (UNIQUEFUNCTION_SBO_MAX_SIZE) bytes as default." ON)
 
 #MQTT Encoding
 option(FORCE_ADD_PROPERTIES "Should properties for packets be added as part of encoding regardless 
@@ -29,10 +33,14 @@ message(STATUS "  ENABLE_WARNINGS_AS_ERRORS: ${ENABLE_WARNINGS_AS_ERRORS}")
 message(STATUS "  FORCE_ADD_PROPERTIES: ${FORCE_ADD_PROPERTIES}")
 message(STATUS "  ENABLE_LOGS: ${ENABLE_LOGS}")
 message(STATUS "  ENABLE_BYTEBUFFER_SBO: ${ENABLE_BYTEBUFFER_SBO}")
+message(STATUS "  ENABLE_UNIQUEFUNCTION_SBO: ${ENABLE_UNIQUEFUNCTION_SBO}")
 message(STATUS "  ENABLE_ASAN: ${ENABLE_ASAN}")
 message(STATUS "  ENABLE_UBSAN: ${ENABLE_UBSAN}")
+message(STATUS "  ENABLE_TSAN: ${ENABLE_TSAN}")
+message(STATUS "  ENABLE_MSAN: ${ENABLE_MSAN}")
 
 
 # Sets
 set(LOG_BUFFER_SIZE 2048 CACHE STRING "Fixed log buffer size in bytes")
 set(BYTEBUFFER_SBO_MAX_SIZE 128 CACHE STRING "Fixed buffer on stack max size for ByteBuffer class (Used by packets on receive and send)")
+set(UNIQUEFUNCTION_SBO_MAX_SIZE 32 CACHE STRING "Fixed buffer on stack max size for UniqueFunction class")

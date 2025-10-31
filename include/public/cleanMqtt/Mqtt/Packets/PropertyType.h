@@ -81,7 +81,7 @@ namespace cleanMqtt
 		using DecoderFunc = void* (*)(const ByteBuffer& buffer);
 		using EncoderFunc = void (*)(ByteBuffer& buffer, PropertyType propertyType, const void* data);
 
-		struct PropertyTraits
+		struct PropertyTraits 
 		{
 			constexpr PropertyTraits(PropertyDataType type, EncoderFunc encoderFunc, DecoderFunc decoderFunc, bool allowDuplicates = false)
 				: allowDuplicates{ allowDuplicates }, dataType{ type }, encoder{ encoderFunc }, decoder{ decoderFunc }

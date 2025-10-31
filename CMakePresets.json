@@ -12,6 +12,8 @@
         "CMAKE_CXX_COMPILER": "cl.exe",
         "ENABLE_BYTEBUFFER_SBO": true,
         "BYTEBUFFER_SBO_MAX_SIZE": 256,
+        "ENABLE_UNIQUEFUNCTION_SBO": true,
+        "UNIQUEFUNCTION_SBO_MAX_SIZE": 32,
         "LOG_BUFFER_SIZE": 2048
       },
       "condition": {

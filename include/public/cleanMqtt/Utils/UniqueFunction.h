@@ -2,6 +2,7 @@
 #define INCLUDE_CLEAMQTT_UTILS_UNIQUEFUNCTION_H
 
 #include <cleanMqtt/GlobalMacros.h>
+#include <cleanMqtt/Utils/TemplateUtils.h>
 #include <type_traits>
 #include <memory>
 
@@ -11,13 +12,13 @@ namespace cleanMqtt
     * @brief A move-only type-erased callable wrapper with small buffer optimization.
     *
     * UniqueFunction allows storing and invoking any callable object (such as lambdas, functors, or function pointers)
-    * with a void() signature. It is move-only and cannot be copied. The implementation uses small buffer optimization (SBO)
-    * to avoid heap allocations for small callable objects.
+    * with a void() signature. It is move-only and cannot be copied. The implementation allows the use of small buffer 
+    * optimization (SBO) when ENABLE_UNQIUEFUNCTION_SBO is defined.
     *
     * Memory management:
-    * - Small callables (≤ 32 bytes) are stored in an internal buffer
-    * - Larger callables are stored on the heap
-    * - Move operations preserve the storage strategy of the source object
+    * - If defined ENABLE_UNQIUEFUNCTION_SBO then small callables (≤ UNIQUEFUNCTION_SBO_MAX_SIZE bytes) are stored in an internal buffer.
+    * - Larger callables are stored on the heap.
+    * - Move operations preserve the storage strategy of the source object.
     * 
     * Exception guarantee: The call operator provides strong noexcept guarantee.
     *
@@ -32,7 +33,12 @@ namespace cleanMqtt
     */
 	class PUBLIC_API UniqueFunction
 	{
-		using Storage = std::aligned_storage_t<32U, alignof(std::max_align_t)>;
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
+#if UNIQUEFUNCTION_SBO_MAX_SIZE <= 0
+#define UNIQUEFUNCTION_SBO_MAX_SIZE 32
+#endif
+		using Storage = std::aligned_storage_t<UNIQUEFUNCTION_SBO_MAX_SIZE, alignof(std::max_align_t)>;
+#endif
 
 		/**
 		 * @brief Abstract base class for type-erased callable objects.
@@ -40,8 +46,10 @@ namespace cleanMqtt
 		struct ICallable
 		{
 			virtual ~ICallable() {}
-			virtual void call() noexcept = 0;
+			virtual void call() = 0;
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
 			virtual void move(void* moveTo) noexcept = 0;
+#endif
 		};
 
 		/**
@@ -55,15 +63,17 @@ namespace cleanMqtt
 			{
 			}
 
-			void call() noexcept override
+			void call() override
 			{
 				func();
 			}
 
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
 			void move(void* moveTo) noexcept override
 			{
 				new (moveTo) Callable<TFunc>(std::move(func));
 			}
+#endif
 
 			TFunc func;
 		};
@@ -75,7 +85,9 @@ namespace cleanMqtt
 		UniqueFunction(TFunc&& func)
 		{
 			using TCallable = Callable<std::decay_t<TFunc>>;
-			constexpr bool canUseBuffer{ sizeof(TCallable) <= sizeof(Storage) && alignof(TCallable) <= alignof(Storage) };
+
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
+			static constexpr bool canUseBuffer{ sizeof(TCallable) <= sizeof(Storage) && alignof(TCallable) <= alignof(Storage) };
 
             if (canUseBuffer)
 			{
@@ -88,10 +100,14 @@ namespace cleanMqtt
 				m_callable = new TCallable(std::forward<TFunc>(func));
 				m_usesBuffer = false;
 			}
+#else
+			m_callable = new TCallable(std::forward<TFunc>(func));
+#endif
 		}
 
 		UniqueFunction(UniqueFunction&& other) noexcept
 		{
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
 			if (other.m_usesBuffer)
 			{
 				other.m_callable->move(&m_buffer);
@@ -103,6 +119,9 @@ namespace cleanMqtt
 				m_callable = other.m_callable;
 				m_usesBuffer = false;
 			}
+#else
+			m_callable = other.m_callable;
+#endif
 
 			other.m_callable = nullptr;
 		}
@@ -113,6 +132,7 @@ namespace cleanMqtt
 
 			destroy(); // Clean up existing callable just in case.
 
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
 			if (other.m_usesBuffer)
 			{
 				other.m_callable->move(&m_buffer);
@@ -124,6 +144,9 @@ namespace cleanMqtt
 				m_callable = other.m_callable;
 				m_usesBuffer = false;
 			}
+#else
+			m_callable = other.m_callable;
+#endif
 
 			other.m_callable = nullptr;
 			return *this;
@@ -134,7 +157,7 @@ namespace cleanMqtt
 			destroy();
 		}
 
-		void operator()() noexcept
+		void operator()()
 		{
 			m_callable->call();
 		}
@@ -143,13 +166,12 @@ namespace cleanMqtt
 
 		/**
 		 * @brief Destroys the stored callable object.
-		 * This method checks whether the callable is stored in the internal buffer or on the heap.
-		 * If it's in the buffer, it explicitly calls the destructor so that resources are properly released.
 		 */
 		void destroy() noexcept
 		{
 			if (m_callable != nullptr)
 			{
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
 				if (m_usesBuffer)
 				{
 					m_callable->~ICallable(); // Explicitly call destructor
@@ -158,12 +180,18 @@ namespace cleanMqtt
 				{
 					delete m_callable; // Delete heap-allocated callable
 				}
+#else
+				delete m_callable; // Delete heap-allocated callable
+#endif
 			}
 		}
 
-		Storage	m_buffer;
-		ICallable* m_callable{ nullptr };
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
 		bool m_usesBuffer{ true };
+		Storage	m_buffer;
+#endif
+
+		ICallable* m_callable{ nullptr };
 	};
 }
 

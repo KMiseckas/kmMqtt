@@ -1,6 +1,8 @@
 #ifndef INCLUDE_CLEANMQTT_UTILS_TEMPLATEUTILS_HEADER
 #define INCLUDE_CLEANMQTT_UTILS_TEMPLATEUTILS_HEADER
 
+#include <type_traits>
+#include <utility>
 #include <cstdint>
 
 namespace cleanMqtt
@@ -19,6 +21,30 @@ namespace cleanMqtt
         {
             return (TFlag & TOtherFlags) != 0;
         }
+
+        /**
+		 * @brief Checks if a function or callable object can be invoked with the specified arguments without throwing exceptions.
+		 * 
+		 * @tparam Func The type of the function or callable object.
+		 * @tparam FArgs The types of the arguments to be passed to the function.
+		 * @return true if the function can be invoked with the specified arguments without throwing exceptions, false otherwise.
+		 * 
+		 * Replacement for C++17's std::is_nothrow_invocable from <type_traits>.
+         */
+        template<typename Func, typename ...FArgs>
+        struct is_NoThrow_Invocable
+        {
+        private:
+            template <typename F, typename ...A>
+            static auto test(int) -> decltype(static_cast<void>(std::declval<F>()(std::declval<A>()...)),
+                std::true_type{});
+
+            template <typename, typename ...>
+            static std::false_type test(...);
+
+        public:
+			static constexpr bool value = noexcept(test<Func, FArgs...>(0));
+        };
     }
 }
 

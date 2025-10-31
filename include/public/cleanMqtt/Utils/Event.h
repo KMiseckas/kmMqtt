@@ -50,8 +50,10 @@ namespace cleanMqtt
 				}
 			}
 
-			virtual void invoke(Args... args)
+			virtual void invoke(Args... args) noexcept
 			{
+				std::lock_guard<std::mutex> lock(m_mutex);
+
 				for (const auto& callback : m_callbacks)
 				{
 					callback(args...);
@@ -64,7 +66,7 @@ namespace cleanMqtt
 				m_callbacks.clear();
 			}
 
-			void operator()(Args... args) { invoke(args...); }
+			void operator()(Args... args) noexcept { invoke(args...); }
 			void operator+=(const Callback& callback) { add(callback); }
 			void operator-=(const Callback& callback) { remove(callback); }
 

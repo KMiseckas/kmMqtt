@@ -25,7 +25,6 @@ static void BM_SBO_ByteBuffer(benchmark::State& state)
 }
 
 BENCHMARK(BM_SBO_ByteBuffer)
-->Arg(2)
 ->Arg(4)
 ->Arg(8)
 ->Arg(16)
@@ -34,10 +33,6 @@ BENCHMARK(BM_SBO_ByteBuffer)
 ->Arg(128)
 ->Arg(256)
 ->Arg(512)
-->Arg(1024)
-->Arg(2048)
-->Arg(4096)
-->Arg(8192)
-->Arg(16384);
+->Arg(1024);
 
 

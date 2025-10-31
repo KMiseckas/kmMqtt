@@ -47,6 +47,13 @@ else()
     target_compile_definitions(${PROJECT_NAME} PUBLIC BYTEBUFFER_SBO_MAX_SIZE=0)
 endif()
 
+if(ENABLE_UNIQUEFUNCTION_SBO)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC UNIQUEFUNCTION_SBO_MAX_SIZE=${UNIQUEFUNCTION_SBO_MAX_SIZE})
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_UNIQUEFUNCTION_SBO)
+else()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC UNIQUEFUNCTION_SBO_MAX_SIZE=0)
+endif()
+
 if(ENABLE_WARNINGS_AS_ERRORS)
     if(MSVC)
         target_compile_options(${PROJECT_NAME} PRIVATE /W4 /WX)
@@ -62,7 +69,7 @@ else()
     endif()
 endif()
 
-if(ENABLE_UBSAN)
+if(ENABLE_ASAN)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(ASAN_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ASAN_FLAGS}")
@@ -89,6 +96,32 @@ if(ENABLE_UBSAN)
     endif()
 endif()
 
+if(ENABLE_MSAN)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Building with MemorySanitizer")
+        set(MSAN_FLAGS "-fsanitize=memory -fsanitize-memory-track-origins -fno-omit-frame-pointer")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MSAN_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MSAN_FLAGS}")
+    endif()
+
+    if (MSVC)
+        message(WARNING "MemorySanitizer is not supported on MSVC.")
+    endif()
+endif()
+
+if(ENABLE_TSAN)  
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")  
+        message(STATUS "Building with ThreadSanitizer")  
+        set(TSAN_FLAGS "-fsanitize=thread -fno-omit-frame-pointer")  
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TSAN_FLAGS}")  
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TSAN_FLAGS}")  
+    endif()
+
+    if (MSVC)  
+        message(WARNING "ThreadSanitizer is not supported on MSVC.")  
+    endif()
+endif()
+
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
@@ -98,6 +131,14 @@ if(BUILD_UNIT_TESTS)
 
     if(ENABLE_UNIT_TESTS)
         enable_testing()
+
+        add_custom_target(run_tests
+            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
+            DEPENDS ${PROJECT_NAME}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+        )
+
+        add_dependencies(run_tests cleanMqttTests)  # Ensure the 'tests' target is built
     endif()
 endif()
 
