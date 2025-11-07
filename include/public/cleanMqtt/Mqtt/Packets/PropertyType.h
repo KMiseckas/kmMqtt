@@ -45,6 +45,40 @@ namespace cleanMqtt
 			_COUNT
 		};
 
+		enum class PropertyTypeOrdered : std::uint8_t
+		{
+			PAYLOAD_FORMAT_INDICATOR, //UINT8 - PUBLISH, Will Properties
+			MESSAGE_EXPIRY_INTERVAL, //UINT32 - PUBLISH, Will Properties
+			CONTENT_TYPE, //UTF8 - PUBLISH, Will Properties
+			RESPONSE_TOPIC, //UTF8 - PUBLISH, Will Properties
+			CORRELATION_DATA, //BinaryData - PUBLISH, Will Properties
+			SUBSCRIPTION_IDENTIFIER, //VariableByteInteger - PUBLISH, SUBSCRIBE
+			SESSION_EXPIRY_INTERVAL, //UINT32 - CONNECT, CONNACK, DISCONNECT
+			ASSIGNED_CLIENT_IDENTIFIER, //UTF8 - CONNACK
+			SERVER_KEEP_ALIVE, //UINT16 - CONNACK
+			AUTHENTICATION_METHOD, //UTF8 - CONNECT, CONNACK, AUTH
+			AUTHENTICATION_DATA, //BinaryData - CONNECT, CONNACK, AUTH
+			REQUEST_PROBLEM_INFORMATION, //UINT8 - CONNECT
+			WILL_DELAY_INTERVAL, //UINT32 - Will Properties
+			REQUEST_RESPONSE_INFORMATION, //UINT8 - CONNECT
+			RESPONSE_INFORMATION, //UTF8 - CONNACK
+			SERVER_REFERENCE, //UTF8 - CONNACK, DISCONNECT
+			REASON_STRING, //UTF8 - CONNACK, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBACK, UNSUBACK, DISCONNECT, AUTH
+			RECEIVE_MAXIMUM, //UINT16 - CONNECT, CONNACK
+			TOPIC_ALIAS_MAXIMUM, //UINT16 - CONNECT, CONNACK
+			TOPIC_ALIAS, //UINT16 - PUBLISH
+			MAXIMUM_QOS, //UINT8 - CONNACK
+			RETAIN_AVAILABLE, //UINT8 - CONNACK
+			USER_PROPERTY, //UTF8 Pair - CONNECT, CONNACK, PUBLISH, Will Properties, PUBACK, PUBREC, PUBREL, PUBCOMP, SUBSCRIBE, SUBACK, UNSUBSCRIBE, UNSUBACK, DISCONNECT, AUTH
+			MAXIMUM_PACKET_SIZE, //UINT32 - CONNECT, CONNACK
+			WILDCARD_SUBSCRIPTION_AVAILABLE, //UINT8 - CONNACK
+			SUBSCRIPTION_IDENTIFIER_AVAILABLE, //UINT8 - CONNACK
+			SHARED_SUBSCRIPTION_AVAILABLE, //UINT8 - CONNACK
+
+			_COUNT
+		};
+
+
 		//Property identifiers are actually Variable Byte Integers, but this library assumes they fit within 0U - 127U and encodes using a byte.
 		//MQTT spec 5.1 at time of writting has all property IDs below 127U.
 		//Rewrite to use variable byte integer if property IDs increase beyond 127U.
@@ -61,9 +95,40 @@ namespace cleanMqtt
 			BINARY_DATA = 1 << 6
 		};
 
+		template<PropertyType>
+		struct type_of;
+		
+		template<> struct type_of<PropertyType::PAYLOAD_FORMAT_INDICATOR> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::MESSAGE_EXPIRY_INTERVAL> { using type = std::uint32_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT32; };
+		template<> struct type_of<PropertyType::CONTENT_TYPE> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::RESPONSE_TOPIC> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::CORRELATION_DATA> { using type = BinaryData; static constexpr PropertyDataType enumType = PropertyDataType::BINARY_DATA;};
+		template<> struct type_of<PropertyType::SUBSCRIPTION_IDENTIFIER> { using type = VariableByteInteger; static constexpr PropertyDataType enumType = PropertyDataType::VARIABLE_BYTE; };
+		template<> struct type_of<PropertyType::SESSION_EXPIRY_INTERVAL> { using type = std::uint32_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT32; };
+		template<> struct type_of<PropertyType::ASSIGNED_CLIENT_IDENTIFIER> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::SERVER_KEEP_ALIVE> { using type = std::uint16_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT16; };
+		template<> struct type_of<PropertyType::AUTHENTICATION_METHOD> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::AUTHENTICATION_DATA> { using type = BinaryData; static constexpr PropertyDataType enumType = PropertyDataType::BINARY_DATA; };
+		template<> struct type_of<PropertyType::REQUEST_PROBLEM_INFORMATION> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::WILL_DELAY_INTERVAL> { using type = std::uint32_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT32; };
+		template<> struct type_of<PropertyType::REQUEST_RESPONSE_INFORMATION> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::RESPONSE_INFORMATION> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::SERVER_REFERENCE> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::REASON_STRING> { using type = UTF8String; static constexpr PropertyDataType enumType = PropertyDataType::UTF8; };
+		template<> struct type_of<PropertyType::RECEIVE_MAXIMUM> { using type = std::uint16_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT16; };
+		template<> struct type_of<PropertyType::TOPIC_ALIAS_MAXIMUM> { using type = std::uint16_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT16; };
+		template<> struct type_of<PropertyType::TOPIC_ALIAS> { using type = std::uint16_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT16; };
+		template<> struct type_of<PropertyType::MAXIMUM_QOS> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::RETAIN_AVAILABLE> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::USER_PROPERTY> { using type = UTF8StringPair; static constexpr PropertyDataType enumType = PropertyDataType::UTF8_PAIR; };
+		template<> struct type_of<PropertyType::MAXIMUM_PACKET_SIZE> { using type = std::uint32_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT32; };
+		template<> struct type_of<PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::SUBSCRIPTION_IDENTIFIER_AVAILABLE> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+		template<> struct type_of<PropertyType::SHARED_SUBSCRIPTION_AVAILABLE> { using type = std::uint8_t; static constexpr PropertyDataType enumType = PropertyDataType::UINT8; };
+
 		ENUM_FLAG_OPERATORS(PropertyDataType)
 
-			constexpr PropertyDataType k_numericalDataType
+		constexpr PropertyDataType k_numericalDataType
 		{
 			PropertyDataType::UINT8 |
 				PropertyDataType::UINT16 |
@@ -100,8 +165,6 @@ namespace cleanMqtt
 
 			namespace
 			{
-				//TODO maybe we can reuse pointers rather than allocating new ones?
-
 				void encodeUInt8(ByteBuffer& buffer, PropertyType property, const void* data)
 				{
 					const auto castData = static_cast<const std::uint8_t*>(data);
@@ -227,6 +290,41 @@ namespace cleanMqtt
 			{PropertyType::TOPIC_ALIAS, {PropertyDataType::UINT16, propertyEncodings::encodeUInt16, propertyDecodings::decodeUInt16, false}},
 			{PropertyType::USER_PROPERTY, {PropertyDataType::UTF8_PAIR, propertyEncodings::encodeUTF8StringPair, propertyDecodings::decodeUTF8StringPair, true}}
 		};
+
+#define AsInt(enum) static_cast<std::uint8_t>(enum)
+
+		constexpr std::uint8_t k_propertyDataTypeMap[static_cast<std::uint8_t>(PropertyTypeOrdered::_COUNT)][2]
+		{
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::PAYLOAD_FORMAT_INDICATOR) },			//PAYLOAD_FORMAT_INDICATOR
+			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::MESSAGE_EXPIRY_INTERVAL)},			//MESSAGE_EXPIRY_INTERVAL
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::CONTENT_TYPE)},			//CONTENT_TYPE
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::RESPONSE_TOPIC) },			//RESPONSE_TOPIC
+			{AsInt(PropertyDataType::BINARY_DATA), AsInt(PropertyType::CORRELATION_DATA) },		//CORRELATION_DATA
+			{AsInt(PropertyDataType::VARIABLE_BYTE), AsInt(PropertyType::SUBSCRIPTION_IDENTIFIER) },	//SUBSCRIPTION_IDENTIFIER
+			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::SESSION_EXPIRY_INTERVAL) },			//SESSION_EXPIRY_INTERVAL
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::ASSIGNED_CLIENT_IDENTIFIER) },			//ASSIGNED_CLIENT_IDENTIFIER
+			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::SERVER_KEEP_ALIVE) },			//SERVER_KEEP_ALIVE
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::AUTHENTICATION_METHOD) },			//AUTHENTICATION_METHOD
+			{AsInt(PropertyDataType::BINARY_DATA), AsInt(PropertyType::AUTHENTICATION_DATA) },		//AUTHENTICATION_DATA
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::REQUEST_PROBLEM_INFORMATION) },			//REQUEST_PROBLEM_INFORMATION
+			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::WILL_DELAY_INTERVAL) },			//WILL_DELAY_INTERVAL
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::REQUEST_RESPONSE_INFORMATION) },			//REQUEST_RESPONSE_INFORMATION
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::RESPONSE_INFORMATION)},			//RESPONSE_INFORMATION
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::SERVER_REFERENCE)},			//SERVER_REFERENCE
+			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::REASON_STRING)},			//REASON_STRING
+			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::RECEIVE_MAXIMUM)},			//RECEIVE_MAXIMUM
+			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::TOPIC_ALIAS_MAXIMUM)},			//TOPIC_ALIAS_MAXIMUM
+			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::TOPIC_ALIAS)},			//TOPIC_ALIAS
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::MAXIMUM_QOS)},			//MAXIMUM_QOS
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::RETAIN_AVAILABLE)},			//RETAIN_AVAILABLE
+			{AsInt(PropertyDataType::UTF8_PAIR), AsInt(PropertyType::USER_PROPERTY) },		//USER_PROPERTY
+			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::MAXIMUM_PACKET_SIZE) },			//MAXIMUM_PACKET_SIZE
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE)},			//WILDCARD_SUBSCRIPTION_AVAILABLE
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::SUBSCRIPTION_IDENTIFIER_AVAILABLE)},			//SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::SHARED_SUBSCRIPTION_AVAILABLE)}			//SHARED_SUBSCRIPTION_AVAILABLE
+		};
+
+#undef AsInt
 	}
 }
 

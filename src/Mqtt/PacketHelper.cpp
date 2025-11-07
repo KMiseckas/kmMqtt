@@ -23,16 +23,16 @@ namespace cleanMqtt
 			}
 
 			Properties connectProperties;
-			connectProperties.tryAddProperty(PropertyType::SESSION_EXPIRY_INTERVAL, conArgs.sessionExpiryInterval, conArgs.sessionExpiryInterval > 0);
-			connectProperties.tryAddProperty(PropertyType::RECEIVE_MAXIMUM, conArgs.receiveMaximum, conArgs.receiveMaximum > 0);
-			connectProperties.tryAddProperty(PropertyType::MAXIMUM_PACKET_SIZE, conArgs.maximumPacketSize, conArgs.maximumPacketSize >= 2);
-			connectProperties.tryAddProperty(PropertyType::TOPIC_ALIAS_MAXIMUM, conArgs.maximumTopicAliases, conArgs.maximumTopicAliases > 0);
-			connectProperties.tryAddProperty(PropertyType::REQUEST_RESPONSE_INFORMATION, conArgs.requestResponseInformation, conArgs.requestResponseInformation);
-			connectProperties.tryAddProperty(PropertyType::REQUEST_PROBLEM_INFORMATION, conArgs.requestProblemInformation, !conArgs.requestProblemInformation);
+			connectProperties.tryAddProperty<PropertyType::SESSION_EXPIRY_INTERVAL>(conArgs.sessionExpiryInterval, conArgs.sessionExpiryInterval > 0);
+			connectProperties.tryAddProperty<PropertyType::RECEIVE_MAXIMUM>(conArgs.receiveMaximum, conArgs.receiveMaximum > 0);
+			connectProperties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(conArgs.maximumPacketSize, conArgs.maximumPacketSize >= 2);
+			connectProperties.tryAddProperty<PropertyType::TOPIC_ALIAS_MAXIMUM>(conArgs.maximumTopicAliases, conArgs.maximumTopicAliases > 0);
+			connectProperties.tryAddProperty<PropertyType::REQUEST_RESPONSE_INFORMATION>(conArgs.requestResponseInformation, conArgs.requestResponseInformation);
+			connectProperties.tryAddProperty<PropertyType::REQUEST_PROBLEM_INFORMATION>(conArgs.requestProblemInformation, !conArgs.requestProblemInformation);
 
 			for (const auto& property : conArgs.userProperties)
 			{
-				connectProperties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				connectProperties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
 			ConnectVariableHeader varHeader{
@@ -45,20 +45,20 @@ namespace cleanMqtt
 			Properties willProperties;
 			if (conArgs.will != nullptr)
 			{
-				willProperties.tryAddProperty(PropertyType::WILL_DELAY_INTERVAL, conArgs.will->willDelayInterval, conArgs.will->willDelayInterval > 0);
-				willProperties.tryAddProperty(PropertyType::PAYLOAD_FORMAT_INDICATOR, conArgs.will->payloadFormat, conArgs.will->payloadFormat == PayloadFormatIndicator::UTF8);
-				willProperties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, conArgs.will->messageExpiryInterval, conArgs.will->messageExpiryInterval > 0);
-				willProperties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String{ conArgs.will->contentType }, !conArgs.will->contentType.empty());
-				willProperties.tryAddProperty(PropertyType::RESPONSE_TOPIC, UTF8String{ conArgs.will->responseTopic }, !conArgs.will->responseTopic.empty());
+				willProperties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(conArgs.will->willDelayInterval, conArgs.will->willDelayInterval > 0);
+				willProperties.tryAddProperty<PropertyType::PAYLOAD_FORMAT_INDICATOR>(static_cast<std::uint8_t>(conArgs.will->payloadFormat), conArgs.will->payloadFormat == PayloadFormatIndicator::UTF8);
+				willProperties.tryAddProperty<PropertyType::MESSAGE_EXPIRY_INTERVAL>(conArgs.will->messageExpiryInterval, conArgs.will->messageExpiryInterval > 0);
+				willProperties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String{ conArgs.will->contentType }, !conArgs.will->contentType.empty());
+				willProperties.tryAddProperty<PropertyType::RESPONSE_TOPIC>(UTF8String{ conArgs.will->responseTopic }, !conArgs.will->responseTopic.empty());
 
 				if (conArgs.will->correlationData != nullptr)
 				{
-					willProperties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() });
+					willProperties.tryAddProperty<PropertyType::CORRELATION_DATA>(BinaryData{ conArgs.will->correlationData->size(), conArgs.will->correlationData->bytes() });
 				}
 
 				for (const auto& property : conArgs.will->userProperties)
 				{
-					willProperties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+					willProperties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 				}
 			}
 
@@ -80,12 +80,12 @@ namespace cleanMqtt
 		Disconnect createDisconnectPacket(const MqttConnectionInfo& connectionInfo, const DisconnectArgs& args, DisconnectReasonCode reason) noexcept
 		{
 			Properties properties;
-			properties.tryAddProperty(PropertyType::SESSION_EXPIRY_INTERVAL, args.sessionExpiryInterval, connectionInfo.connectArgs.sessionExpiryInterval != 0);
-			properties.tryAddProperty(PropertyType::REASON_STRING, UTF8String{ args.disconnectReasonText }, !args.disconnectReasonText.empty());
+			properties.tryAddProperty<PropertyType::SESSION_EXPIRY_INTERVAL>(args.sessionExpiryInterval, connectionInfo.connectArgs.sessionExpiryInterval != 0);
+			properties.tryAddProperty<PropertyType::REASON_STRING>(UTF8String{ args.disconnectReasonText }, !args.disconnectReasonText.empty());
 
 			for (const auto& property : args.userProperties)
 			{
-				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
 			DisconnectVariableHeader header{ reason, std::move(properties) };
@@ -112,19 +112,19 @@ namespace cleanMqtt
 			PublishPayloadHeader payloadHeader;
 
 			Properties properties;
-			properties.tryAddProperty(PropertyType::PAYLOAD_FORMAT_INDICATOR, options.payloadFormatIndicator);
-			properties.tryAddProperty(PropertyType::MESSAGE_EXPIRY_INTERVAL, options.messageExpiryInterval, options.addMessageExpiryInterval);
-			properties.tryAddProperty(PropertyType::TOPIC_ALIAS, options.topicAlias, options.topicAlias > 0);
-			properties.tryAddProperty(PropertyType::RESPONSE_TOPIC, options.responseTopic, !options.responseTopic.empty());
+			properties.tryAddProperty<PropertyType::PAYLOAD_FORMAT_INDICATOR>(static_cast<std::uint8_t>(options.payloadFormatIndicator));
+			properties.tryAddProperty<PropertyType::MESSAGE_EXPIRY_INTERVAL>(options.messageExpiryInterval, options.addMessageExpiryInterval);
+			properties.tryAddProperty<PropertyType::TOPIC_ALIAS>(options.topicAlias, options.topicAlias > 0);
+			properties.tryAddProperty<PropertyType::RESPONSE_TOPIC>(options.responseTopic, !options.responseTopic.empty());
 
 			if (options.correlationData != nullptr)
 			{
-				properties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData{ *options.correlationData.get() }, !options.responseTopic.empty());
+				properties.tryAddProperty<PropertyType::CORRELATION_DATA>(BinaryData{ *options.correlationData.get() }, !options.responseTopic.empty());
 			}
 
 			for (const auto& property : options.userProperties)
 			{
-				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
 			varHeader.properties = std::move(properties);
@@ -143,11 +143,11 @@ namespace cleanMqtt
 		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept
 		{
 			Properties properties;
-			properties.tryAddProperty(PropertyType::REASON_STRING, options.reasonString, !options.reasonString.empty());
+			properties.tryAddProperty<PropertyType::REASON_STRING>(options.reasonString, !options.reasonString.empty());
 
 			for (const auto& property : options.userProperties)
 			{
-				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
 			PubAckVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
@@ -157,11 +157,11 @@ namespace cleanMqtt
 		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept
 		{
 			Properties properties;
-			properties.tryAddProperty(PropertyType::SUBSCRIPTION_IDENTIFIER, VariableByteInteger(options.subscribeIdentifier), options.subscribeIdentifier.uint32Value() != 0);
+			properties.tryAddProperty<PropertyType::SUBSCRIPTION_IDENTIFIER>(VariableByteInteger(options.subscribeIdentifier), options.subscribeIdentifier.uint32Value() != 0);
 
 			for (const auto& property : options.userProperties)
 			{
-				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
 			std::vector<Subscription> subscriptions;
@@ -189,7 +189,7 @@ namespace cleanMqtt
 			Properties properties;
 			for (const auto& property : options.userProperties)
 			{
-				properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair{ property.first, property.second });
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
 			std::vector<UTF8String> topicsFilter;

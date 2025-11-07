@@ -13,15 +13,15 @@ TEST_SUITE("Properties Tests")
 	TEST_CASE("Adding/Getting property")
 	{
 		Properties properties;
-		CHECK(properties.tryAddProperty<std::uint8_t>(PropertyType::ASSIGNED_CLIENT_IDENTIFIER, 10));
-		CHECK(properties.tryAddProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, 20));
-		CHECK(properties.tryAddProperty<bool>(PropertyType::RETAIN_AVAILABLE, true));
-		CHECK(properties.tryAddProperty<const char*>(PropertyType::CONTENT_TYPE, "JSON"));
-		CHECK(properties.tryAddProperty<double>(PropertyType::MAXIMUM_PACKET_SIZE, 22.5));
+		CHECK(properties.tryAddProperty<PropertyType::ASSIGNED_CLIENT_IDENTIFIER>({ 10 }));
+		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>({ 20 }));
+		CHECK(properties.tryAddProperty<PropertyType::RETAIN_AVAILABLE>(true));
+		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>({ "JSON" }));
+		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(22.5));
 
-		CHECK(properties.tryAddProperty<BinaryData>(PropertyType::USER_PROPERTY, BinaryData()));
-		CHECK(properties.tryAddProperty<UTF8String>(PropertyType::WILL_DELAY_INTERVAL, UTF8String("Hello World")));
-		CHECK(properties.tryAddProperty<VariableByteInteger>(PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE, VariableByteInteger::tryCreateFromValue(150)));
+		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({}));
+		CHECK(properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(32));
+		CHECK(properties.tryAddProperty<PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE>(150));
 
 		const std::uint8_t* valueInt;
 		const bool* valueBool;
@@ -61,8 +61,8 @@ TEST_SUITE("Properties Tests")
 		CHECK(*valueDouble != 22.5);
 		CHECK(properties.tryGetProperty<bool>(PropertyType::PAYLOAD_FORMAT_INDICATOR, valueBool) == false);
 
-		CHECK(properties.tryAddProperty<double>(PropertyType::MAXIMUM_PACKET_SIZE, 30.5) == false);
-		CHECK(properties.tryAddProperty<const char*>(PropertyType::CONTENT_TYPE, "JSON_OVERRIDE") == false);
+		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(30.5) == false);
+		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>({ "JSON_OVERRIDE" }) == false);
 
 		CHECK(properties.tryGetProperty<const char*>(PropertyType::CONTENT_TYPE, valueChar));
 		CHECK(std::strcmp(*valueChar, "JSON") == 0);
@@ -73,8 +73,8 @@ TEST_SUITE("Properties Tests")
 	TEST_CASE("Add/Get Duplicate Properties")
 	{
 		Properties properties;
-		CHECK(properties.tryAddProperty<std::uint8_t>(PropertyType::USER_PROPERTY, 10));
-		CHECK(properties.tryAddProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, 20));
+		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({ 10 }));
+		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>({ 20 }));
 
 		const std::uint8_t* valueInt;
 		std::vector<const std::uint8_t*> valueIntVec;
@@ -85,8 +85,8 @@ TEST_SUITE("Properties Tests")
 		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, valueInt));
 		CHECK(*valueInt == 20);
 
-		CHECK(properties.tryAddProperty<std::uint8_t>(PropertyType::USER_PROPERTY, 20) == true); //USER_PROPERTY is allowed for duplication.
-		CHECK(properties.tryAddProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, 30) == false); //AUTHENTICATION_DATA is not allowed for duplication.
+		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({ 20 }) == true); //USER_PROPERTY is allowed for duplication.
+		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>({ 30 }) == false); //AUTHENTICATION_DATA is not allowed for duplication.
 
 		valueIntVec.clear();
 		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::USER_PROPERTY, valueIntVec));

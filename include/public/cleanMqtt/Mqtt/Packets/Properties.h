@@ -55,66 +55,59 @@ namespace cleanMqtt
 				return *this;
 			}
 
-			template<typename TPropertyDataType>
-			typename std::enable_if<!std::is_base_of<MqttDataType, TPropertyDataType>::value, bool>::type
-				tryAddProperty(PropertyType type, const TPropertyDataType& value, bool conditionalCheck = true)
+			/**
+			 * Specialise for each property type to ensure correct data type is used. Ran into problems where I would pass a value in but would
+			 * not get a compile error until runtime because the data type did not match the property type expected data type 
+			 * (e.g. passing in a uint8_t for a property that expects a uint32_t).
+			 */
+
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<std::uint8_t, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(const std::uint8_t& value, bool conditionalCheck = true)
 			{
-#ifdef FORCE_ADD_PROPERTIES
-				(void)conditionalCheck;
-#else
-				if (!conditionalCheck)
-				{
-					return false;
-				}
-#endif
-
-				auto it = k_propertyTraits.find(type);
-				if (!it->second.allowDuplicates)
-				{
-					const auto iter = m_properties.find(type);
-
-					if (iter != m_properties.end())
-					{
-						LogError("Properties", "Cannot add duplicate property. Property Type: %d", static_cast<std::uint16_t>(type));
-						return false;
-					}
-				}
-
-				m_properties.insert(std::make_pair(type, new TPropertyDataType(value)));
-				m_propertiesSizeInBytes += 1 + sizeof(value);
-
-				return true;
+				return tryAddPropertyImpl<T>(value, conditionalCheck);
 			}
 
-			template<typename TPropertyDataType>
-			typename std::enable_if<std::is_base_of<MqttDataType, TPropertyDataType>::value, bool>::type
-				tryAddProperty(PropertyType type, TPropertyDataType&& value, bool conditionalCheck = true)
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<std::uint16_t, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(const std::uint16_t& value, bool conditionalCheck = true)
 			{
-#ifdef FORCE_ADD_PROPERTIES
-				(void)conditionalCheck;
-#else
-				if (!conditionalCheck)
-				{
-					return false;
-				}
-#endif
+				return tryAddPropertyImpl<T>(value, conditionalCheck);
+			}
 
-				auto it = k_propertyTraits.find(type);
-				if (!it->second.allowDuplicates)
-				{
-					const auto iter = m_properties.find(type);
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<std::uint32_t, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(const std::uint32_t& value, bool conditionalCheck = true)
+			{
+				return tryAddPropertyImpl<T>(value, conditionalCheck);
+			}
 
-					if (iter != m_properties.end())
-					{
-						LogError("Properties", "Cannot add duplicate property. Property Type: %d", static_cast<std::uint16_t>(type));
-						return false;
-					}
-				}
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<UTF8String, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(UTF8String&& value, bool conditionalCheck = true)
+			{
+				return tryAddPropertyImpl<T>(std::move(value), conditionalCheck);
+			}
 
-				m_propertiesSizeInBytes += 1 + static_cast<std::uint32_t>(value.encodingSize());
-				m_properties.insert(std::make_pair(type, new TPropertyDataType(std::move(value))));
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<UTF8StringPair, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(UTF8StringPair&& value, bool conditionalCheck = true)
+			{
+				return tryAddPropertyImpl<T>(std::move(value), conditionalCheck);
+			}
 
-				return true;
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<VariableByteInteger, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(VariableByteInteger&& value, bool conditionalCheck = true)
+			{
+				return tryAddPropertyImpl<T>(std::move(value), conditionalCheck);
+			}
+
+			template<PropertyType T>
+			typename std::enable_if<std::is_same<BinaryData, typename type_of<T>::type>::value, bool>::type
+				tryAddProperty(BinaryData&& value, bool conditionalCheck = true)
+			{
+				return tryAddPropertyImpl<T>(std::move(value), conditionalCheck);
 			}
 
 			template<typename TPropertyDataType>
@@ -250,6 +243,68 @@ namespace cleanMqtt
 			}
 
 		protected:
+
+			template<PropertyType T, typename DataT>
+			typename std::enable_if<!std::is_base_of<MqttDataType, DataT>::value, bool>::type
+				tryAddPropertyImpl(const DataT& value, bool conditionalCheck = true)
+			{
+#ifdef FORCE_ADD_PROPERTIES
+				(void)conditionalCheck;
+#else
+				if (!conditionalCheck)
+				{
+					return false;
+				}
+#endif
+
+				auto it = k_propertyTraits.find(T);
+				if (!it->second.allowDuplicates)
+				{
+					const auto iter = m_properties.find(T);
+
+					if (iter != m_properties.end())
+					{
+						LogError("Properties", "Cannot add duplicate property. Property Type: %d", static_cast<std::uint16_t>(T));
+						return false;
+					}
+				}
+
+				m_properties.insert(std::make_pair(T, new DataT(value)));
+				m_propertiesSizeInBytes += 1 + sizeof(value);
+
+				return true;
+			}
+
+			template<PropertyType T, typename DataT>
+			typename std::enable_if<std::is_base_of<MqttDataType, DataT>::value, bool>::type
+				tryAddPropertyImpl(DataT&& value, bool conditionalCheck = true)
+			{
+#ifdef FORCE_ADD_PROPERTIES
+				(void)conditionalCheck;
+#else
+				if (!conditionalCheck)
+				{
+					return false;
+				}
+#endif
+
+				auto it = k_propertyTraits.find(T);
+				if (!it->second.allowDuplicates)
+				{
+					const auto iter = m_properties.find(T);
+
+					if (iter != m_properties.end())
+					{
+						LogError("Properties", "Cannot add duplicate property. Property Type: %d", static_cast<std::uint16_t>(T));
+						return false;
+					}
+				}
+
+				m_propertiesSizeInBytes += 1 + static_cast<std::uint32_t>(value.encodingSize());
+				m_properties.insert(std::make_pair(T, new DataT(std::move(value))));
+
+				return true;
+			}
 
 			bool tryAddProperty(PropertyType type, void* data)
 			{

@@ -87,7 +87,7 @@ TEST_SUITE("Header Tests")
 				flags.setFlagValue(ConnectFlags::WILL_RETAIN, false);
 
 				Properties properties;
-				properties.tryAddProperty<std::uint32_t>(PropertyType::WILL_DELAY_INTERVAL, 200); //Size = 5 (Property Id (1) + Data Type UINT32 (4))
+				properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(200); //Size = 5 (Property Id (1) + Data Type UINT32 (4))
 
 				ConnectVariableHeader header{
 					"MQTT",
@@ -141,13 +141,13 @@ TEST_SUITE("Header Tests")
 				flags.setFlagValue(ConnectFlags::WILL_RETAIN, false);
 
 				Properties properties;
-				properties.tryAddProperty<std::uint32_t>(PropertyType::WILL_DELAY_INTERVAL, 200); //Size = 5 (Property Id (1) + Data Type UINT32 (4))
-				properties.tryAddProperty<UTF8String>(PropertyType::REASON_STRING, UTF8String("REASON 1")); //Size 1 + 2 + 8 = 11
+				properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(200); //Size = 5 (Property Id (1) + Data Type UINT32 (4))
+				properties.tryAddProperty<PropertyType::REASON_STRING>(UTF8String("REASON 1")); //Size 1 + 2 + 8 = 11
 				constexpr std::uint8_t binaryArr[5]{ 1,2,3,4,5 };
-				properties.tryAddProperty<BinaryData>(PropertyType::AUTHENTICATION_DATA, BinaryData(5, binaryArr)); //Size 1 + 2 + 5 = 8;
-				properties.tryAddProperty<UTF8StringPair>(PropertyType::USER_PROPERTY, UTF8StringPair("KEY_1", "VALUE_1")); //Size 1 + 2 + 5 + 2 + 7 = 17;
-				properties.tryAddProperty<UTF8StringPair>(PropertyType::USER_PROPERTY, UTF8StringPair("KEY_1", "VALUE_1")); //Size 1 + 2 + 5 + 2 + 7 = 17;
-				properties.tryAddProperty<std::uint8_t>(PropertyType::MAXIMUM_QOS, 2); //Size 1 + 1 = 2;
+				properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData(5, binaryArr)); //Size 1 + 2 + 5 = 8;
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("KEY_1", "VALUE_1")); //Size 1 + 2 + 5 + 2 + 7 = 17;
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("KEY_1", "VALUE_1")); //Size 1 + 2 + 5 + 2 + 7 = 17;
+				properties.tryAddProperty<PropertyType::MAXIMUM_QOS>( 2); //Size 1 + 1 = 2;
 
 				ConnectVariableHeader header{
 					"MQTT",
@@ -345,7 +345,7 @@ TEST_SUITE("Header Tests")
 			SUBCASE("Params 2")
 			{
 				Properties properties;
-				properties.tryAddProperty(PropertyType::WILL_DELAY_INTERVAL, 200);
+				properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(200);
 
 				ConnectPayloadHeader header;
 				header.clientId = "Client_1"; //10

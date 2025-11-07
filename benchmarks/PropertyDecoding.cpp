@@ -11,9 +11,9 @@ using namespace cleanMqtt::mqtt;
 static void BM_EncodeProperties_WithSmallData(benchmark::State& state)
 {
     Properties properties;
-    properties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String("example"));
-    properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair("key", "value"));
-    properties.tryAddProperty(PropertyType::AUTHENTICATION_DATA, BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
+    properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("example"));
+    properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key", "value"));
+    properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
 
     for (auto _ : state) 
     {
@@ -26,10 +26,10 @@ static void BM_EncodeProperties_WithSmallData(benchmark::State& state)
 static void BM_EncodeProperties_WithLargeData(benchmark::State& state)
 {
     Properties properties;
-    properties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData(50, reinterpret_cast<const std::uint8_t*>("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")));
-    properties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String("example"));
-    properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair("key", "value"));
-    properties.tryAddProperty(PropertyType::AUTHENTICATION_DATA, BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
+    properties.tryAddProperty<PropertyType::CORRELATION_DATA>(BinaryData(50, reinterpret_cast<const std::uint8_t*>("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")));
+    properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("example"));
+    properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key", "value"));
+    properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
 
     for (auto _ : state)
     {
@@ -42,10 +42,10 @@ static void BM_EncodeProperties_WithLargeData(benchmark::State& state)
 static void BM_DecodeProperties_WithLargeData(benchmark::State& state)
 {
     Properties properties;
-    properties.tryAddProperty(PropertyType::CORRELATION_DATA, BinaryData(50, reinterpret_cast<const std::uint8_t*>("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")));
-    properties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String("example"));
-    properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair("key", "value"));
-    properties.tryAddProperty(PropertyType::AUTHENTICATION_DATA, BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
+    properties.tryAddProperty<PropertyType::CORRELATION_DATA>( BinaryData(50, reinterpret_cast<const std::uint8_t*>("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")));
+    properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("example"));
+    properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key", "value"));
+    properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
 
     ByteBuffer buffer{ properties.encodingSize() };
     properties.encode(buffer);
@@ -62,9 +62,9 @@ static void BM_DecodeProperties_WithLargeData(benchmark::State& state)
 static void BM_DecodeProperties_WithSmallData(benchmark::State& state)
 {
     Properties properties;
-    properties.tryAddProperty(PropertyType::CONTENT_TYPE, UTF8String("example"));
-    properties.tryAddProperty(PropertyType::USER_PROPERTY, UTF8StringPair("key", "value"));
-    properties.tryAddProperty(PropertyType::AUTHENTICATION_DATA, BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
+    properties.tryAddProperty<PropertyType::PAYLOAD_FORMAT_INDICATOR>(5);
+    properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key", "value"));
+    properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData(1, reinterpret_cast<const std::uint8_t*>("A")));
 
 	ByteBuffer buffer{ properties.encodingSize() };
     properties.encode(buffer);

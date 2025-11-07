@@ -16,7 +16,7 @@ TEST_SUITE("Connect Packet Tests")
 		flags.setFlagValue(ConnectFlags::WILL_RETAIN, false);
 
 		Properties properties;
-		properties.tryAddProperty<std::uint32_t>(PropertyType::WILL_DELAY_INTERVAL, 200); //Size = 5 (Property Id (1) + Data Type UINT32 (4))
+		properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(200); //Size = 5 (Property Id (1) + Data Type UINT32 (4))
 
 		ConnectVariableHeader varHeader
 		{
