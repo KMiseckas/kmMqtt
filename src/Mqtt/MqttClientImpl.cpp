@@ -261,7 +261,7 @@ namespace cleanMqtt
 
 		ClientError MqttClientImpl::shutdown() noexcept
 		{
-			if (m_clientOptions.isTickAsync())
+			if (m_clientOptions.getTickMode() == TickMode::ASYNC)
 			{
 				return shutdownAsync();
 			}
@@ -331,9 +331,9 @@ namespace cleanMqtt
 
 		ClientError MqttClientImpl::tick() noexcept
 		{
-			assert(m_clientOptions.isTickAsync() == false && "tick() should only be called when client is not configured to tick asynchronously.");
+			assert(m_clientOptions.getTickMode() == TickMode::SYNC && "tick() should only be called when client is not configured to tick asynchronously.");
 
-			if (m_clientOptions.isTickAsync())
+			if (m_clientOptions.getTickMode() == TickMode::ASYNC)
 			{
 				LogWarning("MqttClient", "Cannot call tick() when client is configured to tick asynchronously (tickAsync set as true in constructor).");
 				return ClientErrorCode::Using_Tick_Async;
@@ -367,7 +367,7 @@ namespace cleanMqtt
 
         void MqttClientImpl::tickAsync() noexcept
 		{
-			assert(m_clientOptions.isTickAsync() != false && "tickAsync() should only be called when client is configured to tick asynchronously.");
+			assert(m_clientOptions.getTickMode() != TickMode::ASYNC && "tickAsync() should only be called when client is configured to tick asynchronously.");
 
 			if (m_isRunningAsync.exchange(true))
 			{
@@ -381,7 +381,7 @@ namespace cleanMqtt
 					while (true)
 					{
 						{
-							std::unique_lock<std::mutex> lock{ m_mutex };
+							std::unique_lock<std::mutex> lock{ m_tickMutex };
 
 							m_mqttMainThreadCondition.wait_for(lock, std::chrono::milliseconds(m_config.tickAsyncWaitForMS), [this] {
 								return !m_isRunningAsync;
@@ -479,7 +479,7 @@ namespace cleanMqtt
 
 		bool MqttClientImpl::getIsTickingAsync() const noexcept
 		{
-			return m_clientOptions.isTickAsync();
+			return m_clientOptions.getTickMode() == TickMode::ASYNC;
 		}
 
 		void MqttClientImpl::pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept

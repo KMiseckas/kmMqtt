@@ -159,6 +159,7 @@ else\
 			SendBatchResult m_batchResultData;
 
 			std::mutex m_mutex;
+			std::mutex m_tickMutex;
 			std::mutex m_receiverMutex;
 
 			Config m_config;

@@ -16,7 +16,7 @@ namespace cleanMqtt
 		MqttClient::MqttClient(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions)
 			: m_impl(std::make_unique<MqttClientImpl>(env, clientOptions))
 		{
-			if (clientOptions.isTickAsync())
+			if (clientOptions.getTickMode() == TickMode::ASYNC)
 			{
 				m_impl->tickAsync();
 			}

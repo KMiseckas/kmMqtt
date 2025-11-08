@@ -43,8 +43,7 @@ void SessionModel::connect()
 	 * Create MQTT Client.
 	 */
 	cleanMqtt::DefaultEnvironmentFactory factory;
-	cleanMqtt::MqttClientOptions options;
-	options.setTickAsync(useTickAsync, std::make_shared<cleanMqtt::DeferToTickEndDispatcher>()); 
+	cleanMqtt::MqttClientOptions options{ useTickAsync ? cleanMqtt::TickMode::ASYNC : cleanMqtt::TickMode::SYNC };
 
 	m_mqttClient = new cleanMqtt::mqtt::MqttClient{ factory.createEnvironment(), options };
 
