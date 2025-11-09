@@ -1,7 +1,7 @@
-#ifndef INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDUNSUBSCRIBEJOB_H
-#define INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDUNSUBSCRIBEJOB_H
+#ifndef INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_UNSUBSCRIBECOMPOSER_H
+#define INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_UNSUBSCRIBECOMPOSER_H
 
-#include <cleanMqtt/Mqtt/Transport/ISendJob.h>
+#include <cleanMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <cleanMqtt/Mqtt/Params/Topic.h>
 #include <cleanMqtt/Utils/PacketIdPool.h>
 #include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
@@ -10,18 +10,17 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		class SendUnSubscribeJob : public ISendJob
+		class UnSubscribeComposer : public IPacketComposer
 		{
 		public:
-			SendUnSubscribeJob(
+			UnSubscribeComposer(
 				MqttConnectionInfo* connectionInfo,
-				PacketSendDelegate sendPacketCallback,
 				PacketIdPool* packetIdPool,
 				const std::uint16_t packetId,
 				std::vector<Topic> topics,
 				UnSubscribeOptions&& options) noexcept;
 
-			SendResultData send() noexcept override;
+			ComposeResult compose() noexcept override;
 			void cancel() noexcept override;
 
 		private:
@@ -33,4 +32,4 @@ namespace cleanMqtt
 	}
 }
 
-#endif //INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDUNSUBSCRIBEJOB_H
+#endif //INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_UNSUBSCRIBECOMPOSER_H

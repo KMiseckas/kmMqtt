@@ -93,26 +93,16 @@ namespace cleanMqtt
 		return true;
 	}
 
-	bool DefaultWinWebsocket::send(const ByteBuffer& data) noexcept
+	//TODO fix send. Need to either return sent bytes to know remaining not sent, or fix default socket send to send all 
+	// bytes from cached buffer of remaining data.
+	int DefaultWinWebsocket::send(const ByteBuffer& data) noexcept
 	{
 		if (!m_connected || m_socket == INVALID_SOCKET)
 		{
-			return false;
+			return -1;
 		}
 
-		auto result = ::send(m_socket, reinterpret_cast<const char*>(data.bytes()), static_cast<int>(data.size()), 0);
-
-		if (result == SOCKET_ERROR)
-		{
-			return false;
-		}
-
-		if (result != data.size())
-		{
-			return false;
-		}
-
-		return true;
+		return ::send(m_socket, reinterpret_cast<const char*>(data.bytes()), static_cast<int>(data.size()), 0);
 	}
 
 	bool DefaultWinWebsocket::close() noexcept

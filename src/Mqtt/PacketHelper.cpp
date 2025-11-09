@@ -115,7 +115,7 @@ namespace cleanMqtt
 			properties.tryAddProperty<PropertyType::PAYLOAD_FORMAT_INDICATOR>(static_cast<std::uint8_t>(options.payloadFormatIndicator));
 			properties.tryAddProperty<PropertyType::MESSAGE_EXPIRY_INTERVAL>(options.messageExpiryInterval, options.addMessageExpiryInterval);
 			properties.tryAddProperty<PropertyType::TOPIC_ALIAS>(options.topicAlias, options.topicAlias > 0);
-			properties.tryAddProperty<PropertyType::RESPONSE_TOPIC>(options.responseTopic, !options.responseTopic.empty());
+			properties.tryAddProperty<PropertyType::RESPONSE_TOPIC>(UTF8String{ options.responseTopic }, !options.responseTopic.empty());
 
 			if (options.correlationData != nullptr)
 			{
@@ -143,7 +143,7 @@ namespace cleanMqtt
 		PublishAck createPubAckPacket(std::uint16_t packetId, PubAckReasonCode reasonCode, const PubAckOptions& options) noexcept
 		{
 			Properties properties;
-			properties.tryAddProperty<PropertyType::REASON_STRING>(options.reasonString, !options.reasonString.empty());
+			properties.tryAddProperty<PropertyType::REASON_STRING>(UTF8String{ options.reasonString }, !options.reasonString.empty());
 
 			for (const auto& property : options.userProperties)
 			{

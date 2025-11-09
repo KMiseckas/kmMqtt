@@ -23,7 +23,7 @@ namespace cleanMqtt
 		~DefaultWinWebsocket() override;
 
 		bool connect(const std::string& hostname, const std::string& port = "80") noexcept override;
-		bool send(const ByteBuffer& data) noexcept override;
+		int send(const ByteBuffer& data) noexcept override;
 		bool close() noexcept override;
 		void tick() noexcept override;
 

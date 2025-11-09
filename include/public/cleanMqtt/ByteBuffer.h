@@ -313,6 +313,31 @@ namespace cleanMqtt
 			return append(byteBuffer.bytes(), byteBuffer.size());
 		}
 
+        /**
+         * @brief Removes the specified number of bytes from the beginning of the buffer.
+         * 
+         * @param count The number of bytes to remove.
+         * @throws std::out_of_range if count is greater than the current size of the buffer.
+         */
+        void removeFromBeginning(std::size_t count)
+        {
+            if (count > m_size)
+            {
+                throw std::out_of_range("Cannot remove more bytes than currently stored in the buffer.");
+            }
+
+            std::memmove(m_bytes, m_bytes + count, m_size - count);
+            m_size -= count;
+
+            if (m_readCursor >= count)
+            {
+                m_readCursor -= count;
+            }
+            else
+            {
+                m_readCursor = 0;
+            }
+        }
 		/**
 		 * @brief Get the size of the buffer (number of bytes currently stored).
 		 */

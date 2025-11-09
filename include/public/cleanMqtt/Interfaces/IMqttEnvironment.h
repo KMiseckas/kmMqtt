@@ -17,7 +17,7 @@ namespace cleanMqtt
 
 		virtual Config createConfig() const noexcept = 0;
 
-		virtual std::unique_ptr<IWebSocket> createWebSocket() const noexcept = 0;
+		virtual std::shared_ptr<IWebSocket> createWebSocket() const noexcept = 0;
 	};
 }
 

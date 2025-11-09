@@ -1,7 +1,7 @@
-#ifndef INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDPUBLISHJOB_H
-#define INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDPUBLISHJOB_H
+#ifndef INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_PUBLISHCOMPOSER_H
+#define INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_PUBLISHCOMPOSER_H
 
-#include <cleanMqtt/Mqtt/Transport/ISendJob.h>
+#include <cleanMqtt/Mqtt/Transport/IPacketComposer.h>
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
 #include <cleanMqtt/Utils/PacketIdPool.h>
 
@@ -9,18 +9,17 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
-		class SendPublishJob : public ISendJob
+		class PublishComposer : public IPacketComposer
 		{
 		public:
-			SendPublishJob(MqttConnectionInfo* connectionInfo,
-				PacketSendDelegate sendPacketCallback,
+			PublishComposer(MqttConnectionInfo* connectionInfo,
 				PacketIdPool* packetIdPool,
 				const std::uint16_t packetId,
 				const char* topic,
 				ByteBuffer&& payload,
 				PublishOptions&& pubOptions) noexcept;
 
-			SendResultData send() noexcept override;
+			ComposeResult compose() noexcept override;
 			void cancel() noexcept override;
 
 		private:
@@ -33,4 +32,4 @@ namespace cleanMqtt
 	}
 }
 
-#endif //INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_SENDPUBLISHJOB_H
+#endif //INCLUDE_CLEANMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_PUBLISHCOMPOSER_H

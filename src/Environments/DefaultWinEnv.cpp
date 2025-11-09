@@ -8,8 +8,8 @@ namespace cleanMqtt
 		return Config{};
 	}
 
-	std::unique_ptr<IWebSocket> DefaultWinEnv::createWebSocket() const noexcept
+	std::shared_ptr<IWebSocket> DefaultWinEnv::createWebSocket() const noexcept
 	{
-		return std::make_unique<DefaultWinWebsocket>();
+		return std::make_shared<DefaultWinWebsocket>();
 	}
 } // namespace cleanMqtt

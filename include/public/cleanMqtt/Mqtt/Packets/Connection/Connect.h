@@ -20,6 +20,7 @@ namespace cleanMqtt
 			Connect(ConnectVariableHeader&& variableHeader, ConnectPayloadHeader&& payloadHeader) noexcept;
 			Connect(ByteBuffer&& dataBuffer) noexcept;
 			Connect(Connect&& other) noexcept;
+			Connect() noexcept = default;
 			~Connect() override;
 
 			PacketType getPacketType() const noexcept override;

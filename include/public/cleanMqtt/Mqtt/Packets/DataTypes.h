@@ -34,13 +34,13 @@ namespace cleanMqtt
 			{
 			}
 
-			BinaryData(std::uint16_t size, const std::uint8_t* bytes) noexcept
+			explicit BinaryData(std::uint16_t size, const std::uint8_t* bytes) noexcept
 				: m_size(size), m_bytes(new uint8_t[size])
 			{
 				std::memcpy(m_bytes, bytes, size);
 			}
 
-			BinaryData(const ByteBuffer& buffer)
+			explicit BinaryData(const ByteBuffer& buffer)
 			{
 				decode(buffer);
 			}
@@ -337,7 +337,7 @@ namespace cleanMqtt
 			{
 			}
 
-			UTF8String(std::uint16_t size, const char* val)
+			explicit UTF8String(std::uint16_t size, const char* val)
 				: m_size(size)
 			{
 				if (m_size > 0)
@@ -347,12 +347,12 @@ namespace cleanMqtt
 				}
 			}
 
-			UTF8String(const ByteBuffer& buffer)
+			explicit UTF8String(const ByteBuffer& buffer)
 			{
 				decode(buffer);
 			}
 
-			UTF8String(const std::string& val)
+			explicit UTF8String(const std::string& val)
 			{
 				if (val.size() > 65535)
 				{
@@ -507,7 +507,7 @@ namespace cleanMqtt
 			{
 			}
 
-			UTF8StringPair(const ByteBuffer& buffer)
+			explicit UTF8StringPair(const ByteBuffer& buffer)
 			{
 				m_first.decode(buffer);
 				m_second.decode(buffer);

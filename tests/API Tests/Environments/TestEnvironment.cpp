@@ -8,9 +8,9 @@ namespace cleanMqtt
         return Config{};
     }
 
-    std::unique_ptr<IWebSocket> TestEnvironment::createWebSocket() const noexcept
+    std::shared_ptr<IWebSocket> TestEnvironment::createWebSocket() const noexcept
     {
-        auto newSocket{ std::make_unique<MockWebSocket>() };
+        auto newSocket{ std::make_shared<MockWebSocket>() };
         socketPtr = newSocket.get();
         return newSocket;
     }

@@ -14,7 +14,7 @@ namespace cleanMqtt
 
         Config createConfig() const noexcept override;
 
-        std::unique_ptr<IWebSocket> createWebSocket() const noexcept override;
+        std::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
 
         mutable MockWebSocket* socketPtr{ nullptr };
     };

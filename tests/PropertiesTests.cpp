@@ -13,24 +13,21 @@ TEST_SUITE("Properties Tests")
 	TEST_CASE("Adding/Getting property")
 	{
 		Properties properties;
-		CHECK(properties.tryAddProperty<PropertyType::ASSIGNED_CLIENT_IDENTIFIER>({ 10 }));
-		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>({ 20 }));
+		CHECK(properties.tryAddProperty<PropertyType::ASSIGNED_CLIENT_IDENTIFIER>(UTF8String("Client_123")));
+		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData{}));
 		CHECK(properties.tryAddProperty<PropertyType::RETAIN_AVAILABLE>(true));
-		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>({ "JSON" }));
+		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("JSON")));
 		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(22.5));
 
 		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({}));
 		CHECK(properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(32));
 		CHECK(properties.tryAddProperty<PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE>(150));
 
-		const std::uint8_t* valueInt;
+		const UTF8String valueInt;
 		const bool* valueBool;
-		const char* const* valueChar;
+		const UTF8String valueChar;
 		const double* valueDouble;
 		const UTF8String* utf8String;
-
-		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::ASSIGNED_CLIENT_IDENTIFIER, valueInt));
-		CHECK(*valueInt == 10);
 
 		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, valueInt));
 		CHECK(*valueInt == 20);
@@ -38,7 +35,7 @@ TEST_SUITE("Properties Tests")
 		CHECK(properties.tryGetProperty<bool>(PropertyType::RETAIN_AVAILABLE, valueBool));
 		CHECK(*valueBool == true);
 
-		CHECK(properties.tryGetProperty<const char*>(PropertyType::CONTENT_TYPE, valueChar));
+		CHECK(properties.tryGetProperty<UTF8String>(PropertyType::CONTENT_TYPE, valueChar));
 		CHECK(std::strcmp(*valueChar, "JSON") == 0);
 
 		CHECK(properties.tryGetProperty<double>(PropertyType::MAXIMUM_PACKET_SIZE, valueDouble));

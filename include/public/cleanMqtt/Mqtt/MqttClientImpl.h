@@ -101,6 +101,8 @@ else\
 			void handleSocketDataReceivedEvent(ByteBuffer&& buffer);
 			void handleSocketErrorEvent(int error);
 
+			void handlePingSentEvent();
+
 			void handleReceivedConnectAcknowledge(ConnectAck&& packet);
 			void handleReceivedDisconnect(Disconnect&& packet);
 			void handleReceivedPublish(Publish&& packet);
@@ -139,7 +141,7 @@ else\
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
 
-			std::unique_ptr<IWebSocket> m_socket{ nullptr };
+			std::shared_ptr<IWebSocket> m_socket{ nullptr };
 
 			events::Deferrer m_eventDeferrer;
 			ErrorEvent m_errorEvent;

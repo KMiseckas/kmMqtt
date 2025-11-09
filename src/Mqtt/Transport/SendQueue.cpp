@@ -5,6 +5,8 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+#define MAX_ALLOWED_PERSISTENT_SEND_BUFFER_SIZE (1024 * 1024) //1 MB
+
 		SendQueue::SendQueue() noexcept
 		{
 		}
@@ -13,17 +15,20 @@ namespace cleanMqtt
 		{
 		}
 
+		void SendQueue::setSocket(std::shared_ptr<IWebSocket> socket) noexcept
+		{
+			m_socket = socket;
+		}
+
 		void SendQueue::addToQueue(PacketSendJobPtr packetSendJob)
 		{
 			LockGuard guard{ m_mutex };
-			m_queuedJobs.push(std::move(packetSendJob));
+			m_nextPacketComposersBatch.push_back(std::move(packetSendJob));
 		}
 
 		void SendQueue::sendNextBatch(SendBatchResult& outResult)
 		{
-			outResult.packetsSent = 0;
 			outResult.totalBytesSent = 0;
-			outResult.packetsAttemptedToSend = m_queuedJobs.size();
 			outResult.isRecoverable = true;
 			outResult.socketError = NO_SOCKET_ERROR;
 
@@ -50,8 +55,8 @@ namespace cleanMqtt
 
 					if (m_lastSendData.noSendReason == NoSendReason::SOCKET_SEND_ERROR)
 					{
-						//Can retry same packet a few times before registering as a concrete fail for the overall send queue.
-						LogInfo("SendQueue", "Attempting to retry failed packet. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
+						//Can retry same packets a few times before registering as a concrete fail for the overall send queue.
+						LogInfo("SendQueue", "Attempting to retry failed packets. Retry turn: %d | Max Retries Allowed per Packet: %d.", m_currentLocalRetry, maxLocalRetries);
 
 						if (m_currentLocalRetry == maxLocalRetries)
 						{
@@ -93,45 +98,175 @@ namespace cleanMqtt
 			outResult.lastSendResult = m_lastSendData;
 		}
 
-		void SendQueue::clearQueue() noexcept
+        void SendQueue::clearQueue() noexcept
+        {
+            LockGuard guard{ m_mutex };
+
+            for (const auto& c : m_nextPacketComposersBatch)
+            {
+				c->cancel();
+            }
+
+            m_nextPacketComposersBatch.clear();
+        }
+
+		void SendQueue::setOnPingSentCallback(const std::function<void()>& callback) noexcept
 		{
-			LockGuard guard{ m_mutex };
-			while (!m_queuedJobs.empty())
-			{
-				m_queuedJobs.front()->cancel();
-				m_queuedJobs.pop();
-			}
+			m_onPingSentCallback = callback;
 		}
 
 		bool SendQueue::trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult)
 		{
-			if (m_queuedJobs.size() <= 0)
+			if (m_nextPacketComposersBatch.size() <= 0)
 			{
 				//Early successful return, no packets to proccess for sending.
 				return true;
 			}
 
-			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_queuedJobs.size());
+			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_nextPacketComposersBatch.size());
 
-			while (!m_queuedJobs.empty())
+			std::vector<ByteBuffer> encodedDataQueue;
+			std::size_t fullOutgoingDataSize{ m_sendBuffer.size() };
+			bool hasPingPacket{ false };
+			std::size_t pingPacketLastByte{ 0 };
+
+			for (const auto& c : m_nextPacketComposersBatch)
 			{
-				auto result = m_queuedJobs.front()->send();
+				auto result{ c->compose() };
 
-				if (!result.wasSent)
+				if (!result.encodeResult.isSuccess())
 				{
-					outLastSendResult = std::move(result);
+					outLastSendResult = {};
+					outLastSendResult.encodeResult = result.encodeResult;
+					outLastSendResult.noSendReason = NoSendReason::ENCODE_ERROR;
+					outLastSendResult.wasSent = false;
+
+					outResult.isRecoverable = false;
+					outResult.unrecoverableReasonStr = result.encodeResult.reason;
+
 					return false;
 				}
 
-				m_queuedJobs.pop();
+				if(result.encodeResult.packetType == PacketType::PING_REQUQEST)
+				{
+					if (!hasPingPacket)
+					{
+						pingPacketLastByte = fullOutgoingDataSize + result.encodedData.size();
+						hasPingPacket = true;
+					}
+				}
 
-				outResult.packetsSent += 1;
-				outResult.totalBytesSent += result.packetSize;
+				//TODO check max packet size.
+
+				fullOutgoingDataSize += result.encodedData.size();
+				encodedDataQueue.push_back(std::move(result.encodedData));
 			}
 
-			LogTrace("SendQueue", "Finished processing outgoing packets.");
+			m_nextPacketComposersBatch.clear();
 
-			return true;
+			if (fullOutgoingDataSize > m_sendBuffer.capacity())
+			{
+				auto tempBuffer = ByteBuffer{ fullOutgoingDataSize };
+				tempBuffer.append(m_sendBuffer);
+				m_sendBuffer = std::move(tempBuffer);
+			}
+
+			for(const auto& data : encodedDataQueue)
+			{
+				m_sendBuffer.append(data);
+			}
+
+			static constexpr std::uint8_t kMax_Partial_Send_Loops{ 3 };
+			std::uint8_t partialSendLoopCount{ 0 };
+
+			int sendResult{ 0 };
+
+			while (partialSendLoopCount <= kMax_Partial_Send_Loops)
+			{
+				partialSendLoopCount++;
+
+				sendResult = sendData(m_sendBuffer);
+
+				if (sendResult >= 0)
+				{
+					outResult.controlPacketSent = true;
+					outResult.totalBytesSent = sendResult;
+
+					if (sendResult == m_sendBuffer.size())
+					{
+						if (hasPingPacket)
+						{
+							//Ping packet was sent successfully.
+							m_onPingSentCallback();
+						}
+
+						//Reset buffer to free up memory if over max allowed persistent size.
+						if (m_sendBuffer.capacity() > MAX_ALLOWED_PERSISTENT_SEND_BUFFER_SIZE)
+						{
+							m_sendBuffer = ByteBuffer{};
+						}
+						else
+						{
+							m_sendBuffer.removeFromBeginning(sendResult);
+						}
+
+						return true;
+					}
+					else
+					{
+						if (hasPingPacket)
+						{
+							if (sendResult >= pingPacketLastByte)
+							{
+								//Ping packet was sent successfully.
+								m_onPingSentCallback();
+							}
+						}
+
+						m_sendBuffer.removeFromBeginning(sendResult);
+					}
+				}
+			}
+
+			if (sendResult >= 0)
+			{
+				return true;
+			}
+
+			outLastSendResult = {};
+			outLastSendResult.noSendReason = NoSendReason::SOCKET_SEND_ERROR;
+			outLastSendResult.socketError = sendResult;
+			outLastSendResult.wasSent = false;
+			return false;
+		}
+
+		int SendQueue::sendData(const ByteBuffer& data)
+		{
+			if (m_socket == nullptr)
+			{
+				LogError("SendQueue", "Cannot send data, socket is nullptr.");
+				return -1;
+			}
+
+			LogInfo("SendQueue", "Sending data. Size: %d", data.size());
+
+			if (data.size() > 0)
+			{
+				int sendResult{ m_socket->send(data) };
+
+				if (sendResult >= 0)
+				{
+					LogTrace("SendQueue", "Data sent, Bytes: %d of %d.", sendResult, data.size());
+					return sendResult;
+				}
+
+				LogError("SendQueue", "Sending packet failed at socket level: %d", m_socket->getLastError());
+
+				return m_socket->getLastError();
+			}
+
+			LogWarning("SendQueue", "Cannot send data, data buffer size is 0.");
+			return 0;
 		}
 	}
 }

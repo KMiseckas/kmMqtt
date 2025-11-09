@@ -43,7 +43,7 @@ public:
         return connectResult;
     }
 
-    bool send(const ByteBuffer& data) noexcept override 
+    int send(const ByteBuffer& data) noexcept override 
     {
         if (!connected) 
         {

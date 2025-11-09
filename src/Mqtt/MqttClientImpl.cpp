@@ -1,12 +1,12 @@
 #include "cleanMqtt/Mqtt/MqttClientImpl.h"
 
 #include "cleanMqtt/MqttClientOptions.h"
-#include <cleanMqtt/Mqtt/Transport/Jobs/SendConnectJob.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SendPublishJob.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SendPingJob.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SendPubAckJob.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SendSubscribeJob.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SendUnSubscribeJob.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/ConnectComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/PingComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/PubAckComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h>
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Logger/LoggerInstance.h>
 #include <cleanMqtt/Logger/DefaultLogger.h>
@@ -33,6 +33,9 @@ namespace cleanMqtt
 			m_socket->setOnErrorCallback([this](std::uint16_t error) { handleSocketErrorEvent(error); });
 
 			m_sendPubAckEvent.add([this](std::uint16_t packetId) { pubAck(packetId, PubAckReasonCode::SUCCESS, PubAckOptions{}); });
+
+			m_sendQueue.setSocket(m_socket);
+			m_sendQueue.setOnPingSentCallback([this]() { handlePingSentEvent(); });
 		}
 
 		MqttClientImpl::~MqttClientImpl()
@@ -158,8 +161,7 @@ namespace cleanMqtt
 				}
 			}
 
-			m_sendQueue.addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
-				[this](const BasePacket& packet) {return sendPacket(packet); },
+			m_sendQueue.addToQueue(std::make_unique<PublishComposer>(&m_connectionInfo,
 				&m_packetIdPool,
 				packetId,
 				topic,
@@ -194,8 +196,7 @@ namespace cleanMqtt
 				m_connectionInfo.pendingSubscriptions.push_back(PendingSubscription{ id, topics });
 			}
 
-			m_sendQueue.addToQueue(std::make_unique<SendSubscribeJob>(&m_connectionInfo,
-				[this](const BasePacket& packet) {return sendPacket(packet); },
+			m_sendQueue.addToQueue(std::make_unique<SubscribeComposer>(&m_connectionInfo,
 				&m_packetIdPool,
 				id,
 				topics,
@@ -228,8 +229,7 @@ namespace cleanMqtt
 				m_connectionInfo.pendingUnSubscriptions.push_back(PendingUnSubscription{ id, topics });
 			}
 
-			m_sendQueue.addToQueue(std::make_unique<SendUnSubscribeJob>(&m_connectionInfo,
-				[this](const BasePacket& packet) {return sendPacket(packet); },
+			m_sendQueue.addToQueue(std::make_unique<UnSubscribeComposer>(&m_connectionInfo,
 				&m_packetIdPool,
 				id,
 				topics,
@@ -367,7 +367,7 @@ namespace cleanMqtt
 
         void MqttClientImpl::tickAsync() noexcept
 		{
-			assert(m_clientOptions.getTickMode() != TickMode::ASYNC && "tickAsync() should only be called when client is configured to tick asynchronously.");
+			assert(m_clientOptions.getTickMode() == TickMode::ASYNC && "tickAsync() should only be called when client is configured to tick asynchronously.");
 
 			if (m_isRunningAsync.exchange(true))
 			{
@@ -484,8 +484,7 @@ namespace cleanMqtt
 
 		void MqttClientImpl::pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept
 		{
-			m_sendQueue.addToQueue(std::make_unique<SendPubAckJob>(&m_connectionInfo,
-				[this](const BasePacket& packet) {return sendPacket(packet); },
+			m_sendQueue.addToQueue(std::make_unique<PubAckComposer>(&m_connectionInfo,
 				packetId,
 				code,
 				std::move(options)));
@@ -727,8 +726,7 @@ namespace cleanMqtt
 				m_receiveQueue.setSubscribeAcknowledgeCallback(subAckCallback);
 				m_receiveQueue.setUnSubscribeAcknowledgeCallback(unSubAckCallback);
 
-				m_sendQueue.addToQueue(std::make_unique<SendConnectJob>(&m_connectionInfo,
-					[this](const BasePacket& packet) {return sendPacket(packet); }));
+				m_sendQueue.addToQueue(std::make_unique<ConnectComposer>(&m_connectionInfo));
 
 				LogTrace("MqttClient", "Connect packet send request queued, to be resolved on next tick.");
 			}
@@ -784,6 +782,12 @@ namespace cleanMqtt
 		void MqttClientImpl::handleSocketErrorEvent(int /*error*/)
 		{
 			// TODO: Implement handleSocketErrorEvent
+		}
+
+		void MqttClientImpl::handlePingSentEvent()
+		{
+			m_connectionInfo.lastPingReqSentTime = std::chrono::steady_clock::now();
+			m_connectionInfo.awaitingPingResponse = true;
 		}
 
 		void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck&& packet)
@@ -1130,7 +1134,7 @@ namespace cleanMqtt
 
 				if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval)
 				{
-					m_sendQueue.addToQueue(std::make_unique<SendPingJob>(&m_connectionInfo, [this](const BasePacket& packet) {return sendPacket(packet); }));
+					m_sendQueue.addToQueue(std::make_unique<PingComposer>(&m_connectionInfo));
 				}
 			}
 		}
@@ -1140,20 +1144,9 @@ namespace cleanMqtt
 			//Send queued encoded packets.
 			m_sendQueue.sendNextBatch(m_batchResultData);
 
-			if (m_batchResultData.packetsSent > 0)
+			if (m_batchResultData.controlPacketSent)
 			{
 				m_connectionInfo.lastControlPacketTime = std::chrono::steady_clock::now();
-
-				LogInfo("MqttClient", "Packets Sent: %d/%d", m_batchResultData.packetsSent, m_batchResultData.packetsAttemptedToSend);
-			}
-
-			//Check for potential issues
-			if (m_batchResultData.packetsSent != m_batchResultData.packetsAttemptedToSend)
-			{
-				LogWarning("MqttClient",
-					"Failed to send all packets from the previous batch of packets queued for sending.\n\tPackets Sent: %d\n\tPackets Expected: %d",
-					m_batchResultData.packetsSent,
-					m_batchResultData.packetsAttemptedToSend);
 			}
 
 			//If result from sending action was specified as unrecoverable, then log error and start disconnect.
@@ -1200,8 +1193,7 @@ namespace cleanMqtt
 						ByteBuffer payloadCopy{ msg.data.publishMsgData.payload.size()};
 						payloadCopy.append(msg.data.publishMsgData.payload);
 
-						m_sendQueue.addToQueue(std::make_unique<SendPublishJob>(&m_connectionInfo,
-							[this](const BasePacket& packet) {return sendPacket(packet); },
+						m_sendQueue.addToQueue(std::make_unique<PublishComposer>(&m_connectionInfo,
 							&m_packetIdPool,
 							msg.data.packetID,
 							msg.data.publishMsgData.topic,
@@ -1342,7 +1334,7 @@ namespace cleanMqtt
 			const ByteBuffer* bufferPtr{ packet.getDataBuffer() };
 			if (bufferPtr != nullptr)
 			{
-				if (m_socket->send(*bufferPtr) == true)
+				if (m_socket->send(*bufferPtr) == bufferPtr->size())
 				{
 					LogTrace("MqttClient", "Packet sent, Bytes: %s.", bufferPtr->toString().c_str());
 					return 0;
@@ -1352,12 +1344,9 @@ namespace cleanMqtt
 
 				return m_socket->getLastError();
 			}
-			else
-			{
-				LogError("MqttClient", "Cannot send packet, buffer is nullptr. Packet Type: %d", static_cast<std::uint8_t>(packet.getPacketType()));
-				return -1;
-			}
-		}
 
+			LogError("MqttClient", "Cannot send packet, buffer is nullptr. Packet Type: %d", static_cast<std::uint8_t>(packet.getPacketType()));
+			return -1;
+		}
 	}
 }

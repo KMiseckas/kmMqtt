@@ -32,10 +32,12 @@ namespace cleanMqtt
 
 		/**
 		 * @brief Send data over the WebSocket connection.
+		 * Partial sends are managed internally by the SDK, socket implementation does not need to handle them.
+		 * 
 		 * @param data The data to send. Socket must manage its own partial sends.
-		 * @return True if the data was sent successfully, false otherwise.
+		 * @return The number of bytes sent, or a negative error code on failure.
 		 */
-		virtual bool send(const ByteBuffer& data) noexcept = 0;
+		virtual int send(const ByteBuffer& data) noexcept = 0;
 
 		/**
 		 * @brief Close the WebSocket connection.
