@@ -17,13 +17,10 @@ namespace cleanMqtt
 		{
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ComposeResult);
 
-			ComposeResult(const EncodeResult& result, const ByteBuffer* data) noexcept
+			ComposeResult(const EncodeResult& result, ByteBuffer data) noexcept
 				: encodeResult{ result }
 			{
-				if (data != nullptr)
-				{
-					encodedData = ByteBuffer(*data);
-				}
+				encodedData = std::move(data);
 			}
 
 			ComposeResult(ComposeResult&& other) noexcept

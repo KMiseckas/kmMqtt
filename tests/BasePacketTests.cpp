@@ -53,7 +53,7 @@ TEST_SUITE("Base Packet Tests")
     {
         cleanMqtt::ByteBuffer buf(10);
         TestPacket packet(std::move(buf));
-        CHECK(packet.getDataBuffer() != nullptr);
+        CHECK(packet.getDataBuffer().capacity() == 10);
     }
 
     TEST_CASE("Encode succeeds on minimum buffer size")
@@ -70,9 +70,6 @@ TEST_SUITE("Base Packet Tests")
     {
         FixedHeaderFlags flags(0x00);
         TestPacket packet(flags);
-        // No buffer set, should error
-        auto result = packet.decode();
-        CHECK(result.code == DecodeErrorCode::INTERNAL_ERROR);
 
         // Set a too-small buffer
         cleanMqtt::ByteBuffer buf(1);

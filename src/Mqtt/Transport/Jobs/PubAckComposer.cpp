@@ -10,7 +10,7 @@ namespace cleanMqtt
 			PublishAck packet{ createPubAckPacket(m_publishPacketId, m_reasonCode, m_options) };
 			EncodeResult result{ packet.encode() };
 
-			return ComposeResult{ result, packet.getDataBuffer() };
+			return ComposeResult{ result, packet.extractDataBuffer() };
 		}
 
 		void PubAckComposer::cancel() noexcept

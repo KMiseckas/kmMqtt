@@ -114,6 +114,7 @@ namespace cleanMqtt
 #else
 			m_bytes = other.m_bytes;
 #endif
+
 			other.m_bytes = nullptr;
 			other.m_capacity = 0U;
 			other.m_size = 0U;
@@ -125,10 +126,16 @@ namespace cleanMqtt
 			{
 				return *this;
 			}
-			delete[] m_bytes;
+
 			m_size = other.m_size;
 			m_capacity = other.m_capacity;
 #ifdef ENABLE_BYTEBUFFER_SBO
+
+			if(m_bytes != m_sboBytes)
+			{
+				delete[] m_bytes;
+			}
+
 			if(other.m_capacity > BYTEBUFFER_SBO_MAX_SIZE)
 			{
 				m_bytes = new std::uint8_t[other.m_capacity];
@@ -338,6 +345,41 @@ namespace cleanMqtt
                 m_readCursor = 0;
             }
         }
+
+		void expand(std::size_t newCapacity)
+		{
+			if (newCapacity <= m_capacity)
+			{
+				return;
+			}
+
+			m_capacity = newCapacity;
+
+			if(newCapacity <= BYTEBUFFER_SBO_MAX_SIZE)
+			{
+				return;
+			}
+
+			std::uint8_t* newBytes = new std::uint8_t[newCapacity];
+			std::memcpy(newBytes, m_bytes, m_size);
+
+#ifdef ENABLE_BYTEBUFFER_SBO
+			if (m_bytes != m_sboBytes)
+			{
+				delete[] m_bytes;
+			}
+#else
+			delete[] m_bytes;
+#endif
+			m_bytes = newBytes;
+		}
+
+		void clear() noexcept
+		{
+			m_size = 0U;
+			m_readCursor = 0U;
+		}
+
 		/**
 		 * @brief Get the size of the buffer (number of bytes currently stored).
 		 */

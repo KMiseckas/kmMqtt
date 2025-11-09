@@ -24,7 +24,7 @@ namespace cleanMqtt
 			Subscribe packet{ createSubscribePacket(m_packetId, m_topics, m_subscribeOptions) };
 			EncodeResult result{ packet.encode() };
 
-			return ComposeResult{ result, packet.getDataBuffer() };
+			return ComposeResult{ result, packet.extractDataBuffer() };
 		}
 
 		void SubscribeComposer::cancel() noexcept

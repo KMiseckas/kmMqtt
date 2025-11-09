@@ -25,7 +25,7 @@ namespace cleanMqtt
 			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic, m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
 
-			return ComposeResult{ result, packet.getDataBuffer() };
+			return ComposeResult{ result, packet.extractDataBuffer() };
 		}
 
 		void PublishComposer::cancel() noexcept

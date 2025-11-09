@@ -24,7 +24,7 @@ namespace cleanMqtt
 			UnSubscribe packet{ createUnSubscribePacket(m_packetId, m_topics, m_unSubscribeOptions) };
 			EncodeResult result{ packet.encode() };
 
-			return ComposeResult{ result, packet.getDataBuffer() };
+			return ComposeResult{ result, packet.extractDataBuffer() };
 		}
 
 		void UnSubscribeComposer::cancel() noexcept

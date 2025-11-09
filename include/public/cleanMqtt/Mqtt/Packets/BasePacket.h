@@ -38,7 +38,8 @@ namespace cleanMqtt
 			DecodeResult decode();
 
 			const FixedHeader& getFixedHeader() const;
-			const ByteBuffer* getDataBuffer() const;
+			const ByteBuffer& getDataBuffer() const;
+			ByteBuffer&& extractDataBuffer() noexcept;
 
 		protected:
 			std::size_t calculateFixedHeaderRemainingLength() const;
@@ -53,7 +54,7 @@ namespace cleanMqtt
 
 			std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
 			std::vector<IDecodeHeader*> m_otherDecodeHeaders;
-			ByteBuffer* m_dataBuffer{ nullptr };
+			ByteBuffer m_dataBuffer;
 		};
 	}
 }

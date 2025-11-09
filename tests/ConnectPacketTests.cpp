@@ -33,7 +33,6 @@ TEST_SUITE("Connect Packet Tests")
 		Connect connectPacket{ std::move(varHeader), std::move(payloadHeader) };
 
 		CHECK(connectPacket.getPacketType() == PacketType::CONNECT);
-		CHECK(connectPacket.getDataBuffer() == nullptr);
 		CHECK(connectPacket.getFixedHeader().remainingLength.uint32Value() == 0);
 		CHECK((connectPacket.getVariableHeader().flags.getFlags() & static_cast<std::uint8_t>(ConnectFlags::RESERVED)) == 0);
 		CHECK((connectPacket.getVariableHeader().flags.getFlags() & static_cast<std::uint8_t>(ConnectFlags::CLEAN_START)) == static_cast<std::uint8_t>(ConnectFlags::CLEAN_START));
@@ -43,7 +42,7 @@ TEST_SUITE("Connect Packet Tests")
 
 		CHECK_NOTHROW(connectPacket.encode());
 		CHECK(connectPacket.getFixedHeader().packetType == PacketType::CONNECT);
-		CHECK(connectPacket.getDataBuffer()->headroom() == 0);
-		CHECK(connectPacket.getDataBuffer()->size() > 0);
+		CHECK(connectPacket.getDataBuffer().headroom() == connectPacket.getDataBuffer().capacity() - connectPacket.getDataBuffer().size());
+		CHECK(connectPacket.getDataBuffer().size() > 0);
 	}
 }

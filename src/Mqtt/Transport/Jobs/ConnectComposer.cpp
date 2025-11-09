@@ -10,7 +10,7 @@ namespace cleanMqtt
 			Connect packet{ createConnectPacket(*m_mqttConnectionInfo) };
 			EncodeResult result{ packet.encode() };
 
-			return ComposeResult{ result, packet.getDataBuffer()};
+			return ComposeResult{ result, packet.extractDataBuffer()};
 		}
 
 		void ConnectComposer::cancel() noexcept

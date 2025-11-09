@@ -1331,22 +1331,17 @@ namespace cleanMqtt
 				packetTypeToString(packet.getPacketType()),
 				packet.getFixedHeader().getEncodedBytesSize() + packet.getFixedHeader().remainingLength.uint32Value());
 
-			const ByteBuffer* bufferPtr{ packet.getDataBuffer() };
-			if (bufferPtr != nullptr)
+			const ByteBuffer& bufferRef{ packet.getDataBuffer() };
+
+			if (m_socket->send(bufferRef) == bufferRef.size())
 			{
-				if (m_socket->send(*bufferPtr) == bufferPtr->size())
-				{
-					LogTrace("MqttClient", "Packet sent, Bytes: %s.", bufferPtr->toString().c_str());
-					return 0;
-				}
-
-				LogError("MqttClient", "Sending packet failed at socket level: %d", m_socket->getLastError());
-
-				return m_socket->getLastError();
+				LogTrace("MqttClient", "Packet sent, Bytes: %s.", bufferRef.toString().c_str());
+				return 0;
 			}
 
-			LogError("MqttClient", "Cannot send packet, buffer is nullptr. Packet Type: %d", static_cast<std::uint8_t>(packet.getPacketType()));
-			return -1;
+			LogError("MqttClient", "Sending packet failed at socket level: %d", m_socket->getLastError());
+
+			return m_socket->getLastError();
 		}
 	}
 }

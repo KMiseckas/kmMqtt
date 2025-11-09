@@ -248,7 +248,7 @@ namespace cleanMqtt
 				return -1;
 			}
 
-			LogInfo("SendQueue", "Sending data. Size: %d", data.size());
+			LogTrace("SendQueue", "Sending data. Size: %d", data.size());
 
 			if (data.size() > 0)
 			{

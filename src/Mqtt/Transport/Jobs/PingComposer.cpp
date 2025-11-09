@@ -10,7 +10,7 @@ namespace cleanMqtt
 			auto packet{ createPingRequestPacket() };
 			auto result{ packet.encode() };
 
-			return ComposeResult{ result, packet.getDataBuffer() };
+			return ComposeResult{ result, packet.extractDataBuffer() };
 		}
 
 		void PingComposer::cancel() noexcept

@@ -17,81 +17,49 @@ TEST_SUITE("Properties Tests")
 		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData{}));
 		CHECK(properties.tryAddProperty<PropertyType::RETAIN_AVAILABLE>(true));
 		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("JSON")));
-		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(22.5));
+		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(2222222222));
 
-		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({}));
+		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key", "value")));
 		CHECK(properties.tryAddProperty<PropertyType::WILL_DELAY_INTERVAL>(32));
 		CHECK(properties.tryAddProperty<PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE>(150));
 
-		const UTF8String valueInt;
+		const UTF8String* valueUtf8String;
 		const bool* valueBool;
-		const UTF8String valueChar;
-		const double* valueDouble;
-		const UTF8String* utf8String;
+		const std::uint32_t* valueUint32;
+		std::vector<const BinaryData*> dataVec;
 
-		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, valueInt));
-		CHECK(*valueInt == 20);
+		CHECK(properties.tryGetProperty<UTF8String>(PropertyType::ASSIGNED_CLIENT_IDENTIFIER, valueUtf8String));
+		CHECK(valueUtf8String->getString() == "Client_123");
 
 		CHECK(properties.tryGetProperty<bool>(PropertyType::RETAIN_AVAILABLE, valueBool));
 		CHECK(*valueBool == true);
 
-		CHECK(properties.tryGetProperty<UTF8String>(PropertyType::CONTENT_TYPE, valueChar));
-		CHECK(std::strcmp(*valueChar, "JSON") == 0);
+		CHECK(properties.tryGetProperty<UTF8String>(PropertyType::CONTENT_TYPE, valueUtf8String));
+		CHECK(valueUtf8String->getString() == "JSON");
 
-		CHECK(properties.tryGetProperty<double>(PropertyType::MAXIMUM_PACKET_SIZE, valueDouble));
-		CHECK(*valueDouble == 22.5);
+		CHECK(properties.tryGetProperty<std::uint32_t>(PropertyType::MAXIMUM_PACKET_SIZE, valueUint32));
+		CHECK(*valueUint32 == 2222222222);
 
-		std::vector<const BinaryData*> dataVec;
 		CHECK(properties.tryGetProperty<BinaryData>(PropertyType::USER_PROPERTY, dataVec));
-		CHECK(dataVec[0]->bytes() == nullptr);
-		CHECK(dataVec[0]->size() == 0);
-
-		CHECK(properties.tryGetProperty<UTF8String>(PropertyType::WILL_DELAY_INTERVAL, utf8String));
-		CHECK(utf8String->stringBytes() != nullptr);
-
-		auto d = utf8String->getString();
-
-		CHECK(utf8String->getString().compare("Hello World") == 0);
-		CHECK(utf8String->stringSize() == utf8String->getString().size());
-
-		CHECK(properties.tryGetProperty<double>(PropertyType::CONTENT_TYPE, valueDouble));
-		CHECK(*valueDouble != 22.5);
-		CHECK(properties.tryGetProperty<bool>(PropertyType::PAYLOAD_FORMAT_INDICATOR, valueBool) == false);
+		CHECK(dataVec.empty() == false);
 
 		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(30.5) == false);
-		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>({ "JSON_OVERRIDE" }) == false);
-
-		CHECK(properties.tryGetProperty<const char*>(PropertyType::CONTENT_TYPE, valueChar));
-		CHECK(std::strcmp(*valueChar, "JSON") == 0);
-		CHECK(properties.tryGetProperty<double>(PropertyType::MAXIMUM_PACKET_SIZE, valueDouble));
-		CHECK(*valueDouble == 22.5);
+		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("JSON_OVERRIDE")) == false);
 	}
 
 	TEST_CASE("Add/Get Duplicate Properties")
 	{
 		Properties properties;
-		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({ 10 }));
-		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>({ 20 }));
+		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key1", "value1")));
+		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key2", "value2")));
 
-		const std::uint8_t* valueInt;
-		std::vector<const std::uint8_t*> valueIntVec;
-
-		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::USER_PROPERTY, valueIntVec));
-		CHECK(*(valueIntVec[0]) == 10);
-
-		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, valueInt));
-		CHECK(*valueInt == 20);
-
-		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>({ 20 }) == true); //USER_PROPERTY is allowed for duplication.
-		CHECK(properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>({ 30 }) == false); //AUTHENTICATION_DATA is not allowed for duplication.
-
-		valueIntVec.clear();
-		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::USER_PROPERTY, valueIntVec));
-		CHECK(*(valueIntVec[0]) == 10);
-		CHECK(*(valueIntVec[1]) == 20);
-
-		CHECK(properties.tryGetProperty<std::uint8_t>(PropertyType::AUTHENTICATION_DATA, valueInt));
-		CHECK(*valueInt == 20);
+		std::vector<const UTF8StringPair*> userProperties;
+		CHECK(properties.tryGetProperty<UTF8StringPair>(PropertyType::USER_PROPERTY, userProperties));
+		CHECK(userProperties.size() == 2);
+		CHECK(userProperties[0]->first().getString() == "key1");
+		CHECK(userProperties[0]->second().getString() == "value1");
+		CHECK(userProperties[1]->first().getString() == "key2");
+		CHECK(userProperties[1]->second().getString() == "value2");
 	}
 
 	TEST_CASE("PropertyType enum matches MQTT Spec")
