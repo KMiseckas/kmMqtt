@@ -12,6 +12,9 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		/**
+		 * Property types as defined in the MQTT 5 spec with exact int IDs.
+		 */
 		enum class PropertyType : std::uint8_t
 		{
 			PAYLOAD_FORMAT_INDICATOR = 1U, //UINT8 - PUBLISH, Will Properties
@@ -45,6 +48,9 @@ namespace cleanMqtt
 			_COUNT
 		};
 
+		/**
+		 * Property types in the zero indexed order as they appear in the MQTT 5 spec.
+		 */
 		enum class PropertyTypeOrdered : std::uint8_t
 		{
 			PAYLOAD_FORMAT_INDICATOR, //UINT8 - PUBLISH, Will Properties
@@ -145,19 +151,6 @@ namespace cleanMqtt
 
 		using DecoderFunc = void* (*)(const ByteBuffer& buffer);
 		using EncoderFunc = void (*)(ByteBuffer& buffer, PropertyType propertyType, const void* data);
-
-		struct PropertyTraits 
-		{
-			constexpr PropertyTraits(PropertyDataType type, EncoderFunc encoderFunc, DecoderFunc decoderFunc, bool allowDuplicates = false)
-				: allowDuplicates{ allowDuplicates }, dataType{ type }, encoder{ encoderFunc }, decoder{ decoderFunc }
-			{
-			}
-
-			const bool allowDuplicates;
-			const PropertyDataType dataType;
-			const EncoderFunc encoder;
-			const DecoderFunc decoder;
-		};
 
 		namespace propertyEncodings
 		{
@@ -261,68 +254,195 @@ namespace cleanMqtt
 			}
 		}
 
-		const std::map<PropertyType, PropertyTraits> k_propertyTraits = {
-			{PropertyType::PAYLOAD_FORMAT_INDICATOR, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::REQUEST_PROBLEM_INFORMATION, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::REQUEST_RESPONSE_INFORMATION, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::MAXIMUM_QOS, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::RETAIN_AVAILABLE, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::SUBSCRIPTION_IDENTIFIER_AVAILABLE, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::SHARED_SUBSCRIPTION_AVAILABLE, {PropertyDataType::UINT8, propertyEncodings::encodeUInt8, propertyDecodings::decodeUInt8, false}},
-			{PropertyType::MESSAGE_EXPIRY_INTERVAL, {PropertyDataType::UINT32, propertyEncodings::encodeUInt32, propertyDecodings::decodeUInt32, false}},
-			{PropertyType::SESSION_EXPIRY_INTERVAL, {PropertyDataType::UINT32, propertyEncodings::encodeUInt32, propertyDecodings::decodeUInt32, false}},
-			{PropertyType::WILL_DELAY_INTERVAL, {PropertyDataType::UINT32, propertyEncodings::encodeUInt32, propertyDecodings::decodeUInt32, false}},
-			{PropertyType::MAXIMUM_PACKET_SIZE, {PropertyDataType::UINT32, propertyEncodings::encodeUInt32, propertyDecodings::decodeUInt32, false}},
-			{PropertyType::CONTENT_TYPE, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::RESPONSE_TOPIC, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::ASSIGNED_CLIENT_IDENTIFIER, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::AUTHENTICATION_METHOD, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::RESPONSE_INFORMATION, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::SERVER_REFERENCE, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::REASON_STRING, {PropertyDataType::UTF8, propertyEncodings::encodeUTF8String, propertyDecodings::decodeUTF8String, false}},
-			{PropertyType::CORRELATION_DATA, {PropertyDataType::BINARY_DATA, propertyEncodings::encodeBinaryData, propertyDecodings::decodeBinaryData, false}},
-			{PropertyType::AUTHENTICATION_DATA, {PropertyDataType::BINARY_DATA, propertyEncodings::encodeBinaryData, propertyDecodings::decodeBinaryData, false}},
-			{PropertyType::SUBSCRIPTION_IDENTIFIER, {PropertyDataType::VARIABLE_BYTE, propertyEncodings::encodeVariableByteInteger, propertyDecodings::decodeVariableByteInteger, false}},
-			{PropertyType::SERVER_KEEP_ALIVE, {PropertyDataType::UINT16, propertyEncodings::encodeUInt16, propertyDecodings::decodeUInt16, false}},
-			{PropertyType::RECEIVE_MAXIMUM, {PropertyDataType::UINT16, propertyEncodings::encodeUInt16, propertyDecodings::decodeUInt16, false}},
-			{PropertyType::TOPIC_ALIAS_MAXIMUM, {PropertyDataType::UINT16, propertyEncodings::encodeUInt16, propertyDecodings::decodeUInt16, false}},
-			{PropertyType::TOPIC_ALIAS, {PropertyDataType::UINT16, propertyEncodings::encodeUInt16, propertyDecodings::decodeUInt16, false}},
-			{PropertyType::USER_PROPERTY, {PropertyDataType::UTF8_PAIR, propertyEncodings::encodeUTF8StringPair, propertyDecodings::decodeUTF8StringPair, true}}
-		};
-
 #define AsInt(enum) static_cast<std::uint8_t>(enum)
 
-		constexpr std::uint8_t k_propertyDataTypeMap[static_cast<std::uint8_t>(PropertyTypeOrdered::_COUNT)][2]
+		/**
+		 * Mapping from PropertyType to its data type.
+		 */
+		constexpr PropertyDataType k_propertyTypeDataZeroIndexed[43/**PropertyType::_COUNT*/]
 		{
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::PAYLOAD_FORMAT_INDICATOR) },			//PAYLOAD_FORMAT_INDICATOR
-			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::MESSAGE_EXPIRY_INTERVAL)},			//MESSAGE_EXPIRY_INTERVAL
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::CONTENT_TYPE)},			//CONTENT_TYPE
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::RESPONSE_TOPIC) },			//RESPONSE_TOPIC
-			{AsInt(PropertyDataType::BINARY_DATA), AsInt(PropertyType::CORRELATION_DATA) },		//CORRELATION_DATA
-			{AsInt(PropertyDataType::VARIABLE_BYTE), AsInt(PropertyType::SUBSCRIPTION_IDENTIFIER) },	//SUBSCRIPTION_IDENTIFIER
-			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::SESSION_EXPIRY_INTERVAL) },			//SESSION_EXPIRY_INTERVAL
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::ASSIGNED_CLIENT_IDENTIFIER) },			//ASSIGNED_CLIENT_IDENTIFIER
-			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::SERVER_KEEP_ALIVE) },			//SERVER_KEEP_ALIVE
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::AUTHENTICATION_METHOD) },			//AUTHENTICATION_METHOD
-			{AsInt(PropertyDataType::BINARY_DATA), AsInt(PropertyType::AUTHENTICATION_DATA) },		//AUTHENTICATION_DATA
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::REQUEST_PROBLEM_INFORMATION) },			//REQUEST_PROBLEM_INFORMATION
-			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::WILL_DELAY_INTERVAL) },			//WILL_DELAY_INTERVAL
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::REQUEST_RESPONSE_INFORMATION) },			//REQUEST_RESPONSE_INFORMATION
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::RESPONSE_INFORMATION)},			//RESPONSE_INFORMATION
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::SERVER_REFERENCE)},			//SERVER_REFERENCE
-			{AsInt(PropertyDataType::UTF8), AsInt(PropertyType::REASON_STRING)},			//REASON_STRING
-			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::RECEIVE_MAXIMUM)},			//RECEIVE_MAXIMUM
-			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::TOPIC_ALIAS_MAXIMUM)},			//TOPIC_ALIAS_MAXIMUM
-			{AsInt(PropertyDataType::UINT16), AsInt(PropertyType::TOPIC_ALIAS)},			//TOPIC_ALIAS
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::MAXIMUM_QOS)},			//MAXIMUM_QOS
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::RETAIN_AVAILABLE)},			//RETAIN_AVAILABLE
-			{AsInt(PropertyDataType::UTF8_PAIR), AsInt(PropertyType::USER_PROPERTY) },		//USER_PROPERTY
-			{AsInt(PropertyDataType::UINT32), AsInt(PropertyType::MAXIMUM_PACKET_SIZE) },			//MAXIMUM_PACKET_SIZE
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE)},			//WILDCARD_SUBSCRIPTION_AVAILABLE
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::SUBSCRIPTION_IDENTIFIER_AVAILABLE)},			//SUBSCRIPTION_IDENTIFIER_AVAILABLE
-			{AsInt(PropertyDataType::UINT8), AsInt(PropertyType::SHARED_SUBSCRIPTION_AVAILABLE)}			//SHARED_SUBSCRIPTION_AVAILABLE
+			PropertyDataType::UINT8,//PAYLOAD_FORMAT_INDICATOR
+			PropertyDataType::UINT32,//MESSAGE_EXPIRY_INTERVAL
+			PropertyDataType::UTF8,//CONTENT_TYPE
+			PropertyDataType::UTF8,//RESPONSE_TOPIC
+			PropertyDataType::BINARY_DATA,//CORRELATION_DATA
+			PropertyDataType::VARIABLE_BYTE,//SUBSCRIPTION_IDENTIFIER
+			PropertyDataType::UINT32,//SESSION_EXPIRY_INTERVAL
+			PropertyDataType::UTF8,//ASSIGNED_CLIENT_IDENTIFIER
+			PropertyDataType::UINT16,//SERVER_KEEP_ALIVE
+			PropertyDataType::UTF8,//AUTHENTICATION_METHOD
+			PropertyDataType::BINARY_DATA,//AUTHENTICATION_DATA
+			PropertyDataType::UINT8,//REQUEST_PROBLEM_INFORMATION
+			PropertyDataType::UINT32,//WILL_DELAY_INTERVAL
+			PropertyDataType::UINT8,//REQUEST_RESPONSE_INFORMATION
+			PropertyDataType::UTF8,//RESPONSE_INFORMATION
+			PropertyDataType::UTF8,//SERVER_REFERENCE
+			PropertyDataType::UTF8,//REASON_STRING
+			PropertyDataType::UINT16,//RECEIVE_MAXIMUM
+			PropertyDataType::UINT16,//TOPIC_ALIAS_MAXIMUM
+			PropertyDataType::UINT16,//TOPIC_ALIAS
+			PropertyDataType::UINT8,//MAXIMUM_QOS
+			PropertyDataType::UINT8,//RETAIN_AVAILABLE
+			PropertyDataType::UTF8_PAIR,//USER_PROPERTY
+			PropertyDataType::UINT32,//MAXIMUM_PACKET_SIZE
+			PropertyDataType::UINT8,//WILDCARD_SUBSCRIPTION_AVAILABLE
+			PropertyDataType::UINT8,//SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			PropertyDataType::UINT8//SHARED_SUBSCRIPTION_AVAILABLE
 		};
+
+		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeDataZeroIndexed) / sizeof(PropertyDataType), "k_propertyTypeDataZeroIndexed size mismatch!");
+
+		/**
+		 * Mapping from PropertyType to its encoder function.
+		 */
+		constexpr EncoderFunc k_propertyTypeEncodersZeroIndexed[43/**PropertyType::_COUNT*/]
+		{
+			propertyEncodings::encodeUInt8,//PAYLOAD_FORMAT_INDICATOR
+			propertyEncodings::encodeUInt32,//MESSAGE_EXPIRY_INTERVAL
+			propertyEncodings::encodeUTF8String,//CONTENT_TYPE
+			propertyEncodings::encodeUTF8String,//RESPONSE_TOPIC
+			propertyEncodings::encodeBinaryData,//CORRELATION_DATA
+			propertyEncodings::encodeVariableByteInteger,//SUBSCRIPTION_IDENTIFIER
+			propertyEncodings::encodeUInt32,//SESSION_EXPIRY_INTERVAL
+			propertyEncodings::encodeUTF8String,//ASSIGNED_CLIENT_IDENTIFIER
+			propertyEncodings::encodeUInt16,//SERVER_KEEP_ALIVE
+			propertyEncodings::encodeUTF8String,//AUTHENTICATION_METHOD
+			propertyEncodings::encodeBinaryData,//AUTHENTICATION_DATA
+			propertyEncodings::encodeUInt8,//REQUEST_PROBLEM_INFORMATION
+			propertyEncodings::encodeUInt32,//WILL_DELAY_INTERVAL
+			propertyEncodings::encodeUInt8,//REQUEST_RESPONSE_INFORMATION
+			propertyEncodings::encodeUTF8String,//RESPONSE_INFORMATION
+			propertyEncodings::encodeUTF8String,//SERVER_REFERENCE
+			propertyEncodings::encodeUTF8String,//REASON_STRING
+			propertyEncodings::encodeUInt16,//RECEIVE_MAXIMUM
+			propertyEncodings::encodeUInt16,//TOPIC_ALIAS_MAXIMUM
+			propertyEncodings::encodeUInt16,//TOPIC_ALIAS
+			propertyEncodings::encodeUInt8,//MAXIMUM_QOS
+			propertyEncodings::encodeUInt8,//RETAIN_AVAILABLE
+			propertyEncodings::encodeUTF8StringPair,//USER_PROPERTY
+			propertyEncodings::encodeUInt32,//MAXIMUM_PACKET_SIZE
+			propertyEncodings::encodeUInt8,//WILDCARD_SUBSCRIPTION_AVAILABLE
+			propertyEncodings::encodeUInt8,//SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			propertyEncodings::encodeUInt8//SHARED_SUBSCRIPTION_AVAILABLE
+		};
+
+		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeEncodersZeroIndexed) / sizeof(EncoderFunc), "k_propertyTypeEncodersZeroIndexed size mismatch!");
+
+		/**
+		 * Mapping from PropertyType to its decoder function.
+		 */
+		constexpr DecoderFunc k_propertyTypeDecodersZeroIndexed[43/**PropertyType::_COUNT*/]
+		{
+			propertyDecodings::decodeUInt8,//PAYLOAD_FORMAT_INDICATOR
+			propertyDecodings::decodeUInt32,//MESSAGE_EXPIRY_INTERVAL
+			propertyDecodings::decodeUTF8String,//CONTENT_TYPE
+			propertyDecodings::decodeUTF8String,//RESPONSE_TOPIC
+			propertyDecodings::decodeBinaryData,//CORRELATION_DATA
+			propertyDecodings::decodeVariableByteInteger,//SUBSCRIPTION_IDENTIFIER
+			propertyDecodings::decodeUInt32,//SESSION_EXPIRY_INTERVAL
+			propertyDecodings::decodeUTF8String,//ASSIGNED_CLIENT_IDENTIFIER
+			propertyDecodings::decodeUInt16,//SERVER_KEEP_ALIVE
+			propertyDecodings::decodeUTF8String,//AUTHENTICATION_METHOD
+			propertyDecodings::decodeBinaryData,//AUTHENTICATION_DATA
+			propertyDecodings::decodeUInt8,//REQUEST_PROBLEM_INFORMATION
+			propertyDecodings::decodeUInt32,//WILL_DELAY_INTERVAL
+			propertyDecodings::decodeUInt8,//REQUEST_RESPONSE_INFORMATION
+			propertyDecodings::decodeUTF8String,//RESPONSE_INFORMATION
+			propertyDecodings::decodeUTF8String,//SERVER_REFERENCE
+			propertyDecodings::decodeUTF8String,//REASON_STRING
+			propertyDecodings::decodeUInt16,//RECEIVE_MAXIMUM
+			propertyDecodings::decodeUInt16,//TOPIC_ALIAS_MAXIMUM
+			propertyDecodings::decodeUInt16,//TOPIC_ALIAS
+			propertyDecodings::decodeUInt8,//MAXIMUM_QOS
+			propertyDecodings::decodeUInt8,//RETAIN_AVAILABLE
+			propertyDecodings::decodeUTF8StringPair,//USER_PROPERTY
+			propertyDecodings::decodeUInt32,//MAXIMUM_PACKET_SIZE
+			propertyDecodings::decodeUInt8,//WILDCARD_SUBSCRIPTION_AVAILABLE
+			propertyDecodings::decodeUInt8,//SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			propertyDecodings::decodeUInt8//SHARED_SUBSCRIPTION_AVAILABLE
+		};
+
+		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeDecodersZeroIndexed) / sizeof(DecoderFunc), "k_propertyTypeDecodersZeroIndexed size mismatch!");
+
+		/**
+		 * Mapping from PropertyType to its encoder function.
+		 */
+		constexpr bool k_propertyTypeAllowDuplicatesZeroIndexed [43 /**PropertyType::_COUNT*/]
+		{
+			false,//PAYLOAD_FORMAT_INDICATOR
+			false,//MESSAGE_EXPIRY_INTERVAL
+			false,//CONTENT_TYPE
+			false,//RESPONSE_TOPIC
+			false,//CORRELATION_DATA
+			false,//SUBSCRIPTION_IDENTIFIER
+			false,//SESSION_EXPIRY_INTERVAL
+			false,//ASSIGNED_CLIENT_IDENTIFIER
+			false,//SERVER_KEEP_ALIVE
+			false,//AUTHENTICATION_METHOD
+			false,//AUTHENTICATION_DATA
+			false,//REQUEST_PROBLEM_INFORMATION
+			false,//WILL_DELAY_INTERVAL
+			false,//REQUEST_RESPONSE_INFORMATION
+			false,//RESPONSE_INFORMATION
+			false,//SERVER_REFERENCE
+			false,//REASON_STRING
+			false,//RECEIVE_MAXIMUM
+			false,//TOPIC_ALIAS_MAXIMUM
+			false,//TOPIC_ALIAS
+			false,//MAXIMUM_QOS
+			false,//RETAIN_AVAILABLE
+			true,//USER_PROPERTY
+			false,//MAXIMUM_PACKET_SIZE
+			false,//WILDCARD_SUBSCRIPTION_AVAILABLE
+			false,//SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			false//SHARED_SUBSCRIPTION_AVAILABLE
+		};
+
+		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeAllowDuplicatesZeroIndexed) / sizeof(bool), "k_propertyTypeAllowDuplicatesZeroIndexed size mismatch!");
+
+		/**
+		 * Mapping from PropertyType to its ordered index.
+		 */
+		constexpr std::uint8_t k_propertyTypeZeroedId[43/**PropertyType::_COUNT*/] =
+		{
+			0xFF, // 0 - unused
+			AsInt(PropertyTypeOrdered::PAYLOAD_FORMAT_INDICATOR), // 1 - PAYLOAD_FORMAT_INDICATOR
+			AsInt(PropertyTypeOrdered::MESSAGE_EXPIRY_INTERVAL), // 2 - MESSAGE_EXPIRY_INTERVAL
+			AsInt(PropertyTypeOrdered::CONTENT_TYPE), // 3 - CONTENT_TYPE
+			0xFF, 0xFF, 0xFF, 0xFF, // 4-7 - unused
+			AsInt(PropertyTypeOrdered::RESPONSE_TOPIC), // 8 - RESPONSE_TOPIC
+			AsInt(PropertyTypeOrdered::CORRELATION_DATA), // 9 - CORRELATION_DATA
+			0xFF, // 10 - unused
+			AsInt(PropertyTypeOrdered::SUBSCRIPTION_IDENTIFIER), // 11 - SUBSCRIPTION_IDENTIFIER
+			0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 12-16 - unused
+			AsInt(PropertyTypeOrdered::SESSION_EXPIRY_INTERVAL), // 17 - SESSION_EXPIRY_INTERVAL
+			AsInt(PropertyTypeOrdered::ASSIGNED_CLIENT_IDENTIFIER), // 18 - ASSIGNED_CLIENT_IDENTIFIER
+			AsInt(PropertyTypeOrdered::SERVER_KEEP_ALIVE), // 19 - SERVER_KEEP_ALIVE
+			0xFF, // 20 - unused
+			AsInt(PropertyTypeOrdered::AUTHENTICATION_METHOD), // 21 - AUTHENTICATION_METHOD
+			AsInt(PropertyTypeOrdered::AUTHENTICATION_DATA), // 22 - AUTHENTICATION_DATA
+			AsInt(PropertyTypeOrdered::REQUEST_PROBLEM_INFORMATION), // 23 - REQUEST_PROBLEM_INFORMATION
+			AsInt(PropertyTypeOrdered::WILL_DELAY_INTERVAL), // 24 - WILL_DELAY_INTERVAL
+			AsInt(PropertyTypeOrdered::REQUEST_RESPONSE_INFORMATION), // 25 - REQUEST_RESPONSE_INFORMATION
+			AsInt(PropertyTypeOrdered::RESPONSE_INFORMATION), // 26 - RESPONSE_INFORMATION
+			0xFF, // 27 - unused
+			AsInt(PropertyTypeOrdered::SERVER_REFERENCE), // 28 - SERVER_REFERENCE
+			0xFF, 0xFF, // 29-30 - unused
+			AsInt(PropertyTypeOrdered::REASON_STRING), // 31 - REASON_STRING
+			0xFF, // 32 - unused
+			AsInt(PropertyTypeOrdered::RECEIVE_MAXIMUM), // 33 - RECEIVE_MAXIMUM
+			AsInt(PropertyTypeOrdered::TOPIC_ALIAS_MAXIMUM), // 34 - TOPIC_ALIAS_MAXIMUM
+			AsInt(PropertyTypeOrdered::TOPIC_ALIAS), // 35 - TOPIC_ALIAS
+			AsInt(PropertyTypeOrdered::MAXIMUM_QOS), // 36 - MAXIMUM_QOS
+			AsInt(PropertyTypeOrdered::RETAIN_AVAILABLE), // 37 - RETAIN_AVAILABLE
+			AsInt(PropertyTypeOrdered::USER_PROPERTY), // 38 - USER_PROPERTY
+			AsInt(PropertyTypeOrdered::MAXIMUM_PACKET_SIZE), // 39 - MAXIMUM_PACKET_SIZE
+			AsInt(PropertyTypeOrdered::WILDCARD_SUBSCRIPTION_AVAILABLE), // 40 - WILDCARD_SUBSCRIPTION_AVAILABLE
+			AsInt(PropertyTypeOrdered::SUBSCRIPTION_IDENTIFIER_AVAILABLE), // 41 - SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			AsInt(PropertyTypeOrdered::SHARED_SUBSCRIPTION_AVAILABLE) // 42 - SHARED_SUBSCRIPTION_AVAILABLE
+		};
+
+		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeZeroedId) / sizeof(std::uint8_t), "k_propertyTypeZeroedId size mismatch!");
 
 #undef AsInt
 	}

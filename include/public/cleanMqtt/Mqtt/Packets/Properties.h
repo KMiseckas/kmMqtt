@@ -113,8 +113,7 @@ namespace cleanMqtt
 			template<typename TPropertyDataType>
 			bool tryGetProperty(PropertyType type, const TPropertyDataType*& outVal) const
 			{
-				auto it = k_propertyTraits.find(type);
-				assert(!it->second.allowDuplicates);
+				assert(!k_propertyTypeAllowDuplicatesZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(type)]]);
 
 				const auto iter = m_properties.find(type);
 
@@ -257,8 +256,8 @@ namespace cleanMqtt
 				}
 #endif
 
-				auto it = k_propertyTraits.find(T);
-				if (!it->second.allowDuplicates)
+				static constexpr bool allowDuplicate{ k_propertyTypeAllowDuplicatesZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(T)]] };
+				if (!allowDuplicate)
 				{
 					const auto iter = m_properties.find(T);
 
@@ -288,8 +287,8 @@ namespace cleanMqtt
 				}
 #endif
 
-				auto it = k_propertyTraits.find(T);
-				if (!it->second.allowDuplicates)
+				static constexpr bool allowDuplicate{ k_propertyTypeAllowDuplicatesZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(T)]] };
+				if (!allowDuplicate)
 				{
 					const auto iter = m_properties.find(T);
 
@@ -308,8 +307,8 @@ namespace cleanMqtt
 
 			bool tryAddProperty(PropertyType type, void* data)
 			{
-				auto it = k_propertyTraits.find(type);
-				if (!it->second.allowDuplicates)
+				bool allowDuplicate{ k_propertyTypeAllowDuplicatesZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(type)]] };
+				if (!allowDuplicate)
 				{
 					const auto iter = m_properties.find(type);
 

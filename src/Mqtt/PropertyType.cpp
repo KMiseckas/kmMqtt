@@ -7,18 +7,12 @@ namespace cleanMqtt
 	{
 		void propertyEncodings::encode(ByteBuffer& buffer, PropertyType property, const void* data)
 		{
-			auto pair = k_propertyTraits.find(property);
-			assert(pair != k_propertyTraits.end());
-
-			pair->second.encoder(buffer, property, data);
+			k_propertyTypeEncodersZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(property)]](buffer, property, data);
 		}
 
 		void* propertyDecodings::decode(const ByteBuffer& buffer, PropertyType property)
 		{
-			auto pair = k_propertyTraits.find(property);
-			assert(pair != k_propertyTraits.end());
-
-			return pair->second.decoder(buffer);
+			return k_propertyTypeDecodersZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(property)]](buffer);
 		}
 	}
 }
