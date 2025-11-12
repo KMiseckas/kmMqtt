@@ -129,8 +129,7 @@ namespace cleanMqtt
 			template<typename TPropertyDataType>
 			bool tryGetProperty(PropertyType type, std::vector<const TPropertyDataType*>& outVals) const
 			{
-				auto it = k_propertyTraits.find(type);
-				assert(it->second.allowDuplicates);
+				assert(k_propertyTypeAllowDuplicatesZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(type)]]);
 
 				const auto& rangePair = m_properties.equal_range(type);
 

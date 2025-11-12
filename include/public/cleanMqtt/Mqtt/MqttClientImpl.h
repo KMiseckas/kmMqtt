@@ -80,6 +80,7 @@ else\
 			PublishEvent& onPublishEvent() noexcept;
 			PublishAckEvent& onPublishAckEvent() noexcept;
 			SubscribeAckEvent& onSubscribeAckEvent() noexcept;
+			UnSubscribeAckEvent& onUnSubscribeAckEvent() noexcept;
 
 			ConnectionStatus getConnectionStatus() const noexcept;
 			const MqttConnectionInfo& getConnectionInfo() const noexcept;

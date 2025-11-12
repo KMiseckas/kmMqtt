@@ -3,6 +3,12 @@
 
 #define TEXT(id, text) static constexpr const char* const id{text};
 #define BTN_LABEL(label, postFix) std::string(label).append("##").append(postFix).c_str()
+#define TEXT_FORMAT(text, ...) std::string([&]() { \
+    char buffer[1024]; \
+    snprintf(buffer, sizeof(buffer), text, __VA_ARGS__); \
+    return std::string(buffer); \
+}())
+
 
 namespace text
 {
@@ -14,6 +20,7 @@ TEXT(session_connection_control_panel_title, "Connection Controls")
 TEXT(session_subscription_topics_panel_title, "Topics")
 TEXT(session_messages_panel_title, "Messages")
 TEXT(session_publishing_panel_title, "Publish Controls")
+TEXT(session_subscription_topics_panel_not_connected_msg, "Connect to a broker to manage topics.")
 
 //Session - Connection Panel
 TEXT(session_connection_configs_button_label, "Edit Configuration")
@@ -68,6 +75,20 @@ TEXT(session_connect_will_correlation_data, "Correlation Data")
 TEXT(session_connect_will_topic, "Will Topic")
 TEXT(session_connect_will_payload_format, "Payload Format")
 TEXT(session_connect_will_payload, "Payload")
+
+//Topic View
+TEXT(topics_none_subscribed_status, "No topics subscribed.")
+TEXT(topics_unsubscribe_text, "-")
+TEXT(topics_subscribe_text, "+")
+TEXT(topics_unsubscribe_confirmation, "Unsubscribe from %s?")
+TEXT(topics_subscribe_add_topic, "S")
+TEXT(topics_subscribe_cancel_add_topic, "C")
+TEXT(topics_subscribe_add_topic_tooltip, "Add Topic to Subscriptions")
+TEXT(topics_subscribe_cancel_add_topic_tooltip, "Cancel Adding Topic")
+TEXT(topics_advanced_options, "Advanced Options")
+TEXT(topics_subscribed, "Subscribed")
+TEXT(topics_pending, "Pending")
+TEXT(topics_error_str, "Error: %s")
 }
 
 #endif //INCLUDE_MQTTCLIENT_TEXT_H

@@ -3,6 +3,7 @@
 
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Mqtt/Packets/DataTypes.h>
+#include <map>
 
 namespace cleanMqtt
 {

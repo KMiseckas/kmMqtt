@@ -3,6 +3,7 @@
 
 SessionModel::SessionModel()
 {
+	topicModel = std::make_shared<TopicsModel>();
 }
 
 SessionModel::~SessionModel()
@@ -56,6 +57,11 @@ void SessionModel::connect()
 		m_mqttClient = nullptr;
 		return;
 	}
+
+	/**
+	 * Set MQTT client for topics model.
+	 */
+	topicModel->setMqttClient(m_mqttClient);
 
 	/**
 	 * Register to connection events.

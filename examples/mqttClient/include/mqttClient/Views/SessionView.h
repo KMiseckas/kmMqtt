@@ -3,6 +3,7 @@
 
 #include <mqttClient/Views/View.h>
 #include <mqttClient/Model/SessionModel.h>
+#include "TopicsView.h"
 
 #define UIData m_model->uiData
 
@@ -31,12 +32,15 @@ protected:
 	void drawConnectBasicArgs();
 	void drawConnectAdvancedArgs();
 	void drawWillArgs();
+	void drawTopicView();
 
 	void handleAppliedModel(ModelPtr oldModel, ModelPtr newModel) override;
 
 	const ImVec4 k_red{ 1, 0, 0, 1 };
 	const ImVec4 k_green{ 0, 1, 0, 1 };
 	const ImVec4 k_yellow{ 0, 1, 1, 1 };
+
+	TopicsView m_topicView;
 };
 
 #endif //INCLUDE_MQTTCLIENT_VIEWS_SESSIONVIEW_H 

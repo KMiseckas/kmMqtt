@@ -10,22 +10,22 @@ void SessionView::draw()
 	drawConnectionControlPanel();
 
 	//Topics panel
-	if (viewHelpers::beginPanel(text::session_subscription_topics_panel_title, { 200,360 }))
+	if (viewHelpers::beginPanel(text::session_subscription_topics_panel_title, { 320, 360 }, ImGuiChildFlags_ResizeX))
 	{
-
+		drawTopicView();
 	}
 	viewHelpers::endPanel();
 
 	//Messages sent/received panel
 	ImGui::SameLine();
-	if (viewHelpers::beginPanel(text::session_messages_panel_title, { 0,360 }))
+	if (viewHelpers::beginPanel(text::session_messages_panel_title, { 0,360 }, ImGuiChildFlags_ResizeX))
 	{
 
 	}
 	viewHelpers::endPanel();
 
-	//Publishin panel
-	if (viewHelpers::beginPanel(text::session_publishing_panel_title, { 0,0 }))
+	//Publishing panel
+	if (viewHelpers::beginPanel(text::session_publishing_panel_title, { 0,0 }, ImGuiChildFlags_ResizeX))
 	{
 
 	}
@@ -550,7 +550,19 @@ void SessionView::drawWillArgs()
 	}
 }
 
+void SessionView::drawTopicView()
+{
+	if (getModel()->isMqttConnected)
+	{
+		m_topicView.draw();
+	}
+	else
+	{
+		ImGui::TextWrapped(text::session_subscription_topics_panel_not_connected_msg);
+	}
+}
+
 void SessionView::handleAppliedModel(ModelPtr oldModel, ModelPtr newModel)
 {
-
+	m_topicView.setModel(newModel->topicModel);
 }

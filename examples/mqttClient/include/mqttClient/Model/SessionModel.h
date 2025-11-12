@@ -9,6 +9,7 @@
 #include <string>
 #include <cleanMqtt/MqttClient.h>
 #include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
+#include "TopicsModel.h"
 
 class SessionModel : public ViewModel
 {
@@ -40,6 +41,8 @@ public:
 	std::string connectionFailureReason{ "" };
 	std::string disconnectioReason{ "" };
 	cleanMqtt::mqtt::ConnectionStatus currentConnectionStatus{ cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED };
+
+	std::shared_ptr<TopicsModel> topicModel;
 
 	struct UIData
 	{

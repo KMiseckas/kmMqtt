@@ -5,6 +5,16 @@
 
 namespace ui
 {
+    namespace colors
+    {
+		constexpr ImVec4 k_red{ 1.0f, 0.2f, 0.2f, 1.0f };
+		constexpr ImVec4 k_green{ 0.0f, 0.8f, 0.0f, 1.0f };
+		constexpr ImVec4 k_blue{ 0.20f, 0.40f, 0.80f, 1.0f };
+		constexpr ImVec4 k_yellow{ 0.91f, 0.71f, 0.15f, 1.0f };
+        constexpr ImVec4 k_grey{ 0.6f, 0.6f, 0.6f, 1.0f };
+		constexpr ImVec4 k_orange{ 1.0f, 0.75f, 0.0f, 1.0f };
+    }
+
 	constexpr ImVec4 k_background{ 0.96f, 0.97f, 0.98f, 1.0f };
 
 	constexpr ImVec4 k_border{ 0.53f, 0.19f, 0.24f, 1.0f };

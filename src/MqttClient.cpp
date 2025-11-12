@@ -94,6 +94,11 @@ namespace cleanMqtt
 			return m_impl->onSubscribeAckEvent();
 		}
 
+		UnSubscribeAckEvent& MqttClient::onUnSubscribeAckEvent() noexcept
+		{
+			return m_impl->onUnSubscribeAckEvent();
+		}
+
 		ConnectionStatus MqttClient::getConnectionStatus() const noexcept
 		{
 			return m_impl->getConnectionStatus();

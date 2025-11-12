@@ -198,6 +198,14 @@ namespace cleanMqtt
 			SubscribeAckEvent& onSubscribeAckEvent() noexcept;
 
 			/**
+			 * @brief Accessor for the UnSubscribeAckEvent.
+			 * Invoked when an unsubscribe acknowledgment is received from the broker for a sent unsubscribe packet.
+			 * 
+			 * @return Reference to the UnSubscribeAckEvent instance.
+			 */
+			UnSubscribeAckEvent& onUnSubscribeAckEvent() noexcept;
+
+			/**
 			 * @brief Get the connection status of the MQTT client.
 			 * 
 			 * @return ConnectionStatus indicating the current connection status of the client.
