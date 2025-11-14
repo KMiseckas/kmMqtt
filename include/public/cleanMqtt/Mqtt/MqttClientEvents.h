@@ -59,7 +59,7 @@ namespace cleanMqtt
 		struct PublishEventDetails
 		{
 			std::string topic{ "" };
-			const BinaryData* payload{ nullptr };
+			const ByteBuffer* payload{ nullptr };
 		};
 
 		struct PublishAckEventDetails

@@ -32,8 +32,6 @@ namespace cleanMqtt
 				packetIdentifier = buffer.readUInt16();
 			}
 
-			properties.decode(buffer);
-
 			return result;
 		}
 

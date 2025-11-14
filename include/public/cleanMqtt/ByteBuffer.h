@@ -57,7 +57,7 @@ namespace cleanMqtt
 		/**
 		 * @brief Constructs a ByteBuffer with default capacity using SBO if enabled.
 		 */
-		ByteBuffer() noexcept : m_capacity(BYTEBUFFER_SBO_MAX_SIZE), m_size(0U)
+		ByteBuffer() noexcept : m_capacity(0), m_size(0U)
 		{
 		}
 

@@ -12,13 +12,13 @@ namespace cleanMqtt
 		struct PublishPayloadHeader : public IDecodeHeader, public IEncodeHeader
 		{
 			PublishPayloadHeader() noexcept;
-			PublishPayloadHeader(BinaryData&& payload) noexcept;
+			PublishPayloadHeader(ByteBuffer&& payload) noexcept;
 
 			DecodeResult decode(const ByteBuffer& buffer) noexcept override;
 			void encode(ByteBuffer& buffer) const override;
 			std::size_t getEncodedBytesSize() const noexcept override;
 
-			BinaryData payload;
+			ByteBuffer payload{ 0 };
 		};
 	}
 }

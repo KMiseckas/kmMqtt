@@ -249,7 +249,9 @@ namespace cleanMqtt
 
 				void* decodeBinaryData(const ByteBuffer& buffer)
 				{
-					return new BinaryData(buffer);
+					auto bd = new BinaryData();
+					bd->decode(buffer);
+					return bd;
 				}
 			}
 		}

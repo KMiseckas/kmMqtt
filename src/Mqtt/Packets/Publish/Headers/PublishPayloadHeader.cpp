@@ -8,7 +8,7 @@ namespace cleanMqtt
 		{
 		}
 
-		PublishPayloadHeader::PublishPayloadHeader(BinaryData&& payload) noexcept
+		PublishPayloadHeader::PublishPayloadHeader(ByteBuffer&& payload) noexcept
 			: payload{ std::move(payload) }
 		{
 		}
@@ -17,19 +17,21 @@ namespace cleanMqtt
 		{
 			DecodeResult result;
 
-			payload.decode(buffer);
+			payload.expand(buffer.readHeadroom());
+			payload.append(buffer.bytes() + buffer.readCursor(), payload.capacity());
+			buffer.incrementReadCursor(buffer.readHeadroom());
 
 			return result;
 		}
 
 		void PublishPayloadHeader::encode(ByteBuffer& buffer) const
 		{
-			payload.encode(buffer);
+			buffer.append(payload);
 		}
 
 		std::size_t PublishPayloadHeader::getEncodedBytesSize() const noexcept
 		{
-			return payload.encodingSize();
+			return payload.size();
 		}
 	}
 }

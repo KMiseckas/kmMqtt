@@ -9,6 +9,7 @@
 #include <exception>
 #include <string>
 #include <stdexcept>
+#include <cassert>
 
 namespace cleanMqtt
 {
@@ -40,9 +41,10 @@ namespace cleanMqtt
 				std::memcpy(m_bytes, bytes, size);
 			}
 
-			explicit BinaryData(const ByteBuffer& buffer)
+			explicit BinaryData(const ByteBuffer& buffer) :
+				BinaryData(static_cast<std::uint16_t>(buffer.size()), buffer.bytes())
 			{
-				decode(buffer);
+				assert(buffer.size() <= 65535 && "ByteBuffer size exceeds uint16_t max value for conversion to binary data type");
 			}
 
 			BinaryData(BinaryData&& other) noexcept

@@ -132,7 +132,7 @@ namespace cleanMqtt
 			varHeader.qos = options.qos;
 			varHeader.topicName = topic;
 
-			payloadHeader.payload = BinaryData(payload);
+			payloadHeader.payload = payload;
 
 			EncodedPublishFlags flags{ false, options.qos, options.retain };
 
