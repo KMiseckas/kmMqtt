@@ -15,7 +15,7 @@ namespace cleanMqtt
 			PublishComposer(MqttConnectionInfo* connectionInfo,
 				PacketIdPool* packetIdPool,
 				const std::uint16_t packetId,
-				const char* topic,
+				std::string topic,
 				ByteBuffer&& payload,
 				PublishOptions&& pubOptions) noexcept;
 
@@ -25,7 +25,7 @@ namespace cleanMqtt
 		private:
 			PacketIdPool* m_packetIdPool{ nullptr };
 			std::uint16_t m_packetId{ 0 };
-			const char* m_topic{ nullptr };
+			std::string m_topic{ nullptr };
 			ByteBuffer m_payload;
 			PublishOptions m_publishOptions;
 		};

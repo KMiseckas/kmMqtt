@@ -8,13 +8,13 @@ namespace cleanMqtt
 		PublishComposer::PublishComposer(MqttConnectionInfo* connectionInfo,
 			PacketIdPool* packetIdPool,
 			const std::uint16_t packetId,
-			const char* topic,
+			std::string topic,
 			ByteBuffer&& payload,
 			PublishOptions&& pubOptions) noexcept :
 			IPacketComposer(connectionInfo),
 			m_packetIdPool{ packetIdPool },
 			m_packetId{ packetId },
-			m_topic{ topic },
+			m_topic{ std::move(topic) },
 			m_payload{ std::move(payload) },
 			m_publishOptions{ std::move(pubOptions) }
 		{
@@ -22,7 +22,7 @@ namespace cleanMqtt
 
 		ComposeResult PublishComposer::compose() noexcept
 		{
-			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic, m_payload, m_publishOptions, m_packetId)};
+			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic.c_str(), m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
 
 			return ComposeResult{ result, packet.extractDataBuffer() };

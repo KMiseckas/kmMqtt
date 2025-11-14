@@ -29,7 +29,7 @@ namespace cleanMqtt
 
 		struct PUBLIC_API PublishMessageData
 		{
-			const char* topic;
+			std::string topic;
 			ByteBuffer payload;
 			PublishOptions options;
 		};

@@ -1190,7 +1190,7 @@ namespace cleanMqtt
 					LogTrace("MqttClient", "Retrying message: Type: %s, Packet ID: %d, Topic: %s",
 						packetTypeToString(type),
 						msg.data.packetID,
-						msg.data.publishMsgData.topic);
+						msg.data.publishMsgData.topic.c_str());
 
 					if (type == PacketType::PUBLISH)
 					{
