@@ -24,8 +24,8 @@ namespace cleanMqtt
 				return m_flags;
 			}
 
-			template<typename TReturnType = TSizeType>
-			TReturnType getFlagValue(const TFlagBitsEnum& flagToCheck) const
+			template<typename EnumT = TFlagBitsEnum, typename TReturnType = TSizeType>
+			TReturnType getFlagValue(const EnumT& flagToCheck) const
 			{
 				const TSizeType bitmask = static_cast<TSizeType>(flagToCheck);
 				assert(arePositiveBitsContiguous<TSizeType>(bitmask));
