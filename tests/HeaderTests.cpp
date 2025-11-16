@@ -5,6 +5,7 @@
 #include <cleanMqtt/ByteBuffer.h>
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
 #include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishPayloadHeader.h>
+#include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishVariableHeader.h>
 
 TEST_SUITE("Header Tests")
 {
@@ -406,27 +407,24 @@ TEST_SUITE("Header Tests")
 
 			ByteBuffer buffer{ header.getEncodedBytesSize() };
 			CHECK_NOTHROW(header.encode(buffer));
-			CHECK(buffer.size() == 2); // 2 bytes for length prefix (0)
-			CHECK(buffer[0] == 0);
-			CHECK(buffer[1] == 0);
+			CHECK(buffer.size() == 0);
 		}
 
 		SUBCASE("Encoding With Payload")
 		{
 			const std::uint8_t data[] = { 0xDE, 0xAD, 0xBE, 0xEF };
-			BinaryData payload{ 4, data };
+			ByteBuffer payload{ 4 };
+			payload.append(data, 4);
 			PublishPayloadHeader header{ std::move(payload) };
 
 			CHECK(header.payload.size() == 4);
 			ByteBuffer buffer{ header.getEncodedBytesSize() };
 			CHECK_NOTHROW(header.encode(buffer));
-			CHECK(buffer.size() == 6); // 2 bytes length + 4 bytes data
-			CHECK(buffer[0] == 0);
-			CHECK(buffer[1] == 4);
-			CHECK(buffer[2] == 0xDE);
-			CHECK(buffer[3] == 0xAD);
-			CHECK(buffer[4] == 0xBE);
-			CHECK(buffer[5] == 0xEF);
+			CHECK(buffer.size() == 4); //4 bytes data
+			CHECK(buffer[0] == 0xDE);
+			CHECK(buffer[1] == 0xAD);
+			CHECK(buffer[2] == 0xBE);
+			CHECK(buffer[3] == 0xEF);
 		}
 
 		SUBCASE("Decoding")
@@ -438,10 +436,243 @@ TEST_SUITE("Header Tests")
 			PublishPayloadHeader header;
 			auto result = header.decode(buffer);
 			CHECK(result.isSuccess());
-			CHECK(header.payload.size() == 3);
-			CHECK(header.payload.bytes()[0] == 0x11);
-			CHECK(header.payload.bytes()[1] == 0x22);
-			CHECK(header.payload.bytes()[2] == 0x33);
+			CHECK(header.payload.size() == 5);
+			CHECK(header.payload.bytes()[2] == 0x11);
+			CHECK(header.payload.bytes()[3] == 0x22);
+			CHECK(header.payload.bytes()[4] == 0x33);
+		}
+	}
+
+	TEST_CASE("Publish Variable Header")
+	{
+		using namespace cleanMqtt::mqtt;
+		using cleanMqtt::mqtt::PublishVariableHeader;
+
+		SUBCASE("Encoding")
+		{
+			SUBCASE("Default QOS_0")
+			{
+				PublishVariableHeader header;
+				header.topicName = "test/topic";
+				header.qos = Qos::QOS_0;
+
+				ByteBuffer buffer{ header.getEncodedBytesSize() };
+
+				CHECK_NOTHROW(header.encode(buffer));
+				CHECK(header.topicName.getString().compare("test/topic") == 0);
+				CHECK(header.packetIdentifier == 0);
+				CHECK(header.properties.size() == 0);
+				CHECK(header.qos == Qos::QOS_0);
+
+				CHECK(buffer.capacity() == buffer.size());
+				CHECK(buffer.headroom() == 0);
+
+				// Topic name: length (2 bytes) + "test/topic" (10 bytes) + Properties length (1 byte)
+				CHECK(buffer[0] == 0);		//Topic name length MSB
+				CHECK(buffer[1] == 10);		//Topic name length LSB
+				CHECK(buffer[2] == 't');
+				CHECK(buffer[3] == 'e');
+				CHECK(buffer[4] == 's');
+				CHECK(buffer[5] == 't');
+				CHECK(buffer[6] == '/');
+				CHECK(buffer[7] == 't');
+				CHECK(buffer[8] == 'o');
+				CHECK(buffer[9] == 'p');
+				CHECK(buffer[10] == 'i');
+				CHECK(buffer[11] == 'c');
+				CHECK(buffer[12] == 0); //Properties length
+			}
+
+			SUBCASE("QOS_1 with Packet ID")
+			{
+				PublishVariableHeader header{
+					"sensor/data",
+					1234,
+					Properties{},
+					Qos::QOS_1
+				};
+
+				ByteBuffer buffer{ header.getEncodedBytesSize() };
+
+				CHECK_NOTHROW(header.encode(buffer));
+				CHECK(header.topicName.getString().compare("sensor/data") == 0);
+				CHECK(header.packetIdentifier == 1234);
+				CHECK(header.properties.size() == 0);
+				CHECK(header.qos == Qos::QOS_1);
+
+				CHECK(buffer.capacity() == buffer.size());
+				CHECK(buffer.headroom() == 0);
+
+				//Topic name: length (2 bytes) + "sensor/data" (11 bytes) + Packet ID (2 bytes) + Properties length (1 byte)
+				CHECK(buffer[0] == 0);		//Topic name length MSB
+				CHECK(buffer[1] == 11);		//Topic name length LSB
+				CHECK(buffer[2] == 's');
+				CHECK(buffer[3] == 'e');
+				CHECK(buffer[4] == 'n');
+				CHECK(buffer[5] == 's');
+				CHECK(buffer[6] == 'o');
+				CHECK(buffer[7] == 'r');
+				CHECK(buffer[8] == '/');
+				CHECK(buffer[9] == 'd');
+				CHECK(buffer[10] == 'a');
+				CHECK(buffer[11] == 't');
+				CHECK(buffer[12] == 'a');
+				CHECK(buffer[13] == 0x04);	//Packet ID MSB
+				CHECK(buffer[14] == 0xD2);	//Packet ID LSB
+				CHECK(buffer[15] == 0);
+			}
+
+			SUBCASE("QOS_2 with Properties")
+			{
+				Properties properties;
+				properties.tryAddProperty<PropertyType::MESSAGE_EXPIRY_INTERVAL>(3600);
+				properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("application/json"));
+
+				PublishVariableHeader header{
+					"home/temperature",
+					5678,
+					std::move(properties),
+					Qos::QOS_2
+				};
+
+				ByteBuffer buffer{ header.getEncodedBytesSize() };
+
+				CHECK_NOTHROW(header.encode(buffer));
+				CHECK(header.topicName.getString().compare("home/temperature") == 0);
+				CHECK(header.packetIdentifier == 5678);
+				CHECK(header.properties.size() > 0);
+				CHECK(header.qos == Qos::QOS_2);
+
+				CHECK(buffer.capacity() == buffer.size());
+				CHECK(buffer.headroom() == 0);
+
+				// Topic name: length (2 bytes) + "home/temperature" (16 bytes)
+				CHECK(buffer[0] == 0);		//Topic name length MSB
+				CHECK(buffer[1] == 16);		//Topic name length LSB
+				CHECK(buffer[2] == 'h');
+				CHECK(buffer[3] == 'o');
+				CHECK(buffer[4] == 'm');
+				CHECK(buffer[5] == 'e');
+				CHECK(buffer[6] == '/');
+				CHECK(buffer[7] == 't');
+				CHECK(buffer[8] == 'e');
+				CHECK(buffer[9] == 'm');
+				CHECK(buffer[10] == 'p');
+				CHECK(buffer[11] == 'e');
+				CHECK(buffer[12] == 'r');
+				CHECK(buffer[13] == 'a');
+				CHECK(buffer[14] == 't');
+				CHECK(buffer[15] == 'u');
+				CHECK(buffer[16] == 'r');
+				CHECK(buffer[17] == 'e');
+				CHECK(buffer[18] == 0x16);	//Packet ID MSB
+				CHECK(buffer[19] == 0x2E);	//Packet ID LSB
+			}
+		}
+
+		SUBCASE("Decoding")
+		{
+			SUBCASE("QOS_0 Topic Only")
+			{
+				const std::uint8_t data[] = {
+					0x00, 0x04,				//Topic length = 4
+					't', 'e', 's', 't',		//Topic name = "test"
+					0x00					//Properties length = 0
+				};
+				ByteBuffer buffer{ 7 };
+				buffer.append(data, 7);
+
+				PublishVariableHeader header;
+				header.qos = Qos::QOS_0;
+				auto result = header.decode(buffer);
+
+				CHECK(result.isSuccess());
+				CHECK(header.topicName.getString().compare("test") == 0);
+				CHECK(header.packetIdentifier == 0);	// Should remain 0 for QOS_0
+			}
+
+			SUBCASE("QOS_1 with Packet ID")
+			{
+				const std::uint8_t data[] = {
+					0x00, 0x04,				//Topic length = 4
+					'd', 'a', 't', 'a',		//Topic name = "data"
+					0x03, 0xE8,				//Packet ID = 1000 (0x03E8)
+					0x00					//Properties length = 0
+				};
+				ByteBuffer buffer{ 9 };
+				buffer.append(data, 9);
+
+				PublishVariableHeader header;
+				header.qos = Qos::QOS_1;
+				auto result = header.decode(buffer);
+
+				CHECK(result.isSuccess());
+				CHECK(header.topicName.getString().compare("data") == 0);
+				CHECK(header.packetIdentifier == 1000);
+				CHECK(header.properties.size() == 0);
+			}
+
+			SUBCASE("QOS_2 with Properties")
+			{
+				const std::uint8_t data[] = {
+					0x00, 0x03,				//Topic length = 3
+					'f', 'o', 'o',			//Topic name = "foo"
+					0x07, 0xD0,				//Packet ID = 2000 (0x07D0)
+					0x05,					//Properties length = 5
+					0x02,					//Property: MESSAGE_EXPIRY_INTERVAL
+					0x00, 0x00, 0x0E, 0x10	//Value: 3600 seconds
+				};
+				ByteBuffer buffer{ sizeof(data)};
+				buffer.append(data, sizeof(data));
+
+				PublishVariableHeader header;
+				header.qos = Qos::QOS_2;
+				auto result = header.decode(buffer);
+
+				CHECK(result.isSuccess());
+				CHECK(header.topicName.getString().compare("foo") == 0);
+				CHECK(header.packetIdentifier == 2000);
+				CHECK(header.properties.size() == 5);
+				CHECK(header.properties.count() == 1);
+			}
+		}
+
+		SUBCASE("Size Calculations")
+		{
+			SUBCASE("QOS_0 No Properties")
+			{
+				PublishVariableHeader header;
+				header.topicName = "test";
+				header.qos = Qos::QOS_0;
+
+				// Topic name encoding: 2 bytes length + 4 bytes content + 1 properties size = 7 bytes total
+				CHECK(header.getEncodedBytesSize() == 7);
+			}
+
+			SUBCASE("QOS_1 No Properties")
+			{
+				PublishVariableHeader header;
+				header.topicName = "test";
+				header.packetIdentifier = 1234;
+				header.qos = Qos::QOS_1;
+
+				CHECK(header.getEncodedBytesSize() == 9);
+			}
+
+			SUBCASE("QOS_1 with Properties")
+			{
+				Properties properties;
+				properties.tryAddProperty<PropertyType::MESSAGE_EXPIRY_INTERVAL>(3600);
+
+				PublishVariableHeader header;
+				header.topicName = "test";
+				header.packetIdentifier = 1234;
+				header.properties = std::move(properties);
+				header.qos = Qos::QOS_1;
+
+				//Topic name (2 + 4) + Packet ID (2) + Properties length (1) + Property (1 + 4) = 14 bytes
+				CHECK(header.getEncodedBytesSize() == 14);
+			}
 		}
 	}
 
@@ -450,16 +681,16 @@ TEST_SUITE("Header Tests")
 		SUBCASE("Check Packet Type")
 		{
 			ByteBuffer buffer{ 2 };
-			buffer += 0b00010000; // CONNECT packet type
-			buffer += 0; // Remaining length
+			buffer += 0b00010000; //CONNECT packet type
+			buffer += 0; //Remaining length
 			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
 		}
 
 		SUBCASE("Check Packet Type RESERVED")
 		{
 			ByteBuffer buffer{ 2 };
-			buffer += 0b00000000; // Invalid packet type
-			buffer += 0; // Remaining length
+			buffer += 0b00000000; //Invalid packet type
+			buffer += 0; //Remaining length
 			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
 		}
 	}

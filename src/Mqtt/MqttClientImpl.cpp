@@ -489,6 +489,8 @@ namespace cleanMqtt
 
 		void MqttClientImpl::pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept
 		{
+			LockGuard guard{ m_mutex };
+
 			m_sendQueue.addToQueue(std::make_unique<PubAckComposer>(&m_connectionInfo,
 				packetId,
 				code,
@@ -896,21 +898,23 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleReceivedPublish(Publish&& packet)
 		{
-			if (packet.getVariableHeader().qos == Qos::QOS_0)
+			if (packet.getVariableHeader().qos == Qos::QOS_0 || packet.getVariableHeader().qos == Qos::QOS_1)
 			{
 				firePublishReceivedEvent(std::move(packet));
 			}
 			else
 			{
-				//If QoS is 1 or 2, we need to send a PUBACK or PUBREC packet back to the server + Store to Session State.
-				//const auto packetId{ packet.getVariableHeader().packetIdentifier};
 
-				//PublishMessageData data{packet.getVariableHeader().}
+			}
+			//If QoS is 1 or 2, we need to send a PUBACK or PUBREC packet back to the server + Store to Session State.
+			//const auto packetId{ packet.getVariableHeader().packetIdentifier};
 
-			//	m_connectionInfo.sessionState.addMessage(packetId, )
+			//PublishMessageData data{packet.getVariableHeader().}
 
-			/*	if (packet.getVariableHeader().qos == Qos::QOS_1)
-				{
+			//m_connectionInfo.sessionState.addMessage(packetId, )
+
+			/*if (packet.getVariableHeader().qos == Qos::QOS_1)
+			{
 					m_sendQueue.addToQueue(std::make_unique<SendPublishReceivedJob>(&m_connectionInfo,
 						[this](const BasePacket& packet) {return sendPacket(packet); },
 						packetId,
@@ -925,7 +929,6 @@ namespace cleanMqtt
 						m_config.enforceMaxPacketSizeOnSend,
 						m_config.maxAllowedPacketSize));
 				}*/
-			}
 		}
 
 		void MqttClientImpl::handleReceivedPublishAck(PublishAck&& packet)

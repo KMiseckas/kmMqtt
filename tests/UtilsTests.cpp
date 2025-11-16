@@ -65,7 +65,7 @@ TEST_SUITE("Utils Tests")
     {
 		using namespace cleanMqtt;
 
-		// Helper to create a simple MQTT packet: [fixed header][remaining length][payload]
+		//Helper to create a simple MQTT packet: [fixed header][remaining length][payload]
 		auto makePacket = [](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer
 			{
 				ByteBuffer buf(1 + 1 + payload.size()); // type + remLen + payload
@@ -123,5 +123,59 @@ TEST_SUITE("Utils Tests")
 		CHECK(result == true);
 		CHECK(packets.size() == 1);
 		CHECK(leftOverPos == packet2.size() - 1);
+	}
+
+	TEST_CASE("Split Up MQTT packets - large packets with 2-byte remaining length")
+	{
+		using namespace cleanMqtt;
+
+		//Helper to create MQTT packet with proper variable length encoding
+		auto makeLargePacket = [&](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer
+			{
+				mqtt::VariableByteInteger remainingLength{ mqtt::VariableByteInteger::tryCreateFromValue(payload.size())};
+				ByteBuffer buf(1 + remainingLength.uint32Value() + payload.size());
+				buf.append(&type, 1);
+				remainingLength.encode(buf);
+				if (!payload.empty()) 
+				{
+					buf.append(payload.data(), payload.size());
+				}
+				return buf;
+			};
+
+		//Create large payload (300 bytes) - requires 2-byte variable length field
+		std::vector<std::uint8_t> largePayload1(300, 0xAB);
+		std::vector<std::uint8_t> largePayload2(200, 0xCD);
+
+		ByteBuffer packet1 = makeLargePacket(0x30, largePayload1);
+		ByteBuffer packet2 = makeLargePacket(0x32, largePayload2);
+
+		ByteBuffer combined{ packet1.size() + packet2.size() };
+		combined.append(packet1.bytes(), packet1.size());
+		combined.append(packet2.bytes(), packet2.size());
+
+		std::vector<ByteBuffer> packets;
+		std::size_t leftOverPos{ 0 };
+
+		bool result = separateMqttPacketByteBuffers(combined, packets, leftOverPos);
+
+		CHECK(result == true);
+		CHECK(packets.size() == 2);
+
+		// Check first packet structure
+		CHECK(packets[0].size() == 303); // 1 (type) + 2 (var len) + 300 (payload)
+		CHECK(packets[0].bytes()[0] == 0x30);
+		CHECK(packets[0].bytes()[1] == 0xAC); // 300 % 128 | 0x80 = 44 | 128 = 172 = 0xAC
+		CHECK(packets[0].bytes()[2] == 0x02); // 300 / 128 = 2
+		CHECK(packets[0].bytes()[3] == 0xAB); // First payload byte
+
+		// Check second packet structure
+		CHECK(packets[1].size() == 203); // 1 (type) + 2 (var len) + 200 (payload)
+		CHECK(packets[1].bytes()[0] == 0x32);
+		CHECK(packets[1].bytes()[1] == 0xC8); // 200 % 128 | 0x80 = 72 | 128 = 200 = 0xC8
+		CHECK(packets[1].bytes()[2] == 0x01); // 200 / 128 = 1
+		CHECK(packets[1].bytes()[3] == 0xCD); // First payload byte
+
+		CHECK(leftOverPos == 0);
 	}
 }

@@ -25,14 +25,12 @@ namespace cleanMqtt
 
 			topicName.decode(buffer);
 
-			result = std::move(properties.decode(buffer));
-
 			if (qos >= Qos::QOS_1)
 			{
 				packetIdentifier = buffer.readUInt16();
 			}
 
-			return result;
+			return properties.decode(buffer);
 		}
 
 		void PublishVariableHeader::encode(ByteBuffer& buffer) const
@@ -44,14 +42,16 @@ namespace cleanMqtt
 
 			topicName.encode(buffer);
 			if (qos >= Qos::QOS_1) buffer.append(packetIdentifier);
-			if (properties.size() > 0) properties.encode(buffer);
+
+			properties.encode(buffer); //Size must be encoded even if no properties.
 		}
 
 		std::size_t PublishVariableHeader::getEncodedBytesSize() const noexcept
 		{
 			auto size{ topicName.encodingSize() };
 			if (qos >= Qos::QOS_1) size += sizeof(packetIdentifier);
-			if (properties.size() > 0) size += properties.encodingSize();
+
+			size += properties.encodingSize(); //Size must be encoded even if no properties.
 
 			return size;
 		}

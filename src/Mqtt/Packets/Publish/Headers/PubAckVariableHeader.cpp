@@ -34,11 +34,12 @@ namespace cleanMqtt
 			if (buffer.readHeadroom() > 0)
 			{
 				reasonCode = static_cast<PubAckReasonCode>(buffer.readUint8());
-			}
-
-			if (buffer.readHeadroom() > 0)
-			{
 				result = properties.decode(buffer);
+			}
+			else
+			{
+				//If there are no more bytes, the reason code is SUCCESS by default (and property length can be ommitted per mqtt 5)
+				reasonCode = PubAckReasonCode::SUCCESS;
 			}
 
 			return result;
@@ -48,7 +49,7 @@ namespace cleanMqtt
 		{
 			buffer.append(packetId);
 
-			if (reasonCode != PubAckReasonCode::SUCCESS && properties.size() == 0)
+			if (reasonCode == PubAckReasonCode::SUCCESS && properties.size() == 0)
 			{
 				return;
 			}
@@ -59,12 +60,14 @@ namespace cleanMqtt
 
 		std::size_t PubAckVariableHeader::getEncodedBytesSize() const noexcept
 		{
+			if(reasonCode == PubAckReasonCode::SUCCESS && properties.size() == 0)
+			{
+				return sizeof(packetId);
+			}
+
 			static constexpr std::size_t size{ sizeof(packetId) + sizeof(reasonCode) };
 			std::size_t encodedSize{ size };
-			if (properties.size() > 0)
-			{
-				encodedSize += properties.encodingSize();
-			}
+			encodedSize += properties.encodingSize();
 			return encodedSize;
 		}
 	}
