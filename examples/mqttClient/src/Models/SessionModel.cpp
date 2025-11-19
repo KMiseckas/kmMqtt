@@ -4,6 +4,8 @@
 SessionModel::SessionModel()
 {
 	topicModel = std::make_shared<TopicsModel>();
+	publishModel = std::make_shared<PublishModel>();
+	messagesModel = std::make_shared<MessagesModel>();
 }
 
 SessionModel::~SessionModel()
@@ -37,6 +39,8 @@ const std::string& SessionModel::getName() const noexcept
 
 void SessionModel::connect()
 {
+	topicModel->reset();
+
 	auto connectArgsCpy{ connectArgs };
 	auto connectAddressCpy{ connectAddress };
 
@@ -59,9 +63,11 @@ void SessionModel::connect()
 	}
 
 	/**
-	 * Set MQTT client for topics model.
+	 * Set MQTT client for models.
 	 */
 	topicModel->setMqttClient(m_mqttClient);
+	publishModel->setMqttClient(m_mqttClient);
+	messagesModel->setMqttClient(m_mqttClient);
 
 	/**
 	 * Register to connection events.
@@ -79,8 +85,6 @@ void SessionModel::connect()
 			{
 				connectionFailureReason = "";
 			}
-
-			currentConnectionStatus = m_mqttClient->getConnectionStatus();
 		});
 
 	/**
@@ -99,8 +103,6 @@ void SessionModel::connect()
 			{
 				disconnectioReason = details.error.errorMsg;
 			}
-
-			currentConnectionStatus = m_mqttClient->getConnectionStatus();
 		});
 }
 

@@ -2,6 +2,7 @@
 #define INCLUDE_MQTTCLIENT_EVENTS_APPLICATIONEVENTS_H
 
 #include <mqttClient/Events/Event.h>
+#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
 
 namespace events 
 {
@@ -11,6 +12,20 @@ namespace events
 
 	struct RebootRequestEvent : public Event
 	{
+	};
+
+	struct PublishMessageEvent : public Event
+	{
+		struct Result
+		{
+			bool success;
+			std::string errorMessage;
+		};
+
+		Result result;
+		std::string topic;
+		std::string message;
+		cleanMqtt::mqtt::PublishOptions options;
 	};
 }
 

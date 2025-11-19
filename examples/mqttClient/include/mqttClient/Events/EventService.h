@@ -173,8 +173,8 @@ namespace events
 
 			for (const auto* handler : m_eventMap[typeId])
 			{
-				EventHandler<TEvent>* castedHandler{ static_cast<EventHandler<TEvent>*>(handler) };
-				castedHandler(data);
+				const EventHandler<TEvent>* castedHandler{ static_cast<const EventHandler<TEvent>*>(handler) };
+				(*castedHandler)(data);
 			}
 		}
 
@@ -200,7 +200,7 @@ namespace events
 	template<typename TEvent>
 	static void publish(const TEvent& data)
 	{
-		EventService::Instance().publish(data);
+		EventService::Instance().publish<TEvent>(data);
 	}
 }
 

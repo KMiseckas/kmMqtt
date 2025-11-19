@@ -17,6 +17,7 @@ namespace cleanMqtt
         std::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
 
         mutable MockWebSocket* socketPtr{ nullptr };
+        Config config{};
     };
 }
 

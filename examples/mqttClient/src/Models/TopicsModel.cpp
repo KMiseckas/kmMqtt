@@ -73,22 +73,29 @@ void TopicsModel::subscribe(const std::string& topicFilter)
 
 void TopicsModel::unsubscribe(const std::string& topicFilter)
 {
-    if (m_mqttClient == nullptr || topicFilter.empty())
+    if (topicFilter.empty())
     {
         return;
     }
 
-    auto it = std::find_if(m_subscribedTopics.begin(), m_subscribedTopics.end(),
-        [&topicFilter](const SubscribedTopic& topic) {
+    if (m_mqttClient == nullptr)
+    {
+        m_subscribedTopics.clear();
+        return;
+    }
+
+    auto it = std::find_if(m_subscribedTopics.begin(),
+        m_subscribedTopics.end(),
+        [&topicFilter](const SubscribedTopic& topic) 
+        {
             return topic.topicFilter == topicFilter;
         });
 
     if (it == m_subscribedTopics.end())
     {
-        return; // Topic not found
+        return;
     }
 
-    // Create Topic and unsubscribe
     std::vector<cleanMqtt::mqtt::Topic> topics;
     topics.emplace_back(topicFilter);
 
@@ -138,6 +145,12 @@ void TopicsModel::clearAllTopics()
     }
     
     m_subscribedTopics.clear();
+}
+
+void TopicsModel::reset()
+{
+    m_subscribedTopics.clear();
+    uiData = {};
 }
 
 void TopicsModel::setupEventHandlers()

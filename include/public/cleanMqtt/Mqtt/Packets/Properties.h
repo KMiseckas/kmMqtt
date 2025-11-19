@@ -142,12 +142,29 @@ namespace cleanMqtt
 				return !outVals.empty();
 			}
 
+			/**
+			 * @brief Get the size in bytes required to encode the properties data into bytes (including the length prefix).
+			 * @return std::uint32_t Size in bytes required to encode the properties data into bytes.
+			 */
 			std::uint32_t encodingSize() const
 			{
 				auto varBytes{ VariableByteInteger::tryCreateFromValue(m_propertiesSizeInBytes) };
 				return static_cast<std::uint32_t>(varBytes.encodingSize()) + m_propertiesSizeInBytes;
 			}
 
+			/**
+			 * @brief Get the amount of properties stored.
+			 * @return std::size_t Number of properties stored.
+			 */
+			std::size_t count() const
+			{
+				return m_properties.size();
+			}
+
+			/**
+			 * @brief Get the size in bytes of all properties combined (excluding the length prefix).
+			 * @return std::uint32_t Size in bytes of all properties combined.
+			 */
 			std::uint32_t size() const
 			{
 				return m_propertiesSizeInBytes;

@@ -10,6 +10,8 @@
 #include <cleanMqtt/MqttClient.h>
 #include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
 #include "TopicsModel.h"
+#include "PublishModel.h"
+#include "MessagesModel.h"
 
 class SessionModel : public ViewModel
 {
@@ -28,7 +30,15 @@ public:
 	void cancel();
 	void tickMqtt();
 
-	cleanMqtt::mqtt::ConnectionStatus getConnectionStatus() const;
+	inline cleanMqtt::mqtt::ConnectionStatus getConnectionStatus() const
+	{
+		if (m_mqttClient == nullptr)
+		{
+			return cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED;
+		}
+
+		return m_mqttClient->getConnectionStatus();
+	}
 
 	cleanMqtt::Config mqttConfig;
 	cleanMqtt::mqtt::ConnectAddress connectAddress;
@@ -40,9 +50,10 @@ public:
 	bool isMqttConnected{ false };
 	std::string connectionFailureReason{ "" };
 	std::string disconnectioReason{ "" };
-	cleanMqtt::mqtt::ConnectionStatus currentConnectionStatus{ cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED };
 
 	std::shared_ptr<TopicsModel> topicModel;
+	std::shared_ptr<PublishModel> publishModel;
+	std::shared_ptr<MessagesModel> messagesModel;
 
 	struct UIData
 	{
@@ -80,4 +91,4 @@ private:
 	cleanMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
 };
 
-#endif //INCLUDE_MQTTCLIENT_MODEL_SESSIONMODEL_H 
+#endif //INCLUDE_MQTTCLIENT_MODEL_SESSIONMODEL_H

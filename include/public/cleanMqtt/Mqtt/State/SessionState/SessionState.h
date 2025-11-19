@@ -64,7 +64,7 @@ namespace cleanMqtt
             * 
             * @return Const reference to the MessageContainer.
             */
-            const MessageContainer& messages() noexcept { return m_messages; }
+            const MessageContainer& messages() const noexcept { return m_messages; }
 
             /**
             * @brief Clears all messages from the session state.

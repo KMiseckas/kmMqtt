@@ -46,6 +46,7 @@ public:
     bool isSubscribed(const std::string& topicFilter) const noexcept;
     
     void clearAllTopics();
+    void reset();
 
     struct UIData
     {

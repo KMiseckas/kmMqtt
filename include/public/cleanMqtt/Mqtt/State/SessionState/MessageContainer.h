@@ -28,6 +28,7 @@ namespace cleanMqtt
 			ConstMsgIter cend() const noexcept { return m_messageList.cend(); }
 			void moveToEnd(const std::uint16_t packetId) noexcept;
 			void clear() noexcept;
+			std::size_t size() const noexcept { return m_messageList.size(); }
 
 		private:
 			std::list<MessageContainerData> m_messageList;

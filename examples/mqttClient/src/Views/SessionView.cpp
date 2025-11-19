@@ -1,6 +1,7 @@
 #include <mqttClient/Views/SessionView.h>
 #include <mqttClient/ViewHelpers.h>
 #include <algorithm>
+#include <imgui_internal.h>
 
 void SessionView::draw()
 {
@@ -9,8 +10,10 @@ void SessionView::draw()
 	//Connection panel
 	drawConnectionControlPanel();
 
+	auto topicHeight{ ImGui::GetContentRegionAvail().y * 0.6f };
+
 	//Topics panel
-	if (viewHelpers::beginPanel(text::session_subscription_topics_panel_title, { 320, 360 }, ImGuiChildFlags_ResizeX))
+	if (viewHelpers::beginPanel(text::session_subscription_topics_panel_title, { ImGui::GetContentRegionAvail().x * 0.35f, topicHeight }, ImGuiChildFlags_ResizeX))
 	{
 		drawTopicView();
 	}
@@ -18,16 +21,24 @@ void SessionView::draw()
 
 	//Messages sent/received panel
 	ImGui::SameLine();
-	if (viewHelpers::beginPanel(text::session_messages_panel_title, { 0,360 }, ImGuiChildFlags_ResizeX))
+	if (viewHelpers::beginPanel(text::session_messages_panel_title, { ImGui::GetContentRegionAvail().x, topicHeight }))
 	{
-
+		drawMessageView();
 	}
 	viewHelpers::endPanel();
 
 	//Publishing panel
-	if (viewHelpers::beginPanel(text::session_publishing_panel_title, { 0,0 }, ImGuiChildFlags_ResizeX))
+	if (viewHelpers::beginPanel(text::session_publishing_panel_title, { ImGui::GetContentRegionAvail().x * 0.4f ,0 }, ImGuiChildFlags_ResizeX))
 	{
+		drawPublishView();
+	}
+	viewHelpers::endPanel();
 
+	//Output log panel
+	ImGui::SameLine();
+	if (viewHelpers::beginPanel(text::session_log_output_panel_title, { ImGui::GetContentRegionAvail().x,0 }, ImGuiChildFlags_AutoResizeX))
+	{
+		drawOutputLog();
 	}
 	viewHelpers::endPanel();
 
@@ -36,7 +47,9 @@ void SessionView::draw()
 
 void SessionView::drawConnectionControlPanel()
 {
-	if (viewHelpers::beginPanel(text::session_connection_control_panel_title, { 0,0 }, ImGuiChildFlags_AutoResizeY, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	auto height{ ImGui::GetContentRegionAvail().y * 0.3f};
+
+	if (viewHelpers::beginPanel(text::session_connection_control_panel_title, { 0,0 }, ImGuiChildFlags_AutoResizeY))
 	{
 		//Configs editing
 		//Connection args
@@ -47,7 +60,7 @@ void SessionView::drawConnectionControlPanel()
 
 		drawConnectArgs();
 
-		ImGui::Separator();
+		ImGui::NewLine();
 		if (m_model->connectArgs.will != nullptr)
 		{
 			drawWillBtn();
@@ -108,29 +121,29 @@ void SessionView::drawStatus()
 	const char* statusTxt{ nullptr };
 	ImVec4 color;
 
-	if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
+	if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
 	{
-		color = k_green;
+		color = ui::colors::k_green;
 		statusTxt = text::session_connection_status_connected;
 	}
-	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
 	{
-		color = k_green;
+		color = ui::colors::k_green;
 		statusTxt = text::session_connection_status_connecting;
 	}
-	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
+	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
 	{
-		color = k_red;
+		color = ui::colors::k_red;
 		statusTxt = text::session_connection_status_disconnected;
 	}
-	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
+	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
 	{
-		color = k_yellow;
+		color = ui::colors::k_yellow;
 		statusTxt = text::session_connection_status_reconnecting;
 	}
 	else
 	{
-		color = k_yellow;
+		color = ui::colors::k_yellow;
 		statusTxt = "...";
 	}
 
@@ -145,28 +158,28 @@ void SessionView::drawStatus()
 
 void SessionView::drawConnect()
 {
-	if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
+	if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
 	{
 		if (ImGui::Button(text::session_connection_disconnect_button_label))
 		{
 			m_model->disconnect();
 		}
 	}
-	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
 	{
 		if (ImGui::Button(text::session_connection_cancel_button_label))
 		{
 			m_model->cancel();
 		}
 	}
-	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
+	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
 	{
 		if (ImGui::Button(text::session_connection_connect_button_label))
 		{
 			m_model->connect();
 		}
 	}
-	else if (m_model->currentConnectionStatus == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
+	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
 	{
 		if (ImGui::Button(text::session_connection_cancel_button_label))
 		{
@@ -177,28 +190,23 @@ void SessionView::drawConnect()
 
 void SessionView::drawConnectArgs()
 {
-	ImGui::SetNextWindowSizeConstraints({ 0, 120 }, { 1920, 160 });
-	if (ImGui::BeginChild("ConnectArgs"))
+	auto height{ ImGui::GetContentRegionAvail().y * 0.8f };
+
+	ui::pushPanelInputFieldStyle();
+
+	drawConnectBasicArgs();
+
+	if (UIData.showingAdvancedConnectOptions)
 	{
-		ui::pushPanelInputFieldStyle();
-
-		drawConnectBasicArgs();
-
-		if (UIData.showingAdvancedConnectOptions)
-		{
-			ImGui::NewLine();
-			drawConnectAdvancedArgs();
-		}
-
-		if (UIData.showingWillOptions)
-		{
-			ImGui::NewLine();
-			drawWillArgs();
-		}
-
-		ui::popPanelInputFieldStyle();
+		drawConnectAdvancedArgs();
 	}
-	ImGui::EndChild();
+
+	if (UIData.showingWillOptions)
+	{
+		drawWillArgs();
+	}
+
+	ui::popPanelInputFieldStyle();
 }
 
 void SessionView::drawConnectBasicArgs()
@@ -562,7 +570,38 @@ void SessionView::drawTopicView()
 	}
 }
 
+void SessionView::drawMessageView()
+{
+	if (getModel()->isMqttConnected)
+	{
+		m_messageView.draw();
+	}
+	else
+	{
+		ImGui::TextWrapped(text::session_messages_panel_not_connected_msg);
+	}
+}
+
+void SessionView::drawPublishView()
+{
+	if (getModel()->isMqttConnected)
+	{
+		m_publishView.draw();
+	}
+	else
+	{
+		ImGui::TextWrapped("Connect to MQTT broker to publish messages");
+	}
+}
+
+void SessionView::drawOutputLog()
+{
+
+}
+
 void SessionView::handleAppliedModel(ModelPtr oldModel, ModelPtr newModel)
 {
 	m_topicView.setModel(newModel->topicModel);
+	m_messageView.setModel(newModel->messagesModel);
+	m_publishView.setModel(newModel->publishModel);
 }

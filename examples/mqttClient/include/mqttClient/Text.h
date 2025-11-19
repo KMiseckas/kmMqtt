@@ -20,7 +20,10 @@ TEXT(session_connection_control_panel_title, "Connection Controls")
 TEXT(session_subscription_topics_panel_title, "Topics")
 TEXT(session_messages_panel_title, "Messages")
 TEXT(session_publishing_panel_title, "Publish Controls")
+TEXT(session_log_output_panel_title, "Log Output")
 TEXT(session_subscription_topics_panel_not_connected_msg, "Connect to a broker to manage topics.")
+TEXT(session_publishing_panel_not_connected_msg, "Connect to MQTT broker to publish messages")
+TEXT(session_messages_panel_not_connected_msg, "Connect to a broker to view messages.")
 
 //Session - Connection Panel
 TEXT(session_connection_configs_button_label, "Edit Configuration")
@@ -89,6 +92,138 @@ TEXT(topics_advanced_options, "Advanced Options")
 TEXT(topics_subscribed, "Subscribed")
 TEXT(topics_pending, "Pending")
 TEXT(topics_error_str, "Error: %s")
+
+//Publish View - Statistics
+TEXT(publish_stats_messages_total, "Messages: %zu")
+TEXT(publish_stats_pending, "| %zu Pending")
+TEXT(publish_stats_success, "| %zu Success")
+TEXT(publish_stats_failed, "| %zu Failed")
+
+//Publish View - Form
+TEXT(publish_form_title, "Publish Message")
+TEXT(publish_form_topic_label, "Topic")
+TEXT(publish_form_topic_hint, "Enter topic name...")
+TEXT(publish_form_payload_label, "Payload")
+TEXT(publish_form_qos_label, "QoS")
+TEXT(publish_form_retain_label, "Retain")
+TEXT(publish_form_advanced_button, "Advanced")
+TEXT(publish_form_publish_button, "Publish Message")
+TEXT(publish_form_clear_all_button, "Clear All")
+
+//Publish View - Advanced Options
+TEXT(publish_advanced_title, "Advanced Options")
+TEXT(publish_advanced_response_topic_label, "Response Topic")
+TEXT(publish_advanced_response_topic_hint, "Optional response topic...")
+TEXT(publish_advanced_topic_alias_label, "Topic Alias")
+TEXT(publish_advanced_message_expiry_label, "Add Message Expiry")
+TEXT(publish_advanced_message_expiry_seconds, "seconds")
+TEXT(publish_advanced_payload_format_label, "Payload Format")
+TEXT(publish_advanced_correlation_data_label, "Correlation Data")
+TEXT(publish_advanced_correlation_data_hint, "Optional correlation data...")
+
+//Publish View - Messages List
+TEXT(publish_messages_title, "Published Messages")
+TEXT(publish_messages_filter_label, "Filter")
+TEXT(publish_messages_no_messages, "No messages published")
+TEXT(publish_messages_topic_label, "Topic:")
+
+//Publish View - Message Status Panel
+TEXT(publish_status_panel_title, "Message Status")
+TEXT(publish_status_panel_show_details, "Show Details")
+TEXT(publish_status_panel_recent_label, "Recent:")
+
+//Publish View - Message Status
+TEXT(publish_status_pending, "Pending")
+TEXT(publish_status_sent, "Sent")
+TEXT(publish_status_acknowledged, "OK")
+TEXT(publish_status_failed, "Failed")
+
+//Publish View - Message Details
+TEXT(publish_details_topic_label, "Topic:")
+TEXT(publish_details_payload_label, "Payload (%zu bytes):")
+TEXT(publish_details_options_title, "Options:")
+TEXT(publish_details_qos, "QoS: %d")
+TEXT(publish_details_retain_yes, "Retain: Yes")
+TEXT(publish_details_retain_no, "Retain: No")
+TEXT(publish_details_format_utf8, "Format: UTF-8")
+TEXT(publish_details_format_binary, "Format: Binary")
+TEXT(publish_details_response_topic, "Response Topic: %s")
+TEXT(publish_details_topic_alias, "Topic Alias: %d")
+TEXT(publish_details_message_expiry, "Message Expiry: %d seconds")
+TEXT(publish_details_timestamp, "Timestamp: %s")
+TEXT(publish_details_error, "Error: %s")
+
+//Publish View - Clear Confirmation
+TEXT(publish_clear_confirmation_title, "Clear All Messages##ClearConfirm")
+TEXT(publish_clear_confirmation_message1, "Are you sure you want to clear all published messages?")
+TEXT(publish_clear_confirmation_message2, "This action cannot be undone.")
+TEXT(publish_clear_confirmation_yes_button, "Yes, Clear All")
+TEXT(publish_clear_confirmation_cancel_button, "Cancel")
+
+//Publish View - Message Details Window
+TEXT(publish_details_window_title, "Message Details##MessageDetails")
+TEXT(publish_details_window_close, "Close")
+
+//Publish View - QoS Options
+TEXT(publish_qos_0, "QoS 0")
+TEXT(publish_qos_1, "QoS 1")
+TEXT(publish_qos_2, "QoS 2")
+
+//Publish View - Payload Format Options
+TEXT(publish_format_utf8, "UTF-8 Text")
+TEXT(publish_format_binary, "Binary Data")
+
+//Publish View - Filter Options
+TEXT(publish_filter_all, "All Messages")
+TEXT(publish_filter_pending, "Pending")
+TEXT(publish_filter_sent, "Sent")
+TEXT(publish_filter_acknowledged, "Acknowledged")
+TEXT(publish_filter_failed, "Failed")
+
+//Messages View - Main
+TEXT(messages_view_title, "MQTT Messages")
+TEXT(messages_view_clear_button, "Clear All")
+TEXT(messages_view_no_messages, "No messages to display")
+TEXT(messages_view_filter_label, "Filter:")
+TEXT(messages_view_topic_filter_hint, "Filter by topic...")
+
+//Messages View - Columns
+TEXT(messages_column_received, "Received")
+TEXT(messages_column_sent, "Sent")
+
+//Messages View - Filters
+TEXT(messages_filter_all, "All Messages")
+TEXT(messages_filter_received, "Received Only")
+TEXT(messages_filter_sent, "Sent Only")
+TEXT(messages_filter_by_topic, "By Topic")
+
+//Messages View - Message Types
+TEXT(messages_type_received, "Received")
+TEXT(messages_type_sent, "Sent")
+
+//Messages View - Details Modal
+TEXT(messages_details_title, "Message Details##MessageDetails")
+TEXT(messages_details_close_button, "Close")
+TEXT(messages_details_type_label, "Type:")
+TEXT(messages_details_topic_label, "Topic:")
+TEXT(messages_details_timestamp_label, "Timestamp:")
+TEXT(messages_details_payload_label, "Payload (%zu bytes):")
+TEXT(messages_details_qos_label, "QoS:")
+TEXT(messages_details_retain_label, "Retain:")
+TEXT(messages_details_status_label, "Status:")
+
+//Messages View - Clear Confirmation
+TEXT(messages_clear_confirmation_title, "Clear All Messages##MessagesClearConfirm")
+TEXT(messages_clear_confirmation_message1, "Are you sure you want to clear all messages?")
+TEXT(messages_clear_confirmation_message2, "This action cannot be undone.")
+TEXT(messages_clear_confirmation_yes_button, "Yes, Clear All")
+TEXT(messages_clear_confirmation_cancel_button, "Cancel")
+
+//Messages View - Status Text
+TEXT(messages_status_received, "Received")
+TEXT(messages_status_sent_pending, "Pending")
+TEXT(messages_status_sent_acknowledged, "Sent")
+TEXT(messages_status_sent_failed, "Failed")
 }
 
 #endif //INCLUDE_MQTTCLIENT_TEXT_H

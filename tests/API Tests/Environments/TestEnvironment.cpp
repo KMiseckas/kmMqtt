@@ -5,7 +5,7 @@ namespace cleanMqtt
 {
     Config TestEnvironment::createConfig() const noexcept
     {
-        return Config{};
+        return config;
     }
 
     std::shared_ptr<IWebSocket> TestEnvironment::createWebSocket() const noexcept

@@ -32,8 +32,6 @@ namespace cleanMqtt
 			m_socket->setOnRecvdCallback([this](ByteBuffer&& buffer) { handleSocketDataReceivedEvent(std::move(buffer)); });
 			m_socket->setOnErrorCallback([this](std::uint16_t error) { handleSocketErrorEvent(error); });
 
-			m_sendPubAckEvent.add([this](std::uint16_t packetId) { pubAck(packetId, PubAckReasonCode::SUCCESS, PubAckOptions{}); });
-
 			m_sendQueue.setSocket(m_socket);
 			m_sendQueue.setOnPingSentCallback([this]() { handlePingSentEvent(); });
 		}
@@ -1077,10 +1075,10 @@ namespace cleanMqtt
 
 			DISPATCH_EVENT_TO_CONSUMER([&, tName = std::move(topicName), pload = &packet.getPayloadHeader().payload, p = std::move(packet)]() {m_publishEvent({ std::move(tName), pload }, p); });
 
+			//After packet is sent to application layer, send PUBACK packet back to the server (As per QOS 1 specification) 
 			if (qos == Qos::QOS_1)
 			{
-				//After packet is sent to application layer (previous deferEvent), send PUBACK packet back to the server.
-				DISPATCH_EVENT_TO_CONSUMER([&]() {m_sendPubAckEvent(id); });
+				pubAck(id, PubAckReasonCode::SUCCESS, PubAckOptions{});
 			}
 		}
 

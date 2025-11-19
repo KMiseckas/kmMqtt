@@ -54,14 +54,14 @@ public:
                 onErrorCb(lastError);
             }
 
-            return false;
+            return -1;
         }
 
 		auto bb{ ByteBuffer(data.size()) };
         bb.append(data.bytes(), data.size());
 
         sentPackets.push_back(std::move(bb));
-        return true;
+        return data.size();
     }
 
     bool close() noexcept override 

@@ -15,6 +15,7 @@ struct TestClientContext
         MqttClientOptions options{ cleanMqtt::TickMode::SYNC };
 
         auto env{ TestEnvironment() };
+        env.config = config;
 
         client = new cleanMqtt::mqtt::MqttClient(&env, options);
 
