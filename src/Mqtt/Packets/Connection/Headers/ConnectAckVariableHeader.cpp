@@ -16,7 +16,7 @@ namespace cleanMqtt
 			flags.overrideFlags(buffer.readUint8());
 			reasonCode = static_cast<ConnectReasonCode>(buffer.readUint8());
 
-			result = std::move(properties.decode(buffer));
+			result = properties.decode(buffer);
 
 			return result;
 		}

@@ -52,8 +52,8 @@ namespace cleanMqtt
 		private:
 			FixedHeader m_fixedHeader;
 
-			std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
 			std::vector<IDecodeHeader*> m_otherDecodeHeaders;
+			std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
 			ByteBuffer m_dataBuffer;
 		};
 	}

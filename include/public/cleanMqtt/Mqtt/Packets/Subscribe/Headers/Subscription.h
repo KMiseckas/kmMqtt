@@ -3,7 +3,7 @@
 
 
 #include "cleanMqtt/Mqtt/Packets/Subscribe/Flags/SubscribeOptionsFlags.h"
-#include "cleanMQtt/Mqtt/Packets/DataTypes.h"
+#include "cleanMqtt/Mqtt/Packets/DataTypes.h"
 #include <cstdint>
 #include <vector>
 

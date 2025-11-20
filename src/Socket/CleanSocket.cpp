@@ -1,3 +1,4 @@
+#if defined(_WIN32) || defined(_WIN64)
 #include <cleanMqtt/Sockets/CleanSocket.h>
 #include <cleanMqtt/Logger/Log.h>
 
@@ -13,7 +14,7 @@ namespace cleanMqtt
 			}
 		}
 
-		const bool CleanSocket::connect(const char* ip, const char* port)
+		bool CleanSocket::connect(const char* ip, const char* port)
 		{
 #if _WIN32
 			printf("Starting socket initialization.\n");
@@ -90,7 +91,7 @@ namespace cleanMqtt
 			return true;
 		}
 
-		const bool CleanSocket::send(const void* data, const int size, int& outBytesSent)
+		bool CleanSocket::send(const void* data, const int size, int& outBytesSent)
 		{
 			if (data == nullptr || size == 0)
 			{
@@ -109,7 +110,7 @@ namespace cleanMqtt
 			return true;
 		}
 
-		const bool CleanSocket::receive(void* outBuffer, const int maxBufferLength, int& outBytesReceived)
+		bool CleanSocket::receive(void* outBuffer, const int maxBufferLength, int& outBytesReceived)
 		{
 			if (outBuffer == nullptr)
 			{
@@ -128,7 +129,7 @@ namespace cleanMqtt
 			return true;
 		}
 
-		const bool CleanSocket::kill()
+		bool CleanSocket::kill()
 		{
 			if (!IS_VALID_SOCKET(m_socket))
 			{
@@ -147,7 +148,7 @@ namespace cleanMqtt
 			return true;
 		}
 
-		const bool CleanSocket::setOption(const int option, const void* val, const int length)
+		bool CleanSocket::setOption(const int option, const void* val, const int length)
 		{
 #ifdef _WIN32
 			if (setsockopt(m_socket, SOL_SOCKET, option, static_cast<const char*>(val), length) != SUCCESS)
@@ -176,7 +177,7 @@ namespace cleanMqtt
 			return true;
 		}
 
-		const bool CleanSocket::disableBlocking()
+		bool CleanSocket::disableBlocking()
 		{
 #ifdef _WIN32
 			u_long nonBlockingMode = 1;
@@ -195,3 +196,5 @@ namespace cleanMqtt
 		}
 	}
 }
+
+#endif //defined(_WIN32) || defined(_WIN64)

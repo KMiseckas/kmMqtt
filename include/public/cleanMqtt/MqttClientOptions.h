@@ -59,15 +59,25 @@ namespace cleanMqtt
 		{
 			if (getTickMode() == TickMode::ASYNC)
 			{
-				m_callbackDispatcher = callbackDispatcher == nullptr || typeid(*callbackDispatcher) == typeid(DefaultDispatcher) ? 
-					std::make_shared<ImmediateDispatcher>() :
-					callbackDispatcher;
+				if (callbackDispatcher == nullptr)
+				{
+					m_callbackDispatcher = std::make_shared<ImmediateDispatcher>();
+				}
+				else if (std::dynamic_pointer_cast<DefaultDispatcher>(callbackDispatcher) != nullptr)
+				{
+					m_callbackDispatcher = std::make_shared<ImmediateDispatcher>();
+				}
+				else
+				{
+					m_callbackDispatcher = callbackDispatcher;
+				}
+
 				m_useInternalCallbackDeferrer = false;
 			}
 			else
 			{
 				m_callbackDispatcher = callbackDispatcher == nullptr ? std::make_shared<DefaultDispatcher>() : callbackDispatcher;
-				m_useInternalCallbackDeferrer = typeid(*m_callbackDispatcher) == typeid(DefaultDispatcher);
+				m_useInternalCallbackDeferrer = std::dynamic_pointer_cast<DefaultDispatcher>(m_callbackDispatcher) != nullptr;
 			}
 
 			return *this;

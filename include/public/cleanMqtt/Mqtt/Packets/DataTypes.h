@@ -18,6 +18,7 @@ namespace cleanMqtt
 		struct MqttDataType
 		{
 		public:
+			virtual ~MqttDataType() {};
 			virtual std::size_t encodingSize() const noexcept = 0;
 			virtual void encode(ByteBuffer& buffer) const = 0;
 		};
@@ -113,7 +114,7 @@ namespace cleanMqtt
 				return m_bytes;
 			}
 
-			void encode(ByteBuffer& buffer) const
+			void encode(ByteBuffer& buffer) const override
 			{
 				buffer.append(m_size);
 				buffer.append(m_bytes, m_size);
@@ -236,7 +237,7 @@ namespace cleanMqtt
 				return static_cast<std::size_t>(m_size);
 			}
 
-			void encode(ByteBuffer& buffer) const
+			void encode(ByteBuffer& buffer) const override
 			{
 				const std::uint32_t length = uint32EncodedBytes();
 				static constexpr std::size_t maxBytesShift = sizeof(std::uint32_t) - 1;
@@ -269,7 +270,7 @@ namespace cleanMqtt
 			}
 
 			VariableByteInteger(const ByteBuffer& buffer)
-				:m_size(1), m_value(0), m_encodedValue(0)
+				: m_value(0), m_size(1), m_encodedValue(0)
 			{
 				decode(buffer);
 			}
@@ -327,8 +328,8 @@ namespace cleanMqtt
 				}
 			}
 
-			std::uint8_t m_size{ 1 };
 			std::uint32_t m_value{ 0 };
+			std::uint8_t m_size{ 1 };
 			std::uint32_t m_encodedValue{ 0 };
 		};
 
@@ -454,7 +455,7 @@ namespace cleanMqtt
 				return static_cast<std::size_t>(m_size) + sizeof(m_size);
 			}
 
-			void encode(ByteBuffer& buffer) const
+			void encode(ByteBuffer& buffer) const override
 			{
 				buffer.append(m_size);
 				buffer.append(m_bytes, m_size);
@@ -530,7 +531,7 @@ namespace cleanMqtt
 				return m_first.encodingSize() + m_second.encodingSize();
 			}
 
-			void encode(ByteBuffer& buffer) const
+			void encode(ByteBuffer& buffer) const override
 			{
 				m_first.encode(buffer);
 				m_second.encode(buffer);

@@ -1,5 +1,6 @@
 #include <doctest.h>
 #include <cleanMqtt/Mqtt/TopicAliases.h>
+#include <cstring>
 
 TEST_SUITE("Topic Aliases")
 {

@@ -61,7 +61,7 @@ public:
         bb.append(data.bytes(), data.size());
 
         sentPackets.push_back(std::move(bb));
-        return data.size();
+        return (int)data.size();
     }
 
     bool close() noexcept override 

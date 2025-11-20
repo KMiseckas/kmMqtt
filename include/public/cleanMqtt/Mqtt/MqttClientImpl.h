@@ -7,17 +7,13 @@
 #include <cleanMqtt/Interfaces/IMqttEnvironment.h>
 #include "cleanMqtt/Mqtt/ClientError.h"
 #include "cleanMqtt/Mqtt/Enums/ConnectionStatus.h"
-#include "cleanMqtt/Mqtt/Enums/ReconnectionStatus.h"
 #include "cleanMqtt/Mqtt/MqttClientEvents.h"
 #include "cleanMqtt/Mqtt/MqttConnectionInfo.h"
-#include "cleanMqtt/Mqtt/Packets/Connection/Connect.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/PublishAck.h"
-#include "cleanMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h"
 #include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
-#include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribe.h"
 #include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribeAck.h"
 #include "cleanMqtt/Mqtt/Params/ConnectArgs.h"
 #include "cleanMqtt/Mqtt/Params/DisconnectArgs.h"
@@ -26,18 +22,17 @@
 #include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/UnSubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/Topic.h"
-#include "cleanMqtt/Mqtt/State/SubAckTopicReason.h"
 #include "cleanMqtt/Mqtt/Transport/ReceiveQueue.h"
 #include "cleanMqtt/Mqtt/Transport/SendQueue.h"
 #include "cleanMqtt/Utils/Deferrer.h"
 #include "cleanMqtt/Utils/PacketIdPool.h" 
 #include "cleanMqtt/MqttClientOptions.h"
 
-#include <cstring>
+#include <atomic>
 #include <memory>
-#include <queue>
 #include <mutex>
-#include <functional>
+#include <thread>
+#include <condition_variable>
 
 namespace cleanMqtt
 {
@@ -142,8 +137,6 @@ else\
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
 
-			std::shared_ptr<IWebSocket> m_socket{ nullptr };
-
 			events::Deferrer m_eventDeferrer;
 			ErrorEvent m_errorEvent;
 			ConnectEvent m_connectEvent;
@@ -168,6 +161,7 @@ else\
 			Config m_config;
 			PacketIdPool m_packetIdPool;
 
+			std::shared_ptr<IWebSocket> m_socket{ nullptr };
 			ByteBuffer m_leftOverBuffer{ 0U };
 		};
 	}

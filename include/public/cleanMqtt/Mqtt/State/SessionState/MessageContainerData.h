@@ -68,8 +68,8 @@ namespace cleanMqtt
 				}
 			}
 
-			bool canRetry{ false };
 			TimePoint nextRetryTime;
+			bool canRetry{ false };
 			SavedData data;
 		};
 	}

@@ -1,3 +1,4 @@
+#if defined(_WIN32) || defined(_WIN64)
 #include "cleanMqtt/Sockets/DefaultWinWebsocket.h"
 
 namespace cleanMqtt
@@ -235,3 +236,4 @@ namespace cleanMqtt
 		return "N/A";
 	}
 }
+#endif //defined(_WIN32) || defined(_WIN64)

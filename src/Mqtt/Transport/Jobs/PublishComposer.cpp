@@ -30,7 +30,7 @@ namespace cleanMqtt
 
 		void PublishComposer::cancel() noexcept
 		{
-			
+			m_packetIdPool->releaseId(m_packetId);
 		}
 	}
 }

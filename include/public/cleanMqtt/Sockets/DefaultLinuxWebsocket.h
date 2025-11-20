@@ -1,35 +1,22 @@
-#if defined(_WIN32) || defined(_WIN64)
-
-#ifndef INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H
-#define INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H
+#ifndef INCLUDE_PUBLIC_CLEANMQTT_SOCKETS_DEFAULTLINUXWEBSOCKET_H
+#define INCLUDE_PUBLIC_CLEANMQTT_SOCKETS_DEFAULTLINUXWEBSOCKET_H
 
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <string>
-#include <functional>
-#include <vector>
-#include <iostream>
-#include <mutex>
-#include <thread>
-
-#pragma comment(lib, "Ws2_32.lib")
-
 namespace cleanMqtt
 {
-	class PUBLIC_API DefaultWinWebsocket : public IWebSocket
+	class PUBLIC_API DefaultLinuxWebsocket : public IWebSocket
 	{
 	public:
-		DefaultWinWebsocket();
-		~DefaultWinWebsocket() override;
+		DefaultLinuxWebsocket();
+		~DefaultLinuxWebsocket() override;
 
 		bool connect(const std::string& hostname, const std::string& port = "80") noexcept override;
 		int send(const ByteBuffer& data) noexcept override;
 		bool close() noexcept override;
 		void tick() noexcept override;
-
 		bool isConnected() const noexcept override;
+
 		int getLastError() const noexcept override;
 		int getLastCloseCode() const noexcept override;
 		const char* getLastCloseReason() const noexcept override;
@@ -38,34 +25,7 @@ namespace cleanMqtt
 		void setOnDisconnectCallback(OnDisconnectCallback callback) noexcept override { m_onDisconnectCallback = std::move(callback); }
 		void setOnRecvdCallback(OnRecvdCallback callback) noexcept override { m_onRecvdCallback = std::move(callback); }
 		void setOnErrorCallback(OnErrorCallback callback) noexcept override { m_onErrorCallback = std::move(callback); }
-
 	private:
-
-		inline void logInfo(const char* msg)
-		{
-			std::string logMsg{ "[WinSocket]" };
-			logMsg.append(msg).append("\n");
-
-#ifdef _WIN32
-			OutputDebugStringA(logMsg.c_str());
-#endif
-		}
-
-		inline void logError(const char* prefixMsg)
-		{
-			std::string msg{ "[WinSocket]" };
-			msg.append(prefixMsg);
-			msg.append(std::to_string(WSAGetLastError())).append("\n");
-
-#ifdef _WIN32
-			OutputDebugStringA(msg.c_str());
-#endif
-		}
-
-		WSAEVENT m_event{};
-
-		SOCKET m_socket{};
-		bool m_connected{ false };
 
 		OnConnectCallback m_onConnectCallback;
 		OnDisconnectCallback m_onDisconnectCallback;
@@ -74,5 +34,4 @@ namespace cleanMqtt
 	};
 }
 
-#endif //INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H 
-#endif //defined(_WIN32) || defined(_WIN64)
+#endif

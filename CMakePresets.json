@@ -23,6 +23,25 @@
       }
     },
     {
+      "name": "linux-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "cacheVariables": {
+        "ENABLE_BYTEBUFFER_SBO": true,
+        "BYTEBUFFER_SBO_MAX_SIZE": 256,
+        "ENABLE_UNIQUEFUNCTION_SBO": true,
+        "UNIQUEFUNCTION_SBO_MAX_SIZE": 32,
+        "LOG_BUFFER_SIZE": 2048
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
       "name": "x64-debug",
       "displayName": "x64 Debug",
       "inherits": "windows-base",
@@ -75,6 +94,30 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
+    },
+    {
+      "name": "linux-gcc-coverage",
+      "displayName": "Linux GCC Coverage",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "ENABLE_COVERAGE": true,
+        "BUILD_UNIT_TESTS": true,
+      }
+    },
+    {
+      "name": "linux-clang-coverage",
+      "displayName": "Linux Clang Coverage",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ENABLE_COVERAGE": true,
+        "BUILD_UNIT_TESTS": true,
+      }
     }
   ],
   "testPresets": [
@@ -83,6 +126,18 @@
       "displayName": "Custom Test Preset",
       "description": "Custom test preset description",
       "configurePreset": "x64-debug"
+    },
+    {
+      "name": "coverage-gcc",
+      "displayName": "Coverage Test Preset (GCC)",
+      "description": "Run tests with GCC coverage",
+      "configurePreset": "linux-gcc-coverage"
+    },
+    {
+      "name": "coverage-clang",
+      "displayName": "Coverage Test Preset (Clang)",
+      "description": "Run tests with Clang coverage",
+      "configurePreset": "linux-clang-coverage"
     }
   ]
 }

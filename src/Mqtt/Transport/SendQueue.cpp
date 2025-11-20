@@ -89,7 +89,7 @@ namespace cleanMqtt
 			{
 				LogInfo("SendQueue", "Failed send queue processing.");
 
-				static constexpr char* rsnStr{ "Reached max consecutive failed retries." };
+				static constexpr const char* rsnStr{ "Reached max consecutive failed retries." };
 
 				outResult.isRecoverable = false;
 				outResult.unrecoverableReasonStr = rsnStr;
@@ -192,7 +192,7 @@ namespace cleanMqtt
 					outResult.controlPacketSent = true;
 					outResult.totalBytesSent = sendResult;
 
-					if (sendResult == m_sendBuffer.size())
+					if (sendResult == static_cast<int>(m_sendBuffer.size()))
 					{
 						if (hasPingPacket)
 						{
@@ -216,7 +216,7 @@ namespace cleanMqtt
 					{
 						if (hasPingPacket)
 						{
-							if (sendResult >= pingPacketLastByte)
+							if (sendResult >= static_cast<int>(pingPacketLastByte))
 							{
 								//Ping packet was sent successfully.
 								m_onPingSentCallback();

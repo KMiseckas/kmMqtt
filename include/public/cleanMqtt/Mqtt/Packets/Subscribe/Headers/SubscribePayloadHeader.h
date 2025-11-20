@@ -17,7 +17,7 @@ namespace cleanMqtt
 			SubscribePayloadHeader(std::vector<Subscription>&& subscriptions) noexcept;
 
 			void encode(ByteBuffer& buffer) const override;
-			std::size_t getEncodedBytesSize() const noexcept;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
 			std::vector<Subscription> subscriptions;
 		};

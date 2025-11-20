@@ -2,10 +2,10 @@
 #define INCLUDE_CLEANMQTT_BYTEBUFFER_H
 
 #include <cleanMqtt/GlobalMacros.h>
-#include <cstdint>
 #include <stdexcept>
 #include <exception>
 #include <bitset>
+#include <cstring>
 
 namespace cleanMqtt
 {
@@ -57,7 +57,7 @@ namespace cleanMqtt
 		/**
 		 * @brief Constructs a ByteBuffer with default capacity using SBO if enabled.
 		 */
-		ByteBuffer() noexcept : m_capacity(0), m_size(0U)
+		ByteBuffer() noexcept : m_size(0U), m_capacity(0)
 		{
 		}
 
@@ -67,7 +67,7 @@ namespace cleanMqtt
 		 * Uses SBO if enabled and capacity is small enough.
 		 */
 		ByteBuffer(std::size_t capacity) noexcept
-			: m_capacity(capacity), m_size(0U)
+			: m_size(0U), m_capacity(capacity)
 		{
 			if (capacity > BYTEBUFFER_SBO_MAX_SIZE)
 			{
@@ -199,7 +199,7 @@ namespace cleanMqtt
 		/**
 		 * @brief Reads a single byte from the buffer at the current read cursor position and advances the cursor.
 		 */
-		const std::uint8_t readUint8() const
+		std::uint8_t readUint8() const
 		{
 			BYTEBUFFER_READ_CHECK(m_readCursor)
 
@@ -209,7 +209,7 @@ namespace cleanMqtt
 		/**
 		 * @brief Reads a 16-bit unsigned integer from the buffer at the current read cursor position and advances the cursor by 2 bytes.
 		 */
-		const std::uint16_t readUInt16() const
+		std::uint16_t readUInt16() const
 		{
 			BYTEBUFFER_READ_CHECK(m_readCursor + 1)
 
@@ -221,7 +221,7 @@ namespace cleanMqtt
 		/**
 		 * @brief Reads a 32-bit unsigned integer from the buffer at the current read cursor position and advances the cursor by 4 bytes.
 		 */
-		const std::uint32_t readUInt32() const
+		std::uint32_t readUInt32() const
 		{
 			BYTEBUFFER_READ_CHECK(m_readCursor + 3)
 
@@ -451,8 +451,8 @@ namespace cleanMqtt
 #else
 		std::uint8_t* m_bytes{ nullptr };
 #endif
-		std::size_t m_capacity{ BYTEBUFFER_SBO_MAX_SIZE };
 		std::size_t m_size{ 0U };
+		std::size_t m_capacity{ BYTEBUFFER_SBO_MAX_SIZE };
 		mutable std::size_t m_readCursor{ 0U };
 	};
 

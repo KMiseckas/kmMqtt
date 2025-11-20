@@ -1,5 +1,4 @@
 #include <mqttClient/Model/SessionModel.h>
-#include <cleanMqtt/Environments/DefaultWinEnv.h>
 
 SessionModel::SessionModel()
 {

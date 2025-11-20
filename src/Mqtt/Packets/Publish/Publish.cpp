@@ -5,9 +5,9 @@ namespace cleanMqtt
 	namespace mqtt
 	{
 		Publish::Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept
-			:m_payloadHeader{ new PublishPayloadHeader(std::move(payloadHeader)) },
-			m_variableHeader{ new PublishVariableHeader(std::move(variableHeader)) },
-			BasePacket(flags)
+			:BasePacket(flags),
+			m_payloadHeader{ new PublishPayloadHeader(std::move(payloadHeader)) },
+			m_variableHeader{ new PublishVariableHeader(std::move(variableHeader)) }
 		{
 			setUpHeaders();
 		}

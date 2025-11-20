@@ -1,5 +1,6 @@
+#if defined(_WIN32) || defined(_WIN64)
 #include <cleanMqtt/Environments/DefaultWinEnv.h>
-#include <cleanMqtt/Logger/LoggerInstance.h>
+#include <cleanMqtt/Sockets/DefaultWinWebsocket.h>
 
 namespace cleanMqtt
 {
@@ -13,3 +14,5 @@ namespace cleanMqtt
 		return std::make_shared<DefaultWinWebsocket>();
 	}
 } // namespace cleanMqtt
+
+#endif // defined(_WIN32) || defined(_WIN64)

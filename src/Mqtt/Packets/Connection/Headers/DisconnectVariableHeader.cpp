@@ -42,7 +42,7 @@ namespace cleanMqtt
 			DecodeResult result;
 
 			reasonCode = static_cast<DisconnectReasonCode>(buffer.readUint8());
-			result = std::move(properties.decode(buffer));
+			result = properties.decode(buffer);
 
 			return result;
 		}

@@ -14,7 +14,7 @@ namespace cleanMqtt
     {
         class MqttClient;
         struct PublishEventDetails;
-        struct Publish;
+        class Publish;
     }
 }
 

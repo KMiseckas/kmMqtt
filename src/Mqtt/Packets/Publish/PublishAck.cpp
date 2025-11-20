@@ -5,8 +5,7 @@ namespace cleanMqtt
 	namespace mqtt
 	{
 		PublishAck::PublishAck(PubAckVariableHeader&& variableHeader) noexcept
-			: m_variableHeader{ new PubAckVariableHeader(std::move(variableHeader)) },
-			BasePacket(FixedHeaderFlags(0U))
+			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ new PubAckVariableHeader(std::move(variableHeader)) }
 		{
 			setUpHeaders();
 		}

@@ -22,30 +22,27 @@ namespace cleanMqtt
 
 	namespace events
 	{
-		namespace
+		struct ICallable
 		{
-			struct ICallable
+			virtual ~ICallable() {}
+			virtual void call() noexcept = 0;
+		};
+
+		template<typename TFunc>
+		struct Callable : ICallable
+		{
+			explicit Callable(TFunc&& f)
+				: func(std::move(f))
 			{
-				virtual ~ICallable() {}
-				virtual void call() noexcept = 0;
-			};
+			}
 
-			template<typename TFunc>
-			struct Callable : ICallable
+			void call() noexcept override
 			{
-				explicit Callable(TFunc&& f)
-					: func(std::move(f))
-				{
-				}
+				func();
+			}
 
-				void call() noexcept override
-				{
-					func();
-				}
-
-				TFunc func;
-			};
-		}
+			TFunc func;
+		};
 
 		class Deferrer
 		{

@@ -40,8 +40,8 @@ namespace cleanMqtt
 		class PUBLIC_API MqttClient
 		{
 		public:
-			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
-			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient);
+			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient)
+			DELETE_MOVE_ASSIGNMENT_AND_CONSTRUCTOR(MqttClient)
 
 			/**
 			* @brief Constructs a default MqttClient instance.

@@ -27,8 +27,8 @@ namespace cleanMqtt
 			void setUpHeaders() noexcept;
 			void onFixedHeaderDecoded() const override;
 
-			PublishVariableHeader* m_variableHeader{ nullptr };
 			PublishPayloadHeader* m_payloadHeader{ nullptr };
+			PublishVariableHeader* m_variableHeader{ nullptr };
 		};
 	}
 }

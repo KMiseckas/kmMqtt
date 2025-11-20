@@ -149,58 +149,59 @@ namespace cleanMqtt
 			PropertyDataType::BINARY_DATA
 		};
 
-		using DecoderFunc = void* (*)(const ByteBuffer& buffer);
-		using EncoderFunc = void (*)(ByteBuffer& buffer, PropertyType propertyType, const void* data);
+		using DecoderFunc = void* (*)(const ByteBuffer&);
+		using EncoderFunc = void (*)(ByteBuffer&, const PropertyType&, const void*);
+		using DestructorFunc = void(*)(void*);
 
 		namespace propertyEncodings
 		{
-			void encode(ByteBuffer& buffer, PropertyType property, const void* data);
+			void encode(ByteBuffer& buffer, const PropertyType& property, const void* data);
 
 			namespace
 			{
-				void encodeUInt8(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeUInt8(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const std::uint8_t*>(data);
 					buffer += static_cast<std::uint8_t>(property);
 					buffer += *castData;
 				}
 
-				void encodeUInt16(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeUInt16(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const std::uint16_t*>(data);
 					buffer += static_cast<std::uint8_t>(property);
 					buffer.append(*castData);
 				}
 
-				void encodeUInt32(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeUInt32(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const std::uint32_t*>(data);
 					buffer += static_cast<std::uint8_t>(property);
 					buffer.append(*castData);
 				}
 
-				void encodeUTF8String(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeUTF8String(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const UTF8String*>(data);
 					buffer += static_cast<std::uint8_t>(property);
 					castData->encode(buffer);
 				}
 
-				void encodeUTF8StringPair(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeUTF8StringPair(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const UTF8StringPair*>(data);
 					buffer += static_cast<std::uint8_t>(property);
 					castData->encode(buffer);
 				}
 
-				void encodeVariableByteInteger(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeVariableByteInteger(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const VariableByteInteger*>(data);
 					buffer += static_cast<std::uint8_t>(property);
 					castData->encode(buffer);
 				}
 
-				void encodeBinaryData(ByteBuffer& buffer, PropertyType property, const void* data)
+				void encodeBinaryData(ByteBuffer& buffer, const PropertyType& property, const void* data)
 				{
 					const auto castData = static_cast<const BinaryData*>(data);
 					buffer += static_cast<std::uint8_t>(property);
@@ -211,7 +212,7 @@ namespace cleanMqtt
 
 		namespace propertyDecodings
 		{
-			void* decode(const ByteBuffer& buffer, PropertyType property);
+			void* decode(const ByteBuffer& buffer, const PropertyType& property);
 
 			namespace
 			{
@@ -252,6 +253,49 @@ namespace cleanMqtt
 					auto bd = new BinaryData();
 					bd->decode(buffer);
 					return bd;
+				}
+			}
+		}
+
+		namespace propertyDestructors
+		{
+			void destruct(void* data, const PropertyType& property);
+
+			namespace
+			{
+				void destructUInt8(void* data)
+				{
+					delete static_cast<std::uint8_t*>(data);
+				}
+
+				void destructUInt16(void* data)
+				{
+					delete static_cast<std::uint16_t*>(data);
+				}
+
+				void destructUInt32(void* data)
+				{
+					delete static_cast<std::uint32_t*>(data);
+				}
+
+				void destructUTF8String(void* data)
+				{
+					delete static_cast<UTF8String*>(data);
+				}
+
+				void destructUTF8StringPair(void* data)
+				{
+					delete static_cast<UTF8StringPair*>(data);
+				}
+
+				void destructVariableByteInteger(void* data)
+				{
+					delete static_cast<VariableByteInteger*>(data);
+				}
+
+				void destructBinaryData(void* data)
+				{
+					delete static_cast<BinaryData*>(data);
 				}
 			}
 		}
@@ -365,6 +409,39 @@ namespace cleanMqtt
 		};
 
 		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeDecodersZeroIndexed) / sizeof(DecoderFunc), "k_propertyTypeDecodersZeroIndexed size mismatch!");
+
+		constexpr DestructorFunc k_propertyTypeDestructorsZeroIndexed[43/**PropertyType::_COUNT*/]
+		{
+			propertyDestructors::destructUInt8,//PAYLOAD_FORMAT_INDICATOR
+			propertyDestructors::destructUInt32,//MESSAGE_EXPIRY_INTERVAL
+			propertyDestructors::destructUTF8String,//CONTENT_TYPE
+			propertyDestructors::destructUTF8String,//RESPONSE_TOPIC
+			propertyDestructors::destructBinaryData,//CORRELATION_DATA
+			propertyDestructors::destructVariableByteInteger,//SUBSCRIPTION_IDENTIFIER
+			propertyDestructors::destructUInt32,//SESSION_EXPIRY_INTERVAL
+			propertyDestructors::destructUTF8String,//ASSIGNED_CLIENT_IDENTIFIER
+			propertyDestructors::destructUInt16,//SERVER_KEEP_ALIVE
+			propertyDestructors::destructUTF8String,//AUTHENTICATION_METHOD
+			propertyDestructors::destructBinaryData,//AUTHENTICATION_DATA
+			propertyDestructors::destructUInt8,//REQUEST_PROBLEM_INFORMATION
+			propertyDestructors::destructUInt32,//WILL_DELAY_INTERVAL
+			propertyDestructors::destructUInt8,//REQUEST_RESPONSE_INFORMATION
+			propertyDestructors::destructUTF8String,//RESPONSE_INFORMATION
+			propertyDestructors::destructUTF8String,//SERVER_REFERENCE
+			propertyDestructors::destructUTF8String,//REASON_STRING
+			propertyDestructors::destructUInt16,//RECEIVE_MAXIMUM
+			propertyDestructors::destructUInt16,//TOPIC_ALIAS_MAXIMUM
+			propertyDestructors::destructUInt16,//TOPIC_ALIAS
+			propertyDestructors::destructUInt8,//MAXIMUM_QOS
+			propertyDestructors::destructUInt8,//RETAIN_AVAILABLE
+			propertyDestructors::destructUTF8StringPair,//USER_PROPERTY
+			propertyDestructors::destructUInt32,//MAXIMUM_PACKET_SIZE
+			propertyDestructors::destructUInt8,//WILDCARD_SUBSCRIPTION_AVAILABLE
+			propertyDestructors::destructUInt8,//SUBSCRIPTION_IDENTIFIER_AVAILABLE
+			propertyDestructors::destructUInt8//SHARED_SUBSCRIPTION_AVAILABLE
+		};
+
+		static_assert(static_cast<std::size_t>(PropertyType::_COUNT) == sizeof(k_propertyTypeDestructorsZeroIndexed) / sizeof(DestructorFunc), "k_propertyTypeDestructorsZeroIndexed size mismatch!");
 
 		/**
 		 * Mapping from PropertyType to its encoder function.

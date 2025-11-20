@@ -2,6 +2,7 @@
 #define INCLUDE_CLEANMQTT_MQTT_TOPIC_ALIASES_H
 
 #include <unordered_map>
+#include <cstdint>
 
 namespace cleanMqtt
 {

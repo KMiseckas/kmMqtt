@@ -77,9 +77,9 @@ namespace cleanMqtt
 
 		private:
 			const char* m_clientId;
-            Milliseconds m_sessionExpiryInterval;
             Milliseconds m_retryInterval;
-			ISessionStatePersistantStore* m_persistantStore{ nullptr };
+            ISessionStatePersistantStore* m_persistantStore{ nullptr };
+            Milliseconds m_sessionExpiryInterval;
             MessageContainer m_messages{};
 			mutable std::mutex m_mutex{};
 		};

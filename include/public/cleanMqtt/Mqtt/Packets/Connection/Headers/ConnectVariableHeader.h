@@ -23,12 +23,12 @@ namespace cleanMqtt
 				Properties&& properties) noexcept;
 
 			void encode(ByteBuffer& buffer) const override;
-			std::size_t getEncodedBytesSize() const noexcept;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
 			UTF8String protocolName{ "" };
 			MqttVersion protocolLevel{ MqttVersion::MQTT_5_0 };
-			EncodedConnectFlags flags;
 			std::uint16_t keepAliveInSec{ 0 };
+			EncodedConnectFlags flags;
 			Properties properties;
 		};
 	}

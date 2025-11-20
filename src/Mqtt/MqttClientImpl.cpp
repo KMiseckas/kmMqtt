@@ -16,9 +16,9 @@ namespace cleanMqtt
 	namespace mqtt
 	{
 		MqttClientImpl::MqttClientImpl(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions)
-			: m_config(env->createConfig()),
-			m_socket(env->createWebSocket()),
-			m_clientOptions{clientOptions}
+			: m_clientOptions{ clientOptions },
+			m_config(env->createConfig()),
+			m_socket(env->createWebSocket())
 		{
 			if (getLogger() == nullptr)
 			{
@@ -1317,7 +1317,7 @@ namespace cleanMqtt
 			{
 				const bool hasAck{ result.packetType == PacketType::CONNECT_ACKNOWLEDGE };
 
-				DISPATCH_EVENT_TO_CONSUMER([&, hA = hasAck, p = std::move(ConnectAck{})]() {m_connectEvent({ false, hA, ClientErrorCode::Failed_Decoding_Packet }, p); });
+				DISPATCH_EVENT_TO_CONSUMER([&, hA = hasAck, p = ConnectAck{}]() {m_connectEvent({ false, hA, ClientErrorCode::Failed_Decoding_Packet }, p); });
 			}
 
 			DISPATCH_EVENT_TO_CONSUMER([&]() {m_errorEvent({ ClientErrorCode::Failed_Decoding_Packet, args.disconnectReasonText.c_str() }, {}); });
@@ -1339,7 +1339,7 @@ namespace cleanMqtt
 
 			const ByteBuffer& bufferRef{ packet.getDataBuffer() };
 
-			if (m_socket->send(bufferRef) == bufferRef.size())
+			if (static_cast<std::size_t>(m_socket->send(bufferRef)) == bufferRef.size())
 			{
 				LogTrace("MqttClient", "Packet sent, Bytes: %s.", bufferRef.toString().c_str());
 				return 0;

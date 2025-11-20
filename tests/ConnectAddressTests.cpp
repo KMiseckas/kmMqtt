@@ -35,7 +35,7 @@ TEST_SUITE("ConnectAddress Tests")
 	{
 		SUBCASE("Singles")
 		{
-			auto& addresses = Address::toAddress(k_ipv4_1);
+			auto addresses = Address::toAddress(k_ipv4_1);
 			CHECK(addresses.size() == 1);
 			CHECK(addresses[0].hostname() == k_ipv4_1_hostname);
 			CHECK(addresses[0].port() == k_ipv4_1_port);
@@ -61,7 +61,7 @@ TEST_SUITE("ConnectAddress Tests")
 				.append(k_ipv6_1).append(" ")
 				.append(k_url_1);
 
-			auto& addresses = Address::toAddress(addressesTxt.c_str());
+			auto addresses = Address::toAddress(addressesTxt.c_str());
 			CHECK(addresses.size() == 3);
 			CHECK(addresses[0].hostname() == k_ipv4_1_hostname);
 			CHECK(addresses[0].port() == k_ipv4_1_port);
@@ -82,7 +82,7 @@ TEST_SUITE("ConnectAddress Tests")
 			.append(k_ipv6_1).append(" ")
 			.append(k_url_1);
 
-		auto& addresses = Address::toAddress(addressesTxt.c_str());
+		auto addresses = Address::toAddress(addressesTxt.c_str());
 		const auto temp{ addresses[0] };
 		addresses.erase(addresses.begin());
 
@@ -105,7 +105,7 @@ TEST_SUITE("ConnectAddress Tests")
 			.append(k_ipv6_1).append(" ")
 			.append(k_url_1);
 
-		auto& addresses = Address::toAddress(addressesTxt.c_str());
+		auto addresses = Address::toAddress(addressesTxt.c_str());
 		const auto temp{ addresses[0] };
 		addresses.erase(addresses.begin());
 

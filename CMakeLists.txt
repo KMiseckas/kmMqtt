@@ -128,17 +128,71 @@ endif()
 
 if(BUILD_UNIT_TESTS)
     add_subdirectory(tests)
+endif()
 
-    if(ENABLE_UNIT_TESTS)
-        enable_testing()
+#Add coverage report generation if coverage is enabled
+if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
-        add_custom_target(run_tests
-            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-            DEPENDS ${PROJECT_NAME}
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set(COVERAGE_LINK_FLAGS --coverage)
+        set(COVERAGE_COMPILE_FLAGS -O0 -g --coverage)
+    elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        set(COVERAGE_FLAGS -O0 -g -fprofile-instr-generate -fcoverage-mapping)
+    else()
+        message(WARNING "Code coverage is only supported with GCC or Clang")
+        set(COVERAGE_FLAGS "")
+    endif()
+
+    target_compile_options(${PROJECT_NAME} PRIVATE ${COVERAGE_COMPILE_FLAGS})
+    target_link_options(${PROJECT_NAME} PRIVATE ${COVERAGE_LINK_FLAGS})
+
+    target_compile_options(cleanMqttTests PRIVATE ${COVERAGE_COMPILE_FLAGS})
+    target_link_options(cleanMqttTests PRIVATE ${COVERAGE_LINK_FLAGS})
+
+    set(COVERAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/coverage")
+            
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        # GCC coverage with lcov
+        find_program(LCOV_PATH lcov REQUIRED)
+        find_program(GENHTML_PATH genhtml REQUIRED)
+                
+        message(STATUS "Coverage report will be generated with lcov at ${COVERAGE_OUTPUT_DIR}")
+                    
+        add_custom_target(coverage_report
+            COMMAND ${CMAKE_COMMAND} -E echo "Generating coverage report with lcov..."
+            COMMAND ${CMAKE_COMMAND} -E remove_directory "${COVERAGE_OUTPUT_DIR}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_OUTPUT_DIR}"
+            COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage.info
+            COMMAND ${LCOV_PATH} --remove coverage.info '*/_deps/*' '/usr/*' '*/tests/*' '*/examples/*' '*/benchmarks/*' --output-file coverage_filtered.info --ignore-errors unused
+            COMMAND ${GENHTML_PATH} coverage_filtered.info --output-directory coverage --ignore-errors source
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            DEPENDS cleanMqttTests
+            COMMENT "Generating coverage report with lcov"
         )
-
-        add_dependencies(run_tests cleanMqttTests)  # Ensure the 'tests' target is built
+                
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # Clang coverage with llvm-cov
+        find_program(LLVM_PROFDATA_PATH llvm-profdata)
+        find_program(LLVM_COV_PATH llvm-cov)
+                
+        if(LLVM_PROFDATA_PATH AND LLVM_COV_PATH)
+            message(STATUS "Coverage report will be generated with llvm-cov at ${COVERAGE_OUTPUT_DIR}")
+                    
+            add_custom_target(coverage_report
+                COMMAND ${CMAKE_COMMAND} -E echo "Generating coverage report with llvm-cov..."
+                COMMAND ${CMAKE_COMMAND} -E remove_directory "${COVERAGE_OUTPUT_DIR}"
+                COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_OUTPUT_DIR}"
+                COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=default.profraw ${CMAKE_CTEST_COMMAND} --output-on-failure
+                COMMAND ${LLVM_PROFDATA_PATH} merge -sparse default.profraw -o coverage.profdata
+                COMMAND ${LLVM_COV_PATH} show tests/cleanMqttTests -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="(tests|examples|benchmarks|/usr|_deps)"
+                COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated: ${COVERAGE_OUTPUT_DIR}/index.html"
+                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                DEPENDS cleanMqttTests
+                COMMENT "Generating coverage report with llvm-cov"
+            )
+        else()
+            message(WARNING "llvm-profdata and llvm-cov not found. Coverage report will not be generated automatically.")
+        endif()
     endif()
 endif()
 

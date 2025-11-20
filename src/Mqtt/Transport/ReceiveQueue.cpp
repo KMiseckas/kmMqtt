@@ -138,6 +138,18 @@ if (callback != nullptr)\
 					HANDLE_RECEIVED_PACKET(Disconnect, m_DisconnectCallback);
 					break;
 				}
+				//Added to silence -Wswitch warning on some compilers
+				case PacketType::RESERVED:
+				case PacketType::CONNECT:
+				case PacketType::SUBSCRIBE:
+				case PacketType::UNSUBSCRIBE:
+				case PacketType::PING_REQUQEST:
+				case PacketType::AUTH:
+				case PacketType::_COUNT:
+					default:
+					LogError("ReceiveQueue", "Received unsupported packet type: %s", mqtt::k_packetTypeName[static_cast<std::uint8_t>(packetType)]);
+					decodeResult.code = DecodeErrorCode::PROTOCOL_ERROR;
+					return decodeResult;
 				}
 
 				if (!m_inProgressData.empty())

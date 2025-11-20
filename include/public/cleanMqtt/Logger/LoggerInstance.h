@@ -5,7 +5,7 @@
 
 namespace cleanMqtt
 {
-	const ILogger* const getLogger();
+	ILogger* getLogger();
 
 	void setLogger(ILogger* logger, bool deleteOld = true);
 }

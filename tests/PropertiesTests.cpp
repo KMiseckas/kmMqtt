@@ -43,7 +43,7 @@ TEST_SUITE("Properties Tests")
 		CHECK(properties.tryGetProperty<BinaryData>(PropertyType::USER_PROPERTY, dataVec));
 		CHECK(dataVec.empty() == false);
 
-		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(30.5) == false);
+		CHECK(properties.tryAddProperty<PropertyType::MAXIMUM_PACKET_SIZE>(30) == false);
 		CHECK(properties.tryAddProperty<PropertyType::CONTENT_TYPE>(UTF8String("JSON_OVERRIDE")) == false);
 	}
 
@@ -56,10 +56,24 @@ TEST_SUITE("Properties Tests")
 		std::vector<const UTF8StringPair*> userProperties;
 		CHECK(properties.tryGetProperty<UTF8StringPair>(PropertyType::USER_PROPERTY, userProperties));
 		CHECK(userProperties.size() == 2);
-		CHECK(userProperties[0]->first().getString() == "key1");
-		CHECK(userProperties[0]->second().getString() == "value1");
-		CHECK(userProperties[1]->first().getString() == "key2");
-		CHECK(userProperties[1]->second().getString() == "value2");
+		
+		bool foundKey1Value1 = false;
+		bool foundKey2Value2 = false;
+		
+		for (const auto* prop : userProperties)
+		{
+			if (prop->first().getString() == "key1" && prop->second().getString() == "value1")
+			{
+				foundKey1Value1 = true;
+			}
+			if (prop->first().getString() == "key2" && prop->second().getString() == "value2")
+			{
+				foundKey2Value2 = true;
+			}
+		}
+		
+		CHECK(foundKey1Value1);
+		CHECK(foundKey2Value2);
 	}
 
 	TEST_CASE("PropertyType enum matches MQTT Spec")

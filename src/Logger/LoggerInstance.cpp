@@ -4,7 +4,7 @@ namespace cleanMqtt
 {
 	ILogger* m_logger{ nullptr };
 
-	const ILogger* const getLogger()
+	ILogger* getLogger()
 	{
 		return m_logger;
 	}

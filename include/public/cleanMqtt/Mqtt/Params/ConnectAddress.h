@@ -151,9 +151,9 @@ namespace cleanMqtt
 			{
 			}
 
-			LocatorType m_locatorType{ LocatorType::UNKNOWN };
 			std::string m_hostname{ "" };
 			std::string m_port{ "" };
+			LocatorType m_locatorType{ LocatorType::UNKNOWN };
 		};
 
 		struct ConnectAddress

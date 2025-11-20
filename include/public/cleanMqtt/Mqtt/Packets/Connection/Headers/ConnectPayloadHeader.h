@@ -22,7 +22,7 @@ namespace cleanMqtt
 				BinaryData&& password) noexcept;
 
 			void encode(ByteBuffer& buffer) const override;
-			std::size_t getEncodedBytesSize() const noexcept;
+			std::size_t getEncodedBytesSize() const noexcept override;
 
 			UTF8String clientId;
 			Properties willProperties;

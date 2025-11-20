@@ -47,7 +47,7 @@ namespace cleanMqtt
 					correlationData = std::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
 				}
 
-				responseTopic = responseTopic;
+				responseTopic = other.responseTopic;
 				topicAlias = other.topicAlias;
 				messageExpiryInterval = other.messageExpiryInterval;
 				addMessageExpiryInterval = other.addMessageExpiryInterval;
@@ -86,7 +86,7 @@ namespace cleanMqtt
 				}
 
 				correlationData = std::move(other.correlationData);
-				responseTopic = std::move(responseTopic);
+				responseTopic = std::move(other.responseTopic);
 				topicAlias = other.topicAlias;
 				messageExpiryInterval = other.messageExpiryInterval;
 				addMessageExpiryInterval = other.addMessageExpiryInterval;

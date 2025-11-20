@@ -5,6 +5,7 @@
 #include <cleanMqtt/Utils/TemplateUtils.h>
 #include <type_traits>
 #include <memory>
+#include <cstddef>
 
 namespace cleanMqtt
 {
@@ -25,7 +26,7 @@ namespace cleanMqtt
     * Example usage:
     * @code
     * cleanMqtt::UniqueFunction f = [](){ std::cout << "Hello!"; };
-    * f(); // Invokes the stored callable
+    * f(); //Invokes the stored callable
     * @endcode
     *
     * @note Only callables with a void() signature are supported.
@@ -81,28 +82,21 @@ namespace cleanMqtt
 	public:
 		DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(UniqueFunction)
 
+		/**
+		 * @brief Constructs UniqueFunction from any callable object.
+		 * 
+		 * @note Calls a private constructor that decides whether to use small buffer optimization based on the size and alignment of the callable by determining
+		 * if it fits within the predefined constraints at compile time (std::integral_constant...)
+		 * 
+		 * @tparam TFunc The type of the callable object.
+		 * @param func The callable object to store.
+		 */
 		template<typename TFunc>
-		UniqueFunction(TFunc&& func)
+		UniqueFunction(TFunc&& func) 
+			: UniqueFunction(std::forward<TFunc>(func),
+				std::integral_constant<bool, sizeof(Callable<std::decay_t<TFunc>>) <= sizeof(Storage) && alignof(Callable<std::decay_t<TFunc>>) <= alignof(Storage)>{})
 		{
-			using TCallable = Callable<std::decay_t<TFunc>>;
 
-#ifdef ENABLE_UNIQUEFUNCTION_SBO
-			static constexpr bool canUseBuffer{ sizeof(TCallable) <= sizeof(Storage) && alignof(TCallable) <= alignof(Storage) };
-
-            if (canUseBuffer)
-			{
-				new (&m_buffer) TCallable(std::forward<TFunc>(func));
-				m_callable = reinterpret_cast<ICallable*>(&m_buffer);
-				m_usesBuffer = true;
-			}
-			else
-			{
-				m_callable = new TCallable(std::forward<TFunc>(func));
-				m_usesBuffer = false;
-			}
-#else
-			m_callable = new TCallable(std::forward<TFunc>(func));
-#endif
 		}
 
 		UniqueFunction(UniqueFunction&& other) noexcept
@@ -163,6 +157,39 @@ namespace cleanMqtt
 		}
 
 	private:
+
+		/**
+		 * @brief Constructs UniqueFunction with small buffer optimization (if ENABLE_UNIQUEFUNCTION_SBO is enabled aswell).
+		 */
+		template<typename TFunc>
+		UniqueFunction(TFunc&& func, std::true_type)
+		{
+			using TCallable = Callable<std::decay_t<TFunc>>;
+
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
+			new (&m_buffer) TCallable(std::forward<TFunc>(func));
+			m_callable = reinterpret_cast<ICallable*>(&m_buffer);
+			m_usesBuffer = true;
+#else
+			m_callable = new TCallable(std::forward<TFunc>(func));
+#endif
+		}
+
+		/**
+		 * @brief Constructs UniqueFunction without small buffer optimization.
+		 */
+		template<typename TFunc>
+		UniqueFunction(TFunc&& func, std::false_type)
+		{
+			using TCallable = Callable<std::decay_t<TFunc>>;
+
+#ifdef ENABLE_UNIQUEFUNCTION_SBO
+			m_callable = new TCallable(std::forward<TFunc>(func));
+			m_usesBuffer = false;
+#else
+			m_callable = new TCallable(std::forward<TFunc>(func));
+#endif
+		}
 
 		/**
 		 * @brief Destroys the stored callable object.

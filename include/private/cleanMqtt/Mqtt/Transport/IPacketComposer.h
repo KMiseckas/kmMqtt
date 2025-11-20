@@ -15,7 +15,7 @@ namespace cleanMqtt
 	{
 		struct ComposeResult
 		{
-			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ComposeResult);
+			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ComposeResult)
 
 			ComposeResult(const EncodeResult& result, ByteBuffer data) noexcept
 				: encodeResult{ result }

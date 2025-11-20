@@ -1,5 +1,5 @@
-#ifndef INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTWINENV_H
-#define INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTWINENV_H
+#ifndef INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTLINUXENV_H
+#define INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTLINUXENV_H
 
 #include "cleanMqtt/GlobalMacros.h"
 #include <cleanMqtt/Interfaces/IMqttEnvironment.h>
@@ -8,15 +8,15 @@
 
 namespace cleanMqtt
 {
-    class PUBLIC_API DefaultWinEnv : public IMqttEnvironment
+    class PUBLIC_API DefaultLinuxEnv : public IMqttEnvironment
     {
     public:
-        ~DefaultWinEnv() override = default;
+        ~DefaultLinuxEnv() override = default;
 
         Config createConfig() const noexcept override;
-         
+
         std::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
     };
 }
 
-#endif // INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTWINENV_H
+#endif // INCLUDE_CLEANMQTT_ENVIRONMENTS_DEFAULTLINUXENV_H

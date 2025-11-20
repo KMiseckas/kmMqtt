@@ -102,14 +102,14 @@ namespace cleanMqtt
 
 			try
 			{
-				result = std::move(m_fixedHeader.decode(m_dataBuffer));
+				result = m_fixedHeader.decode(m_dataBuffer);
 				onFixedHeaderDecoded();
 
 				if (result.isSuccess())
 				{
 					for (IDecodeHeader* header : m_otherDecodeHeaders)
 					{
-						result = std::move(header->decode(m_dataBuffer));
+						result = header->decode(m_dataBuffer);
 
 						if (!result.isSuccess())
 						{

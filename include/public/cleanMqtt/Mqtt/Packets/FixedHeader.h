@@ -49,7 +49,7 @@ namespace cleanMqtt
 				return DecodeResult{ DecodeErrorCode::NO_ERROR };
 			}
 
-			std::size_t getEncodedBytesSize() const noexcept
+			std::size_t getEncodedBytesSize() const noexcept override
 			{
 				return sizeof(std::uint8_t) + remainingLength.encodingSize();
 			}

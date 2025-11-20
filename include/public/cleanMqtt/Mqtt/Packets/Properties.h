@@ -3,15 +3,14 @@
 
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Mqtt/Packets/PropertyType.h>
-#include <cleanMqtt/Interfaces/ILogger.h>
 #include <cleanMqtt/Mqtt/Packets/DataTypes.h>
 #include <cleanMqtt/Mqtt/Packets/ErrorCodes.h>
 
-#include <cstdint>
 #include <memory>
 #include <unordered_map>
 #include <type_traits>
 #include <cassert>
+#include <vector>
 
 namespace cleanMqtt
 {
@@ -32,7 +31,7 @@ namespace cleanMqtt
 				{
 					if (pair.second != nullptr)
 					{
-						delete pair.second;
+						propertyDestructors::destruct(pair.second, pair.first);
 					}
 				}
 				m_properties.clear();
@@ -234,7 +233,7 @@ namespace cleanMqtt
 
 					if (!tryAddProperty(type, data))
 					{
-						delete data;
+						propertyDestructors::destruct(data, type);
 						LogError("Properties", "Failed to add property to properties list due to it already existing.");
 						return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Duplicate property not allowed for property type: " + std::to_string(static_cast<std::uint8_t>(type)) };
 					}
@@ -259,6 +258,9 @@ namespace cleanMqtt
 
 		protected:
 
+			/**
+			 * @brief Implementation for adding property when the data type is NOT derived from MqttDataType and is a primitive type.
+			 */
 			template<PropertyType T, typename DataT>
 			typename std::enable_if<!std::is_base_of<MqttDataType, DataT>::value, bool>::type
 				tryAddPropertyImpl(const DataT& value, bool conditionalCheck = true)
@@ -290,6 +292,9 @@ namespace cleanMqtt
 				return true;
 			}
 
+			/**
+			 * @brief Implementation for adding property when the data type is derived from MqttDataType.
+			 */
 			template<PropertyType T, typename DataT>
 			typename std::enable_if<std::is_base_of<MqttDataType, DataT>::value, bool>::type
 				tryAddPropertyImpl(DataT&& value, bool conditionalCheck = true)
@@ -340,8 +345,8 @@ namespace cleanMqtt
 				return true;
 			}
 
-			std::uint32_t m_propertiesSizeInBytes{ 0U };
 			std::unordered_multimap<PropertyType, void*> m_properties;
+			std::uint32_t m_propertiesSizeInBytes{ 0U };
 		};
 	}
 }

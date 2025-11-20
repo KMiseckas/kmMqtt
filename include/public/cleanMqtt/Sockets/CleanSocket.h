@@ -1,3 +1,4 @@
+#if defined(_WIN32) || defined(__Win64)
 #pragma once
 
 #include <cleanMqtt/Interfaces/ISocket.h>
@@ -41,15 +42,16 @@ namespace cleanMqtt
 		{
 			~CleanSocket() override;
 
-			const bool connect(const char* ip, const char* port) override;
-			const bool send(const void* data, const int size, int& outBytesSent) override;
-			const bool receive(void* outBuffer, const int maxBufferLength, int& outBytesReceived) override;
-			const bool kill() override;
-			const bool setOption(const int option, const void* val, const int length) override;
-			const bool disableBlocking() override;
+			bool connect(const char* ip, const char* port) override;
+			bool send(const void* data, const int size, int& outBytesSent) override;
+			bool receive(void* outBuffer, const int maxBufferLength, int& outBytesReceived) override;
+			bool kill() override;
+			bool setOption(const int option, const void* val, const int length) override;
+			bool disableBlocking() override;
 
 		private:
 			SOCKET m_socket{ INVALID_SOCKET };
 		};
 	}
 }
+#endif 

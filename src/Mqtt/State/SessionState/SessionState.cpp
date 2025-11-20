@@ -64,7 +64,7 @@ namespace cleanMqtt
 					LogTrace("SessionState", "Session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
 				}
 
-				const auto iter{ m_messages.push(std::move(data)) };
+				m_messages.push(std::move(data));
 			}
 
 			return ClientErrorCode::No_Error;
