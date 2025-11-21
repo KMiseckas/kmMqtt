@@ -9,6 +9,7 @@
 #include <memory>
 #include <cstdint>
 #include <cassert>
+#include <algorithm>
 
 namespace events
 {
@@ -147,7 +148,7 @@ namespace events
 			auto iter = std::find_if(handlers.begin(), handlers.end(),
 				[&handle](IEventHandler* existingHandler)
 				{
-					EventHandler<TEvent>* castedHandler = std::static_cast<EventHandler<TEvent>*>(existingHandler);
+					EventHandler<TEvent>* castedHandler = static_cast<EventHandler<TEvent>*>(existingHandler);
 					return castedHandler->equals(handle);
 				});
 

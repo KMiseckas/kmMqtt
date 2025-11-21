@@ -96,6 +96,46 @@
       }
     },
     {
+      "name": "linux-gcc-debug",
+      "displayName": "Linux GCC Debug",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-clang-debug",
+      "displayName": "Linux Clang Debug",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "linux-gcc-release",
+      "displayName": "Linux GCC Release",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "linux-clang-release",
+      "displayName": "Linux Clang Release",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
       "name": "linux-gcc-coverage",
       "displayName": "Linux GCC Coverage",
       "inherits": "linux-base",
@@ -103,8 +143,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
-        "ENABLE_COVERAGE": true,
-        "BUILD_UNIT_TESTS": true,
+        "BUILD_COVERAGE": true,
+        "BUILD_UNIT_TESTS": true
       }
     },
     {
@@ -115,8 +155,78 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "ENABLE_COVERAGE": true,
-        "BUILD_UNIT_TESTS": true,
+        "BUILD_COVERAGE": true,
+        "BUILD_UNIT_TESTS": true
+      }
+    },
+    {
+      "name": "linux-gcc-ubsan-asan",
+      "displayName": "Linux GCC UBSAN/ASAN",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "ENABLE_UBSAN": true,
+        "ENABLE_ASAN": true,
+        "ENABLE_TSAN": false,
+        "ENABLE_MSAN": false
+      }
+    },
+    {
+      "name": "linux-clang-ubsan-asan",
+      "displayName": "Linux Clang UBSAN/ASAN",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ENABLE_UBSAN": true,
+        "ENABLE_ASAN": true,
+        "ENABLE_TSAN": false,
+        "ENABLE_MSAN": false
+      }
+    },
+    {
+      "name": "linux-gcc-tsan",
+      "displayName": "Linux GCC TSAN",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "ENABLE_UBSAN": false,
+        "ENABLE_ASAN": false,
+        "ENABLE_TSAN": true,
+        "ENABLE_MSAN": false
+      }
+    },
+    {
+      "name": "linux-clang-tsan",
+      "displayName": "Linux Clang TSAN",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ENABLE_UBSAN": false,
+        "ENABLE_ASAN": false,
+        "ENABLE_TSAN": true,
+        "ENABLE_MSAN": false
+      }
+    },
+    {
+      "name": "linux-clang-msan",
+      "displayName": "Linux Clang MSAN",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ENABLE_UBSAN": false,
+        "ENABLE_ASAN": false,
+        "ENABLE_TSAN": false,
+        "ENABLE_MSAN": true
       }
     }
   ],

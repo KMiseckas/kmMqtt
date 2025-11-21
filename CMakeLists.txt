@@ -71,9 +71,9 @@ endif()
 
 if(ENABLE_ASAN)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        set(ASAN_FLAGS "-fsanitize=address -fno-omit-frame-pointer")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${ASAN_FLAGS}")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ASAN_FLAGS}")
+        set(ASAN_FLAGS "-fsanitize=address" "-fno-omit-frame-pointer")
+        target_compile_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
+        target_link_options(${PROJECT_NAME} PRIVATE ${ASAN_FLAGS})
     endif()
 
     if (MSVC)
@@ -85,9 +85,9 @@ endif()
 if(ENABLE_UBSAN)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         message(STATUS "Building with UndefinedBehaviorSanitizer")
-        set(UBSAN_FLAGS "-fsanitize=undefined -fno-sanitize-recover=all")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${UBSAN_FLAGS}")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${UBSAN_FLAGS}")
+        set(UBSAN_FLAGS "-fsanitize=undefined" "-fno-sanitize-recover=all")
+        target_compile_options(${PROJECT_NAME} PRIVATE ${UBSAN_FLAGS})
+        target_link_options(${PROJECT_NAME} PRIVATE ${UBSAN_FLAGS})
     endif()
 
     if (MSVC)
@@ -97,30 +97,40 @@ if(ENABLE_UBSAN)
 endif()
 
 if(ENABLE_MSAN)
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-        message(STATUS "Building with MemorySanitizer")
-        set(MSAN_FLAGS "-fsanitize=memory -fsanitize-memory-track-origins -fno-omit-frame-pointer")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MSAN_FLAGS}")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MSAN_FLAGS}")
-    endif()
+    if(NOT ENABLE_ASAN AND NOT ENABLE_TSAN)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+            message(STATUS "Building with MemorySanitizer")
+            set(MSAN_FLAGS "-fsanitize=memory" "-fsanitize-memory-track-origins" "-fno-omit-frame-pointer" "-fsanitize-recover=all")
+            target_compile_options(${PROJECT_NAME} PRIVATE ${MSAN_FLAGS})
+            target_link_options(${PROJECT_NAME} PRIVATE ${MSAN_FLAGS})
+        endif()
 
-    if (MSVC)
-        message(WARNING "MemorySanitizer is not supported on MSVC.")
+        if (MSVC)
+            message(FATAL_ERROR "MemorySanitizer is not supported on MSVC.")
+        endif()
+    else()
+        message(FATAL_ERROR "MemorySanitizer cannot be enabled together with AddressSanitizer or ThreadSanitizer")
     endif()
 endif()
 
 if(ENABLE_TSAN)  
-    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")  
-        message(STATUS "Building with ThreadSanitizer")  
-        set(TSAN_FLAGS "-fsanitize=thread -fno-omit-frame-pointer")  
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TSAN_FLAGS}")  
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TSAN_FLAGS}")  
-    endif()
+    if(NOT ENABLE_ASAN AND NOT ENABLE_MSAN AND NOT ENABLE_UBSAN)
+        if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")  
+            message(STATUS "Building with ThreadSanitizer")  
+            set(TSAN_FLAGS "-fsanitize=thread" "-fno-omit-frame-pointer")  
+            target_compile_options(${PROJECT_NAME} PRIVATE ${TSAN_FLAGS})
+            target_link_options(${PROJECT_NAME} PRIVATE ${TSAN_FLAGS})
+        endif()
 
-    if (MSVC)  
-        message(WARNING "ThreadSanitizer is not supported on MSVC.")  
+        if (MSVC)  
+            message(FATAL_ERROR "ThreadSanitizer is not supported on MSVC.")  
+        endif()
+    else()
+        message(FATAL_ERROR "ThreadSanitizer cannot be enabled together with AddressSanitizer or MemorySanitizer")
     endif()
 endif()
+
+set(CLEANMQTT_SANITIZER_FLAGS ${MSAN_FLAGS} ${ASAN_FLAGS} ${UBSAN_FLAGS} ${TSAN_FLAGS})
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
@@ -137,17 +147,20 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         set(COVERAGE_LINK_FLAGS --coverage)
         set(COVERAGE_COMPILE_FLAGS -O0 -g --coverage)
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        set(COVERAGE_FLAGS -O0 -g -fprofile-instr-generate -fcoverage-mapping)
+        set(COVERAGE_COMPILE_FLAGS "-O0" "-g" "-fprofile-instr-generate" "-fcoverage-mapping")
+        set(COVERAGE_LINK_FLAGS "-fprofile-instr-generate")
     else()
         message(WARNING "Code coverage is only supported with GCC or Clang")
-        set(COVERAGE_FLAGS "")
+       set(COVERAGE_COMPILE_FLAGS "")
+        set(COVERAGE_LINK_FLAGS "")
     endif()
 
     target_compile_options(${PROJECT_NAME} PRIVATE ${COVERAGE_COMPILE_FLAGS})
-    target_link_options(${PROJECT_NAME} PRIVATE ${COVERAGE_LINK_FLAGS})
-
     target_compile_options(cleanMqttTests PRIVATE ${COVERAGE_COMPILE_FLAGS})
+
+    target_link_options(${PROJECT_NAME} PRIVATE ${COVERAGE_LINK_FLAGS})
     target_link_options(cleanMqttTests PRIVATE ${COVERAGE_LINK_FLAGS})
+    target_link_options(mqttClient PRIVATE ${COVERAGE_LINK_FLAGS})
 
     set(COVERAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/coverage")
             
@@ -178,13 +191,21 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         if(LLVM_PROFDATA_PATH AND LLVM_COV_PATH)
             message(STATUS "Coverage report will be generated with llvm-cov at ${COVERAGE_OUTPUT_DIR}")
                     
+            enable_testing()
+                add_test(
+                    NAME cleanMqttTests 
+                    COMMAND $<TARGET_FILE:cleanMqttTests>
+                )
+
+            set(ENV{LLVM_PROFILE_FILE} "default.profraw")
+
             add_custom_target(coverage_report
                 COMMAND ${CMAKE_COMMAND} -E echo "Generating coverage report with llvm-cov..."
                 COMMAND ${CMAKE_COMMAND} -E remove_directory "${COVERAGE_OUTPUT_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_OUTPUT_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=default.profraw ${CMAKE_CTEST_COMMAND} --output-on-failure
                 COMMAND ${LLVM_PROFDATA_PATH} merge -sparse default.profraw -o coverage.profdata
-                COMMAND ${LLVM_COV_PATH} show tests/cleanMqttTests -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="(tests|examples|benchmarks|/usr|_deps)"
+                COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:cleanMqttTests> -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="tests|examples|benchmarks|/usr|_deps"
                 COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated: ${COVERAGE_OUTPUT_DIR}/index.html"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
                 DEPENDS cleanMqttTests

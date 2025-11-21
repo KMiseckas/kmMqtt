@@ -160,7 +160,7 @@ void TopicsView::drawTopicItem(size_t index, const SubscribedTopic& topic)
 		}
 	}
 
-	ImGui::TextColored(statusColor, statusIcon);
+	ImGui::TextColored(statusColor, "%s", statusIcon);
 	ImGui::SameLine();
 
 	//Topic name
@@ -193,7 +193,7 @@ void TopicsView::drawTopicItem(size_t index, const SubscribedTopic& topic)
 
 	if (ImGui::IsItemHovered())
 	{
-		ImGui::SetTooltip(TEXT_FORMAT(text::topics_unsubscribe_confirmation, topic.topicFilter.c_str()).c_str());
+		ImGui::SetTooltip(text::topics_unsubscribe_confirmation, topic.topicFilter.c_str());
 	}
 
 	//Expanded section

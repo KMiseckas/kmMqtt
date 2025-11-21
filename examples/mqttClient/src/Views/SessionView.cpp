@@ -153,7 +153,7 @@ void SessionView::drawStatus()
 
 	ImGui::Text(text::session_connection_status);
 	ImGui::SameLine();
-	ImGui::TextColored(color, statusTxt);
+	ImGui::TextColored(color, "%s", statusTxt);
 }
 
 void SessionView::drawConnect()

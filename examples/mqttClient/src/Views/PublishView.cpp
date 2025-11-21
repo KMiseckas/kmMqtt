@@ -256,7 +256,7 @@ void PublishView::drawMessageItem(size_t index, const PublishedMessage& message)
     float spacing = ImGui::GetStyle().ItemSpacing.x;
     
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availableWidth - statusWidth - qosWidth - spacing * 3);
-    ImGui::Text(TEXT_FORMAT(text::publish_details_qos, static_cast<int>(message.options.qos)).c_str());
+    ImGui::Text(text::publish_details_qos, static_cast<int>(message.options.qos));
     
     ImGui::SameLine();
     ImGui::TextColored(statusColor, "%s", statusText);
@@ -287,7 +287,7 @@ void PublishView::drawMessageDetails(const PublishedMessage& message)
         ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_AutoSelectAll);
     
     // Payload preview
-    ImGui::Text(TEXT_FORMAT(text::publish_details_payload_label, message.payload.length()).c_str());
+    ImGui::Text(text::publish_details_payload_label, message.payload.length());
     std::string displayPayload = message.payload;
     if (displayPayload.length() > 200)
     {
@@ -304,7 +304,7 @@ void PublishView::drawMessageDetails(const PublishedMessage& message)
     
     if (!message.options.responseTopic.empty())
     {
-        ImGui::BulletText(text::publish_details_response_topic, message.options.responseTopic);
+        ImGui::BulletText(text::publish_details_response_topic, message.options.responseTopic.c_str());
     }
     
     if (message.options.topicAlias > 0)
@@ -321,13 +321,13 @@ void PublishView::drawMessageDetails(const PublishedMessage& message)
     auto time_t = std::chrono::system_clock::to_time_t(message.timestamp);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S");
-    ImGui::BulletText(TEXT_FORMAT(text::publish_details_timestamp, ss.str().c_str()).c_str());
+    ImGui::BulletText(text::publish_details_timestamp, ss.str().c_str());
     
     // Error message if failed
     if (!message.lastError.empty())
     {
         ImGui::Separator();
-        ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), TEXT_FORMAT(text::publish_details_error, message.lastError.c_str()).c_str());
+        ImGui::TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), text::publish_details_error, message.lastError.c_str());
     }
     
     ImGui::Unindent();

@@ -62,7 +62,7 @@ elseif(RENDERING_VULKAN)
     target_compile_definitions(examples_shared_lib INTERFACE USE_VULKAN)
 endif()
 
-target_link_libraries(examples_shared_lib INTERFACE imgui ${OPENGL_gl_LIBRARY} cleanMqtt)
+target_link_libraries(examples_shared_lib INTERFACE imgui OpenGL::GL cleanMqtt)
 
 #Add example projects
 add_subdirectory(mqttClient)
