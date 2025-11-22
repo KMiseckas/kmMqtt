@@ -29,6 +29,7 @@ public:
 	
 	void enableFileLogging(const std::string& filepath);
 	void disableFileLogging();
+	inline bool isFileLoggingEnabled() const noexcept { return m_fileLoggingEnabled; }
 
 	std::size_t getLogCount() const noexcept;
 

@@ -229,6 +229,7 @@ TEXT(messages_status_sent_failed, "Failed")
 TEXT(output_copy_all_button, "Copy All")
 TEXT(output_clear_button, "Clear Logs")
 TEXT(output_no_logs, "No logs to display")
+TEXT(output_enable_logging_to_file, "Log To File?")
 
 //Output View - Clear Confirmation
 TEXT(output_clear_confirmation_title, "Clear All Logs##OutputClearConfirm")

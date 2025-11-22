@@ -21,27 +21,35 @@ void OutputView::drawLogOutput()
 	const auto& model{ getModel() };
 	const auto& logs{ model->GetAllLogs() };
 
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-
-	float availableWidth{ ImGui::GetContentRegionAvail().x };
-	float buttonWidth{ (availableWidth - 8.0f) * 0.5f };
-
 	//Copy All
-	if (ImGui::Button(text::output_copy_all_button, ImVec2(buttonWidth, 0)))
+	if (ImGui::Button(text::output_copy_all_button, ImVec2(0, 0)))
 	{
 		copyAllLogsToClipboard();
 	}
 
 	ImGui::SameLine();
-	ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 4.0f);
 
 	//Clear Logs
-	if (ImGui::Button(text::output_clear_button, ImVec2(buttonWidth, 0)))
+	if (ImGui::Button(text::output_clear_button, ImVec2(0, 0)))
 	{
 		model->uiData.showClearConfirmation = true;
 	}
 
-	ImGui::PopStyleVar();
+	ImGui::SameLine();
+
+	//Clear Logs
+	bool logToFile{ model->isFileLoggingEnabled()};
+	if (ImGui::Checkbox(text::output_enable_logging_to_file, &logToFile))
+	{
+		if (logToFile)
+		{
+			model->enableFileLogging("mqtt_client_log.txt");
+		}
+		else
+		{
+			model->disableFileLogging();
+		}
+	}
 
 	//Scrollable Area
 	auto height = ImGui::GetContentRegionAvail().y;
