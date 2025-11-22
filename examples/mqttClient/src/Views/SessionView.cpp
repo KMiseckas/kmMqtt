@@ -596,7 +596,7 @@ void SessionView::drawPublishView()
 
 void SessionView::drawOutputLog()
 {
-
+	m_outputView.draw();
 }
 
 void SessionView::handleAppliedModel(ModelPtr oldModel, ModelPtr newModel)
@@ -604,4 +604,5 @@ void SessionView::handleAppliedModel(ModelPtr oldModel, ModelPtr newModel)
 	m_topicView.setModel(newModel->topicModel);
 	m_messageView.setModel(newModel->messagesModel);
 	m_publishView.setModel(newModel->publishModel);
+	m_outputView.setModel(newModel->outputModel);
 }

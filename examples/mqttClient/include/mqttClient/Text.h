@@ -224,6 +224,18 @@ TEXT(messages_status_received, "Received")
 TEXT(messages_status_sent_pending, "Pending")
 TEXT(messages_status_sent_acknowledged, "Sent")
 TEXT(messages_status_sent_failed, "Failed")
+
+//Output View - Main
+TEXT(output_copy_all_button, "Copy All")
+TEXT(output_clear_button, "Clear Logs")
+TEXT(output_no_logs, "No logs to display")
+
+//Output View - Clear Confirmation
+TEXT(output_clear_confirmation_title, "Clear All Logs##OutputClearConfirm")
+TEXT(output_clear_confirmation_message1, "Are you sure you want to clear all logs?")
+TEXT(output_clear_confirmation_message2, "This action cannot be undone.")
+TEXT(output_clear_confirmation_yes_button, "Yes, Clear All")
+TEXT(output_clear_confirmation_cancel_button, "Cancel")
 }
 
 #endif //INCLUDE_MQTTCLIENT_TEXT_H

@@ -11,6 +11,7 @@
 #include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
 #include "TopicsModel.h"
 #include "PublishModel.h"
+#include "OutputModel.h"
 #include "MessagesModel.h"
 
 class SessionModel : public ViewModel
@@ -54,6 +55,7 @@ public:
 	std::shared_ptr<TopicsModel> topicModel;
 	std::shared_ptr<PublishModel> publishModel;
 	std::shared_ptr<MessagesModel> messagesModel;
+	std::shared_ptr<OutputModel> outputModel;
 
 	struct UIData
 	{

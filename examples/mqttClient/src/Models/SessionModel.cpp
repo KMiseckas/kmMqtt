@@ -1,10 +1,13 @@
 #include <mqttClient/Model/SessionModel.h>
+#include <mqttClient/Adapters/CustomLogger.h>
+#include <cleanMqtt/Logger/LoggerInstance.h>
 
 SessionModel::SessionModel()
 {
 	topicModel = std::make_shared<TopicsModel>();
 	publishModel = std::make_shared<PublishModel>();
 	messagesModel = std::make_shared<MessagesModel>();
+	outputModel = std::make_shared<OutputModel>();
 }
 
 SessionModel::~SessionModel()
@@ -49,6 +52,10 @@ void SessionModel::connect()
 	cleanMqtt::DefaultEnvironmentFactory factory;
 	cleanMqtt::MqttClientOptions options{ useTickAsync ? cleanMqtt::TickMode::ASYNC : cleanMqtt::TickMode::SYNC };
 
+	//Set up customer logger
+	std::weak_ptr<OutputModel> weakOutputMdl{ outputModel };
+	cleanMqtt::setLogger(new CustomLogger(weakOutputMdl));
+
 	m_mqttClient = new cleanMqtt::mqtt::MqttClient{ factory.createEnvironment(), options };
 
 	/**
@@ -67,6 +74,7 @@ void SessionModel::connect()
 	topicModel->setMqttClient(m_mqttClient);
 	publishModel->setMqttClient(m_mqttClient);
 	messagesModel->setMqttClient(m_mqttClient);
+	outputModel->setMqttClient(m_mqttClient);
 
 	/**
 	 * Register to connection events.

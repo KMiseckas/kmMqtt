@@ -6,6 +6,7 @@
 #include "TopicsView.h"
 #include "PublishView.h"
 #include "MessagesView.h"
+#include "OutputView.h"
 
 #define UIData m_model->uiData
 
@@ -44,6 +45,7 @@ protected:
 	TopicsView m_topicView;
 	MessagesView m_messageView;
 	PublishView m_publishView;
+	OutputView m_outputView;
 };
 
 #endif //INCLUDE_MQTTCLIENT_VIEWS_SESSIONVIEW_H
