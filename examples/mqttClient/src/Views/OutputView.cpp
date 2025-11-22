@@ -37,7 +37,7 @@ void OutputView::drawLogOutput()
 
 	ImGui::SameLine();
 
-	//Clear Logs
+	//Log to File
 	bool logToFile{ model->isFileLoggingEnabled()};
 	if (ImGui::Checkbox(text::output_enable_logging_to_file, &logToFile))
 	{
