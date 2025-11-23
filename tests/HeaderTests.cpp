@@ -6,6 +6,11 @@
 #include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
 #include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishPayloadHeader.h>
 #include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishVariableHeader.h>
+#include <cleanMqtt/Mqtt/Packets/Subscribe/Headers/SubscribePayloadHeader.h>
+#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribePayloadHeader.h>
+#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeAckPayloadHeader.h>
+#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeAckVariableHeader.h>
+#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeVariableHeader.h>
 
 TEST_SUITE("Header Tests")
 {
@@ -122,7 +127,7 @@ TEST_SUITE("Header Tests")
 				CHECK(buffer[8] == 0b10100111);	//Keep alive in seconds - byte 0
 				CHECK(buffer[9] == 0b11111000);	//Keep alive in seconds - byte 1
 				CHECK(buffer[10] == 5);			//Properties Length Variable Byte Integer
-				VariableByteInteger propertyIdVar{ VariableByteInteger::tryCreateFromValue(buffer[11])};
+				VariableByteInteger propertyIdVar{ VariableByteInteger::tryCreateFromValue(buffer[11]) };
 				CHECK(propertyIdVar.uint32Value() == static_cast<std::uint8_t>(PropertyType::WILL_DELAY_INTERVAL));
 				CHECK(buffer[12] == 0);			//200 in uint32
 				CHECK(buffer[13] == 0);			//...
@@ -148,7 +153,7 @@ TEST_SUITE("Header Tests")
 				properties.tryAddProperty<PropertyType::AUTHENTICATION_DATA>(BinaryData(5, binaryArr)); //Size 1 + 2 + 5 = 8;
 				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("KEY_1", "VALUE_1")); //Size 1 + 2 + 5 + 2 + 7 = 17;
 				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("KEY_1", "VALUE_1")); //Size 1 + 2 + 5 + 2 + 7 = 17;
-				properties.tryAddProperty<PropertyType::MAXIMUM_QOS>( 2); //Size 1 + 1 = 2;
+				properties.tryAddProperty<PropertyType::MAXIMUM_QOS>(2); //Size 1 + 1 = 2;
 
 				ConnectVariableHeader header{
 					"MQTT",
@@ -260,7 +265,7 @@ TEST_SUITE("Header Tests")
 					nextIdByte += 1; //For property ID byte.
 				}
 
-				CHECK((successAuth&& successMaxQos&& successReason&& successUser1&& successUser2&& successWill) == true);
+				CHECK((successAuth && successMaxQos && successReason && successUser1 && successUser2 && successWill) == true);
 			}
 		}
 	}
@@ -372,24 +377,24 @@ TEST_SUITE("Header Tests")
 				CHECK(buffer[8] == '_');
 				CHECK(buffer[9] == '1');
 				CHECK(buffer[10] == 5);
-				CHECK(buffer[10+1] == static_cast<std::uint8_t>(PropertyType::WILL_DELAY_INTERVAL));
-				CHECK(buffer[11+1] == 0);
-				CHECK(buffer[12+1] == 0);
-				CHECK(buffer[13+1] == 0);
-				CHECK(buffer[14+1] == 200);
-				CHECK(buffer[15+1] == 0);
-				CHECK(buffer[16+1] == 5);
-				CHECK(buffer[17+1] == 'T');
-				CHECK(buffer[18+1] == 'o');
-				CHECK(buffer[19+1] == 'p');
-				CHECK(buffer[20+1] == 'i');
-				CHECK(buffer[21+1] == 'c');
-				CHECK(buffer[22+1] == 0);
-				CHECK(buffer[23+1] == 4);
-				CHECK(buffer[24+1] == 'U');
-				CHECK(buffer[25+1] == 's');
-				CHECK(buffer[26+1] == 'e');
-				CHECK(buffer[27+1] == 'r');
+				CHECK(buffer[10 + 1] == static_cast<std::uint8_t>(PropertyType::WILL_DELAY_INTERVAL));
+				CHECK(buffer[11 + 1] == 0);
+				CHECK(buffer[12 + 1] == 0);
+				CHECK(buffer[13 + 1] == 0);
+				CHECK(buffer[14 + 1] == 200);
+				CHECK(buffer[15 + 1] == 0);
+				CHECK(buffer[16 + 1] == 5);
+				CHECK(buffer[17 + 1] == 'T');
+				CHECK(buffer[18 + 1] == 'o');
+				CHECK(buffer[19 + 1] == 'p');
+				CHECK(buffer[20 + 1] == 'i');
+				CHECK(buffer[21 + 1] == 'c');
+				CHECK(buffer[22 + 1] == 0);
+				CHECK(buffer[23 + 1] == 4);
+				CHECK(buffer[24 + 1] == 'U');
+				CHECK(buffer[25 + 1] == 's');
+				CHECK(buffer[26 + 1] == 'e');
+				CHECK(buffer[27 + 1] == 'r');
 			}
 		}
 	}
@@ -622,7 +627,7 @@ TEST_SUITE("Header Tests")
 					0x02,					//Property: MESSAGE_EXPIRY_INTERVAL
 					0x00, 0x00, 0x0E, 0x10	//Value: 3600 seconds
 				};
-				ByteBuffer buffer{ sizeof(data)};
+				ByteBuffer buffer{ sizeof(data) };
 				buffer.append(data, sizeof(data));
 
 				PublishVariableHeader header;
@@ -692,6 +697,219 @@ TEST_SUITE("Header Tests")
 			buffer += 0b00000000; //Invalid packet type
 			buffer += 0; //Remaining length
 			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
+		}
+	}
+
+	TEST_CASE("Header Constructors")
+	{
+		SUBCASE("Subscribe Payload")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::SubscribePayloadHeader header);
+		}
+
+		SUBCASE("Publish Variable")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::PublishVariableHeader header);
+		}
+
+		SUBCASE("Publish Payload")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::PublishPayloadHeader header);
+		}
+
+		SUBCASE("Unsubscribe Payload")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::UnSubscribePayloadHeader header);
+		}
+
+		SUBCASE("UnSubscribe Ack Payload")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::UnSubscribeAckPayloadHeader header);
+		}
+
+		SUBCASE("UnSubscribe Ack Var")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::UnSubscribeAckVariableHeader header);
+		}
+
+		SUBCASE("Connect Payload")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::ConnectPayloadHeader header);
+		}
+
+		SUBCASE("Connect Variable")
+		{
+			CHECK_NOTHROW(cleanMqtt::mqtt::ConnectVariableHeader header);
+		}
+	}
+
+
+	TEST_CASE("UnSubscribe Variable Header")
+	{
+		using namespace cleanMqtt::mqtt;
+
+		SUBCASE("Constructor with Parameters")
+		{
+			Properties properties;
+			properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key", "value"));
+
+			UnSubscribeVariableHeader header{ 1234, std::move(properties) };
+
+			CHECK(header.packetId == 1234);
+			CHECK(header.properties.size() > 0);
+			CHECK(header.properties.count() == 1);
+		}
+
+		SUBCASE("Encoding")
+		{
+			Properties properties;
+			UnSubscribeVariableHeader header{ 5000, std::move(properties) };
+
+			ByteBuffer buffer{ header.getEncodedBytesSize() };
+			CHECK_NOTHROW(header.encode(buffer));
+
+			CHECK(buffer.capacity() == buffer.size());
+			CHECK(buffer.headroom() == 0);
+			CHECK(buffer[0] == 0x13);	// Packet ID MSB (5000 = 0x1388)
+			CHECK(buffer[1] == 0x88);	// Packet ID LSB
+			CHECK(buffer[2] == 0);		// Properties length
+		}
+
+		SUBCASE("Size Calculation")
+		{
+			Properties properties;
+			properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("test", "data"));
+
+			UnSubscribeVariableHeader header{ 100, std::move(properties) };
+
+			// Packet ID (2 bytes) + Properties length + Properties content
+			std::size_t expectedSize = 2 + header.properties.encodingSize();
+			CHECK(header.getEncodedBytesSize() == expectedSize);
+		}
+	}
+
+	TEST_CASE("UnSubscribe Payload Header")
+	{
+		using namespace cleanMqtt::mqtt;
+
+		SUBCASE("Constructor with Topics")
+		{
+			std::vector<UTF8String> topics;
+			topics.emplace_back("topic1");
+			topics.emplace_back("topic2");
+			topics.emplace_back("topic3");
+
+			UnSubscribePayloadHeader header{ std::move(topics) };
+
+			CHECK(header.topics.size() == 3);
+			CHECK(header.topics[0].getString() == "topic1");
+			CHECK(header.topics[1].getString() == "topic2");
+			CHECK(header.topics[2].getString() == "topic3");
+		}
+
+		SUBCASE("Encoding")
+		{
+			std::vector<UTF8String> topics;
+			topics.emplace_back("test/topic");
+
+			UnSubscribePayloadHeader header{ std::move(topics) };
+
+			ByteBuffer buffer{ header.getEncodedBytesSize() };
+			CHECK_NOTHROW(header.encode(buffer));
+
+			CHECK(buffer.capacity() == buffer.size());
+			CHECK(buffer.headroom() == 0);
+			CHECK(buffer[0] == 0);		// Topic length MSB
+			CHECK(buffer[1] == 10);		// Topic length LSB
+			CHECK(buffer[2] == 't');
+			CHECK(buffer[3] == 'e');
+			CHECK(buffer[4] == 's');
+			CHECK(buffer[5] == 't');
+			CHECK(buffer[6] == '/');
+			CHECK(buffer[7] == 't');
+			CHECK(buffer[8] == 'o');
+			CHECK(buffer[9] == 'p');
+			CHECK(buffer[10] == 'i');
+			CHECK(buffer[11] == 'c');
+		}
+
+		SUBCASE("Size Calculation")
+		{
+			std::vector<UTF8String> topics;
+			topics.emplace_back("a");
+			topics.emplace_back("bc");
+			topics.emplace_back("def");
+
+			UnSubscribePayloadHeader header{ std::move(topics) };
+
+			// Each topic: 2 bytes length + content
+			// "a" = 2 + 1 = 3, "bc" = 2 + 2 = 4, "def" = 2 + 3 = 5
+			CHECK(header.getEncodedBytesSize() == 12);
+		}
+	}
+
+	TEST_CASE("UnSubscribe Ack Variable Header")
+	{
+		using namespace cleanMqtt::mqtt;
+
+		SUBCASE("Default Constructor")
+		{
+			UnSubscribeAckVariableHeader header;
+			CHECK(header.packetId == 0);
+		}
+
+		SUBCASE("Decoding Valid Packet")
+		{
+			const std::uint8_t data[] = {
+				0x04, 0xD2,		// Packet ID = 1234
+				0x00			// Properties length = 0
+			};
+			ByteBuffer buffer{ sizeof(data) };
+			buffer.append(data, sizeof(data));
+
+			UnSubscribeAckVariableHeader header;
+			auto result = header.decode(buffer);
+
+			CHECK(result.isSuccess());
+			CHECK(header.packetId == 1234);
+			CHECK(header.properties.size() == 0);
+		}
+
+		SUBCASE("Decoding with Properties")
+		{
+			const std::uint8_t data[] = {
+				0x00, 0x64,		// Packet ID = 100
+				0x07,			// Properties length = 7
+				0x1F,			// Property: REASON_STRING
+				0x00, 0x04,		// String length = 4
+				't', 'e', 's', 't'
+			};
+			ByteBuffer buffer{ sizeof(data) };
+			buffer.append(data, sizeof(data));
+
+			UnSubscribeAckVariableHeader header;
+			auto result = header.decode(buffer);
+
+			CHECK(result.isSuccess());
+			CHECK(header.packetId == 100);
+			CHECK(header.properties.size() == 7);
+		}
+
+		SUBCASE("Decoding Invalid Packet ID Zero")
+		{
+			const std::uint8_t data[] = {
+				0x00, 0x00,		// Packet ID = 0 (invalid)
+				0x00			// Properties length = 0
+			};
+			ByteBuffer buffer{ sizeof(data) };
+			buffer.append(data, sizeof(data));
+
+			UnSubscribeAckVariableHeader header;
+			auto result = header.decode(buffer);
+
+			CHECK_FALSE(result.isSuccess());
+			CHECK(result.code == DecodeErrorCode::PROTOCOL_ERROR);
+			CHECK(std::string(result.reason).find("Packet ID cannot be zero") != std::string::npos);
 		}
 	}
 }

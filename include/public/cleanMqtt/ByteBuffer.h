@@ -88,7 +88,7 @@ namespace cleanMqtt
 		}
 
 		ByteBuffer(const ByteBuffer& other) noexcept
-			: m_size(other.m_size), m_capacity(other.m_capacity)
+			: m_size(other.m_size), m_capacity(other.m_capacity), m_readCursor(other.m_readCursor)
 		{
 			if(other.m_capacity > BYTEBUFFER_SBO_MAX_SIZE)
 			{
@@ -99,7 +99,7 @@ namespace cleanMqtt
 		}
 
 		ByteBuffer(ByteBuffer&& other) noexcept
-			: m_size(other.m_size), m_capacity(other.m_capacity)
+			: m_size(other.m_size), m_capacity(other.m_capacity), m_readCursor(other.m_readCursor)
 		{
 #ifdef ENABLE_BYTEBUFFER_SBO
 			if(other.m_bytes == other.m_sboBytes)
@@ -129,6 +129,7 @@ namespace cleanMqtt
 
 			m_size = other.m_size;
 			m_capacity = other.m_capacity;
+			m_readCursor = other.m_readCursor;
 #ifdef ENABLE_BYTEBUFFER_SBO
 
 			if(m_bytes != m_sboBytes)
@@ -160,6 +161,7 @@ namespace cleanMqtt
 
 			m_size = other.m_size;
 			m_capacity = other.m_capacity;
+			m_readCursor = other.m_readCursor;
 			
 #ifdef ENABLE_BYTEBUFFER_SBO
 			if (other.m_bytes == other.m_sboBytes)

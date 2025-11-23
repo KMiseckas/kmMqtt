@@ -13,8 +13,15 @@ namespace cleanMqtt
 		{
 			DecodeResult result;
 
-			flags.overrideFlags(buffer.readUint8());
-			reasonCode = static_cast<ConnectReasonCode>(buffer.readUint8());
+			try
+			{
+				flags.overrideFlags(buffer.readUint8());
+				reasonCode = static_cast<ConnectReasonCode>(buffer.readUint8());
+			}
+			catch (const std::out_of_range& e)
+			{
+				return DecodeResult(DecodeErrorCode::MALFORMED_PACKET, e.what());
+			}
 
 			result = properties.decode(buffer);
 

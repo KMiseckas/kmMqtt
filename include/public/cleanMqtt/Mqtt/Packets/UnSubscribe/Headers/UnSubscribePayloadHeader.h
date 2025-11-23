@@ -3,7 +3,6 @@
 
 #include <cleanMqtt/Interfaces/IEncodeHeader.h>
 #include <cleanMqtt/Mqtt/Packets/DataTypes.h>
-#include <cstdint>
 #include <vector>
 
 namespace cleanMqtt

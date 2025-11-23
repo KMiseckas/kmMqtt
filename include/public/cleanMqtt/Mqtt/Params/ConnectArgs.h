@@ -70,7 +70,7 @@ namespace cleanMqtt
 
 			Will& operator=(Will&& other) noexcept
 			{
-				if (this != &other)
+				if (this == &other)
 				{
 					return *this;
 				}
@@ -95,7 +95,7 @@ namespace cleanMqtt
 
 			Will& operator=(const Will& other) noexcept
 			{
-				if (this != &other)
+				if (this == &other)
 				{
 					return *this;
 				}

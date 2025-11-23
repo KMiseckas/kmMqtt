@@ -8,6 +8,7 @@ namespace cleanMqtt
 {
 	class PUBLIC_API DefaultDispatcher : public ICallbackDispatcher
 	{
+	public:
 		void dispatch(UniqueFunction callback) noexcept override;
 	};
 }
