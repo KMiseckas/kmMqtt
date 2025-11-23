@@ -72,6 +72,8 @@ namespace cleanMqtt
 					return *this;
 				}
 
+				delete[] m_bytes;
+
 				m_size = other.m_size;
 				m_bytes = other.m_bytes;
 
@@ -87,6 +89,9 @@ namespace cleanMqtt
 				{
 					return *this;
 				}
+
+				delete[] m_bytes;
+				m_bytes = nullptr;
 
 				m_size = other.m_size;
 
@@ -390,6 +395,13 @@ namespace cleanMqtt
 
 			UTF8String& operator=(UTF8String&& other) noexcept
 			{
+				if (this == &other)
+				{
+					return *this;
+				}
+
+				delete[] m_bytes;
+
 				m_size = other.m_size;
 				m_bytes = other.m_bytes;
 

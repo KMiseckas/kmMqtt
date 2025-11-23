@@ -20,7 +20,11 @@ void SessionTabsView::draw()
 			for (std::uint8_t i{ 0 }; i < numberSessions; ++i)
 			{
 				auto sessionModel = m_model->getSessionModel(i);
-				const std::string imGuiItemLabel{ sessionModel->getName() + "##" + std::to_string(i) };
+				std::string imGuiItemLabel;
+				imGuiItemLabel.reserve(sessionModel->getName().size() + 12); // Reserve space for name + "##" + number
+				imGuiItemLabel = sessionModel->getName();
+				imGuiItemLabel.append("##");
+				imGuiItemLabel.append(std::to_string(i));
 
 				bool active = true;
 

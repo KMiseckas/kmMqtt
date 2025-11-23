@@ -199,7 +199,10 @@ void TopicsModel::onSubscribeAck(const cleanMqtt::mqtt::SubscribeAckEventDetails
                 if (!topic.isSubscribed)
                 {
                     topic.isSubscribed = false;
-					topic.lastError = "Subscription failed with reason code: " + std::to_string(static_cast<int>(details.results.getTopicReasons()[0].reasonCode));
+					topic.lastError.clear();
+					topic.lastError.reserve(64); // Reserve space for the error message
+					topic.lastError = "Subscription failed with reason code: ";
+					topic.lastError.append(std::to_string(static_cast<int>(details.results.getTopicReasons()[0].reasonCode)));
                     break;
                 }
             }

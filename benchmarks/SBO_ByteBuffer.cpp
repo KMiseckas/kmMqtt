@@ -10,12 +10,12 @@ static void BM_SBO_ByteBuffer(benchmark::State& state)
 
     for (auto _ : state)
     {
-		for (std::size_t i = 0; i < 1000; ++i);
+		for (std::size_t i = 0; i < 1000; ++i)
         {
             ByteBuffer buf(bufferSize);
-            for (std::size_t i = 0; i < bufferSize; ++i)
+            for (std::size_t j = 0; j < bufferSize; ++j)
             {
-                buf += static_cast<std::uint8_t>(i & 0xFF);
+                buf += static_cast<std::uint8_t>(j & 0xFF);
             }
 
             benchmark::DoNotOptimize(buf);

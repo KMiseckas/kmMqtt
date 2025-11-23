@@ -146,6 +146,7 @@ namespace cleanMqtt
 				m_bytes = m_sboBytes;
 			}
 #else
+			delete[] m_bytes;
 			m_bytes = new std::uint8_t[other.m_capacity];
 #endif
 			std::memcpy(m_bytes, other.m_bytes, other.m_size);

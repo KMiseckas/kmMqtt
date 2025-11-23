@@ -1,8 +1,22 @@
 #ifndef INCLUDE_MQTTCLIENT_TEXT_H
 #define INCLUDE_MQTTCLIENT_TEXT_H
 
+#include <string>
+
 #define TEXT(id, text) static constexpr const char* const id{text};
-#define BTN_LABEL(label, postFix) std::string(label).append("##").append(postFix).c_str()
+
+// Helper function to create ImGui button labels with unique IDs
+// Returns a static thread_local buffer to avoid dangling pointer issues
+inline const char* BTN_LABEL(const char* label, const char* postFix) {
+    static thread_local std::string buffer;
+    buffer.clear();
+    buffer.reserve(std::strlen(label) + std::strlen(postFix) + 2); // +2 for "##"
+    buffer.append(label);
+    buffer.append("##");
+    buffer.append(postFix);
+    return buffer.c_str();
+}
+
 #define TEXT_FORMAT(text, ...) std::string([&]() { \
     char buffer[1024]; \
     snprintf(buffer, sizeof(buffer), text, __VA_ARGS__); \

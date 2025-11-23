@@ -85,7 +85,10 @@ void SessionModel::connect()
 
 			if (details.isSuccessful)
 			{
-				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)) };
+				std::string reasonCode;
+				reasonCode.reserve(32); // Reserve space for "MQTT Reason Code: " + number
+				reasonCode = "MQTT Reason Code: ";
+				reasonCode.append(std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)));
 				connectionFailureReason = details.hasReceivedAck ? reasonCode.c_str() : details.error.errorMsg;
 			}
 			else
@@ -103,7 +106,10 @@ void SessionModel::connect()
 
 			if(details.isBrokerInduced)
 			{
-				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)) };
+				std::string reasonCode;
+				reasonCode.reserve(32); // Reserve space for "MQTT Reason Code: " + number
+				reasonCode = "MQTT Reason Code: ";
+				reasonCode.append(std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)));
 				disconnectioReason = reasonCode.c_str();
 			}
 			else
