@@ -19,6 +19,7 @@ snippets/
 mono_crash.*
 
 # Build results
+build/
 out/
 [Dd]ebug/
 [Dd]ebugPublic/
