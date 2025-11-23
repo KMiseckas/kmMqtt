@@ -197,7 +197,6 @@ void PublishView::drawMessageItem(size_t index, const PublishedMessage& message)
     
     const bool isExpanded = (getModel()->uiData.expandedMessageIndex == static_cast<int>(index));
     
-    // Status color and icon
     ImVec4 statusColor;
     const char* statusIcon;
     const char* statusText;
@@ -206,22 +205,22 @@ void PublishView::drawMessageItem(size_t index, const PublishedMessage& message)
     {
     case PublishMessageStatus::PENDING:
         statusColor = ImVec4(0.6f, 0.6f, 0.6f, 1.0f); // Gray
-        statusIcon = "?";
+        statusIcon = "P";
         statusText = text::publish_status_pending;
         break;
     case PublishMessageStatus::SENT:
         statusColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f); // Orange
-        statusIcon = "→";
+        statusIcon = "S";
         statusText = text::publish_status_sent;
         break;
     case PublishMessageStatus::ACKNOWLEDGED:
         statusColor = ImVec4(0.0f, 0.8f, 0.0f, 1.0f); // Green
-        statusIcon = "✓";
+        statusIcon = "A";
         statusText = text::publish_status_acknowledged;
         break;
     case PublishMessageStatus::FAILED:
         statusColor = ImVec4(1.0f, 0.2f, 0.2f, 1.0f); // Red
-        statusIcon = "✗";
+        statusIcon = "F";
         statusText = text::publish_status_failed;
         break;
     }
