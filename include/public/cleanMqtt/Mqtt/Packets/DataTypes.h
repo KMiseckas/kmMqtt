@@ -91,7 +91,6 @@ namespace cleanMqtt
 				}
 
 				delete[] m_bytes;
-				m_bytes = nullptr;
 
 				m_size = other.m_size;
 
@@ -99,6 +98,10 @@ namespace cleanMqtt
 				{
 					m_bytes = new std::uint8_t[m_size];
 					std::memcpy(m_bytes, other.m_bytes, m_size);
+				}
+				else
+				{
+					m_bytes = nullptr;
 				}
 
 				return *this;

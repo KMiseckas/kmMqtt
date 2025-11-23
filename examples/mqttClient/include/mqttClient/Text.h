@@ -2,6 +2,7 @@
 #define INCLUDE_MQTTCLIENT_TEXT_H
 
 #include <string>
+#include <cstring>
 
 #define TEXT(id, text) static constexpr const char* const id{text};
 
