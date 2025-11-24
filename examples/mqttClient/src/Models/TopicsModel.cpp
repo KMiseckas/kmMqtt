@@ -67,7 +67,7 @@ void TopicsModel::subscribe(const std::string& topicFilter)
     auto result = m_mqttClient->subscribe(topics, {});
     if (!result.noError())
     {
-        it->lastError = result.errorMsg;
+        it->lastError = result.errorMsg();
     }
 }
 
@@ -104,7 +104,7 @@ void TopicsModel::unsubscribe(const std::string& topicFilter)
     auto result{ m_mqttClient->unSubscribe(topics, std::move(unsubscribeOptions)) };
     if (!result.noError())
     {
-        it->lastError = result.errorMsg;
+        it->lastError = result.errorMsg();
     }
 }
 

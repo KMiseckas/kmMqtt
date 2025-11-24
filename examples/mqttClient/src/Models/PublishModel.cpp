@@ -75,7 +75,7 @@ void PublishModel::publish(const std::string& topic, const std::string& payload)
     if (!result.noError())
     {
         addedMessage.status = PublishMessageStatus::FAILED;
-        addedMessage.lastError = result.errorMsg;
+        addedMessage.lastError = result.errorMsg();
     }
     else
     {
@@ -92,7 +92,7 @@ void PublishModel::publish(const std::string& topic, const std::string& payload)
 
     {
         events::PublishMessageEvent e;
-        e.result = { result.noError(), result.errorMsg };
+        e.result = { result.noError(), result.errorMsg()};
         e.topic = topic;
         e.message = payload;
         e.options = message.options;

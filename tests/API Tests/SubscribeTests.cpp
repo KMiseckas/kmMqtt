@@ -61,8 +61,8 @@ TEST_SUITE("MqttClient Subscribe")
         topics.push_back({ "test/topic" });
         SubscribeOptions options{};
 
-        auto err = testContext.client->subscribe(topics, std::move(options));
-        CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+        auto result = testContext.client->subscribe(topics, std::move(options));
+        CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
     }
 
     TEST_CASE("Subscribe with multiple topics and QOS 1/2")
@@ -144,8 +144,8 @@ TEST_SUITE("MqttClient Subscribe")
         std::vector<Topic> topics{};
         SubscribeOptions options{};
 
-        auto err = testContext.client->subscribe(topics, std::move(options));
-        CHECK(err.errorCode == ClientErrorCode::Invalid_Argument);
+        auto result = testContext.client->subscribe(topics, std::move(options));
+        CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
     }
 
     TEST_CASE("SubscribeAck with unknown packetId releases id and does not fire event")

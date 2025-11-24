@@ -24,27 +24,27 @@ namespace cleanMqtt
 
 		MqttClient::~MqttClient() = default;
 
-		ClientError MqttClient::connect(ConnectArgs&& args, ConnectAddress&& address) noexcept
+		ReqResult MqttClient::connect(ConnectArgs&& args, ConnectAddress&& address) noexcept
 		{
 			return m_impl->connect(std::move(args), std::move(address));
 		}
 
-		ClientError MqttClient::publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept
+		ReqResult MqttClient::publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept
 		{
 			return m_impl->publish(topic, std::move(payload), std::move(options));
 		}
 
-		ClientError MqttClient::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
+		ReqResult MqttClient::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
 		{
 			return m_impl->subscribe(topics, std::move(options));
 		}
 
-		ClientError MqttClient::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
+		ReqResult MqttClient::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
 		{
 			return m_impl->unSubscribe(topics, std::move(options));
 		}
 
-		ClientError MqttClient::disconnect(DisconnectArgs&& args) noexcept
+		ReqResult MqttClient::disconnect(DisconnectArgs&& args) noexcept
 		{
 			return m_impl->disconnect(std::move(args));
 		}

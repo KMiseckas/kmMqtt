@@ -52,17 +52,19 @@ else\
 		//Internal Events
 		using SendPubAckEvent = events::Event<std::uint16_t>;
 
+		class ReqResult;
+
 		class MqttClientImpl
 		{
 		public:
 			explicit MqttClientImpl(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions);
 			~MqttClientImpl();
 
-			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
-			ClientError publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
-			ClientError subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
-			ClientError unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
-			ClientError disconnect(DisconnectArgs&& args = {}) noexcept;
+			ReqResult connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
+			ReqResult publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
+			ReqResult subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
+			ReqResult unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
+			ReqResult disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
 			ClientError tick() noexcept;

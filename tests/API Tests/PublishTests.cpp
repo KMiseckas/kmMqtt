@@ -37,8 +37,8 @@ TEST_SUITE("MqttClient Publish")
         PublishOptions options;
         options.qos = Qos::QOS_0;
 
-        auto err{ testContext.client->publish(topic.c_str(), std::move(payload), std::move(options)) };
-        CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+        auto result{ testContext.client->publish(topic.c_str(), std::move(payload), std::move(options)) };
+        CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
     }
 
     TEST_CASE("Successful Publish QOS 1 triggers PubAck event")
@@ -375,8 +375,8 @@ TEST_SUITE("MqttClient Publish")
             PublishOptions options;
             options.qos = Qos::QOS_0;
 
-            auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
-            results.push_back(err);
+            auto result = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
+            results.push_back(result.error);
         }
 
         // All publishes should succeed
@@ -418,8 +418,8 @@ TEST_SUITE("MqttClient Publish")
         PublishOptions options;
         options.qos = Qos::QOS_0;
 
-        auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
-        CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+        auto result = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
+        CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
 
         CHECK(testContext.client->tick().noError()); //Process send queue
     }

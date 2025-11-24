@@ -65,10 +65,10 @@ struct TestClientContext
         cleanMqtt::mqtt::ConnectAddress&& address = getDefaultConnectAddress(),
         bool includeSuccessResponse = false)
     {
-        auto err{ client->connect(std::move(args), std::move(address)) };
-        CHECK(err.errorCode == expectedErrorCode);
+        auto result{ client->connect(std::move(args), std::move(address)) };
+        CHECK(result.errorCode() == expectedErrorCode);
 
-        if (err.errorCode == mqtt::ClientErrorCode::No_Error)
+        if (result.errorCode() == mqtt::ClientErrorCode::No_Error)
         {
             if (includeSuccessResponse)
             {
@@ -83,7 +83,7 @@ struct TestClientContext
             }
         }
 
-        return err;
+        return result.error;
     }
 
     /**
@@ -92,10 +92,10 @@ struct TestClientContext
     cleanMqtt::mqtt::ClientError tryConnectWithResponse(cleanMqtt::mqtt::ConnectArgs&& args = getDefaultConnectArgs(),
         cleanMqtt::mqtt::ConnectAddress&& address = getDefaultConnectAddress())
     {
-        auto err{ client->connect(std::move(args), std::move(address)) };
-        CHECK(err.errorCode == mqtt::ClientErrorCode::No_Error);
+        auto result{ client->connect(std::move(args), std::move(address)) };
+        CHECK(result.errorCode() == mqtt::ClientErrorCode::No_Error);
 
-        if (err.errorCode == mqtt::ClientErrorCode::No_Error)
+        if (result.errorCode() == mqtt::ClientErrorCode::No_Error)
         {
 			ByteBuffer ackBuffer(5);
 			ackBuffer += 32;    //Type
@@ -107,7 +107,7 @@ struct TestClientContext
 			receiveResponse(ackBuffer);
         }
 
-        return err;
+        return result.error;
     }
 
     MockWebSocket* socketPtr;

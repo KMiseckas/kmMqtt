@@ -10,6 +10,7 @@
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 #include <cleanMqtt/Logger/LoggerInstance.h>
 #include <cleanMqtt/Logger/DefaultLogger.h>
+#include <cleanMqtt/Mqtt/ReqResult.h>
 
 namespace cleanMqtt
 {
@@ -46,7 +47,7 @@ namespace cleanMqtt
 			}
 		}
 
-		ClientError MqttClientImpl::connect(ConnectArgs&& args, ConnectAddress&& address) noexcept
+		ReqResult MqttClientImpl::connect(ConnectArgs&& args, ConnectAddress&& address) noexcept
 		{
 			{
 				LockGuard guard{ m_mutex };
@@ -56,19 +57,19 @@ namespace cleanMqtt
 				if (m_connectionStatus == ConnectionStatus::CONNECTED || m_connectionStatus == ConnectionStatus::CONNECTING)
 				{
 					LogWarning("MqttClient", "Cannot connect() again while already connected or attempting to connect.");
-					return m_connectionStatus == ConnectionStatus::CONNECTED ? ClientErrorCode::Already_Connected : ClientErrorCode::Already_Connecting;
+					return m_connectionStatus == ConnectionStatus::CONNECTED ? ReqResult{ ClientErrorCode::Already_Connected } : ReqResult{ ClientErrorCode::Already_Connecting };
 				}
 
 				if (address.primaryAddress.hostname().empty())
 				{
 					LogError("MqttClient", "Cannot connect() without primary address.");
-					return { ClientErrorCode::Missing_Argument, "Cannot connect() without primary address." };
+					return ReqResult{ ClientErrorCode::Missing_Argument, "Cannot connect() without primary address." };
 				}
 
 				if (args.clientId.empty())
 				{
 					LogError("MqttClient", "Cannot connect() without client ID argument.");
-					return { ClientErrorCode::Missing_Argument, "Cannot connect() without client ID argument." };
+					return ReqResult{ ClientErrorCode::Missing_Argument, "Cannot connect() without client ID argument." };
 				}
 
 				if (args.will != nullptr)
@@ -76,19 +77,19 @@ namespace cleanMqtt
 					if (args.will->payload != nullptr && args.will->payload->size() <= 0)
 					{
 						LogError("MqttClient", "Payload size must be bigger than 0! Payload is included in the will, but payload size is 0.");
-						return { ClientErrorCode::Invalid_Argument, "Payload size must be bigger than 0! Payload is included in the will, but payload size is 0." };
+						return ReqResult{ ClientErrorCode::Invalid_Argument, "Payload size must be bigger than 0! Payload is included in the will, but payload size is 0." };
 					}
 
 					if (args.will->correlationData != nullptr && args.will->correlationData->size() <= 0)
 					{
 						LogError("MqttClient", "Correlatation data size must be bigger than 0! Correlatation data is included in the will, but Correlatation data size is 0.");
-						return { ClientErrorCode::Invalid_Argument, "Correlatation data size must be bigger than 0! Correlatation data is included in the will, but Correlatation data size is 0." };
+						return ReqResult{ ClientErrorCode::Invalid_Argument, "Correlatation data size must be bigger than 0! Correlatation data is included in the will, but Correlatation data size is 0." };
 					}
 
 					if (args.will->willTopic.empty())
 					{
 						LogError("MqttClient", "Attempted to add a Will to the Connect packet, but Will Topic has not been set!");
-						return { ClientErrorCode::Missing_Argument, "Attempted to add a Will to the Connect packet, but Will Topic has not been set!" };
+						return ReqResult{ ClientErrorCode::Missing_Argument, "Attempted to add a Will to the Connect packet, but Will Topic has not been set!" };
 					}
 				}
 
@@ -117,7 +118,7 @@ namespace cleanMqtt
 				if (!sConnectResult)
 				{
 					m_connectionStatus = ConnectionStatus::DISCONNECTED;
-					return ClientErrorCode::Socket_Connect_Failed;
+					return ReqResult{ ClientErrorCode::Socket_Connect_Failed };
 				}
 
 				m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
@@ -125,17 +126,17 @@ namespace cleanMqtt
 
 			m_mqttMainThreadCondition.notify_all();
 
-			return ClientErrorCode::No_Error;
+			return ReqResult{ ClientErrorCode::No_Error };
 		}
 
-		ClientError MqttClientImpl::publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept
+		ReqResult MqttClientImpl::publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept
 		{
 			LogTrace("MqttClient", "Started publish(): Topic: %s", topic);
 
 			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
 				LogError("MqttClient", "Client not connected, cannot publish()!");
-				return { ClientErrorCode::Not_Connected, "Client not connected, cannot publish()!" };
+				return ReqResult{ ClientErrorCode::Not_Connected, "Client not connected, cannot publish()!" };
 			}
 
 			if (options.topicAlias > m_connectionInfo.maxServerTopicAlias)
@@ -155,7 +156,7 @@ namespace cleanMqtt
 				const auto error{ m_connectionInfo.sessionState.addMessage(packetId, std::move(msgData)) };
 				if (error != ClientErrorCode::No_Error)
 				{
-					return { error, "Failed to add message to session state." };
+					return ReqResult{ error, "Failed to add message to session state." };
 				}
 			}
 
@@ -170,66 +171,66 @@ namespace cleanMqtt
 
 			m_mqttMainThreadCondition.notify_all();
 
-			return ClientErrorCode::No_Error;
+			return ReqResult{ ClientErrorCode::No_Error, packetId };
 		}
 
-		ClientError MqttClientImpl::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
+		ReqResult MqttClientImpl::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
 		{
 			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
 				LogError("MqttClient", "Client not connected, cannot subscribe()!");
-				return { ClientErrorCode::Not_Connected, "Client not connected, cannot subscribe()!" };
+				return ReqResult{ ClientErrorCode::Not_Connected, "Client not connected, cannot subscribe()!" };
 			}
 
 			if (topics.empty())
 			{
 				LogError("MqttClient", "Cannot subscribe to an empty list of topics!");
-				return { ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
+				return ReqResult{ ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
 			}
 
-			auto id{ m_packetIdPool.getId() };
+			auto packetId{ m_packetIdPool.getId() };
 
 			{
 				LockGuard guard{ m_mutex };
-				m_connectionInfo.pendingSubscriptions.push_back(PendingSubscription{ id, topics });
+				m_connectionInfo.pendingSubscriptions.push_back(PendingSubscription{ packetId, topics });
 			}
 
 			m_sendQueue.addToQueue(std::make_unique<SubscribeComposer>(&m_connectionInfo,
 				&m_packetIdPool,
-				id,
+				packetId,
 				topics,
 				std::move(options)));
 
 			LogTrace("MqttClient", "Started subscribe: Subscribing to; %s", allTopicsToStr(topics).c_str());
 			m_mqttMainThreadCondition.notify_all();
 
-			return ClientErrorCode::No_Error;
+			return ReqResult{ ClientErrorCode::No_Error, packetId };
 		}
 
-		ClientError MqttClientImpl::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
+		ReqResult MqttClientImpl::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
 		{
 			if (m_connectionStatus != ConnectionStatus::CONNECTED)
 			{
 				LogWarning("MqttClient", "Client not connected, cannot unSubscribe()!");
-				return { ClientErrorCode::Not_Connected, "Client not connected, cannot unSubscribe()!" };
+				return ReqResult{ ClientErrorCode::Not_Connected, "Client not connected, cannot unSubscribe()!" };
 			}
 
 			if (topics.empty())
 			{
 				LogError("MqttClient", "Cannot unsubscribe with an empty list of topics!");
-				return { ClientErrorCode::Invalid_Argument, "Cannot unsubscribe with an empty list of topics!" };
+				return ReqResult{ ClientErrorCode::Invalid_Argument, "Cannot unsubscribe with an empty list of topics!" };
 			}
 
-			auto id{ m_packetIdPool.getId() };
+			auto packetId{ m_packetIdPool.getId() };
 
 			{
 				LockGuard guard{ m_mutex };
-				m_connectionInfo.pendingUnSubscriptions.push_back(PendingUnSubscription{ id, topics });
+				m_connectionInfo.pendingUnSubscriptions.push_back(PendingUnSubscription{ packetId, topics });
 			}
 
 			m_sendQueue.addToQueue(std::make_unique<UnSubscribeComposer>(&m_connectionInfo,
 				&m_packetIdPool,
-				id,
+				packetId,
 				topics,
 				std::move(options)));
 
@@ -237,15 +238,15 @@ namespace cleanMqtt
 
 			m_mqttMainThreadCondition.notify_all();
 
-			return ClientErrorCode::No_Error;
+			return ReqResult{ ClientErrorCode::No_Error, packetId };
 		}
 
-		ClientError MqttClientImpl::disconnect(DisconnectArgs&& args) noexcept
+		ReqResult MqttClientImpl::disconnect(DisconnectArgs&& args) noexcept
 		{
 			if (m_connectionStatus == ConnectionStatus::DISCONNECTED)
 			{
 				LogWarning("MqttClient", "Client already disconnected, cannot disconnect()!");
-				return { ClientErrorCode::Not_Connected, "Client not connected, cannot disconnect()!" };
+				return ReqResult{ ClientErrorCode::Not_Connected, "Client not connected, cannot disconnect()!" };
 			}
 
 			handleInternalDisconnect(
@@ -254,7 +255,7 @@ namespace cleanMqtt
 
 			m_mqttMainThreadCondition.notify_all();
 
-			return ClientErrorCode::No_Error;
+			return ReqResult{ ClientErrorCode::No_Error };
 		}
 
 		ClientError MqttClientImpl::shutdown() noexcept

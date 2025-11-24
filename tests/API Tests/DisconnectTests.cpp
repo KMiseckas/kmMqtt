@@ -13,8 +13,8 @@ TEST_SUITE("MqttClient Disconnect")
     TEST_CASE("Disconnect when not connected")
     {
         TestClientContext testContext;
-        auto err{ testContext.client->disconnect() };
-        CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+        auto result{ testContext.client->disconnect() };
+        CHECK(result.errorCode()  == ClientErrorCode::Not_Connected);
     }
 
     TEST_CASE("Disconnect when connected")
@@ -41,9 +41,9 @@ TEST_SUITE("MqttClient Disconnect")
         ackBuffer += 0;     //Property Length
         testContext.receiveResponse(ackBuffer);
 
-        auto err = testContext.client->disconnect();
+        auto result = testContext.client->disconnect();
         testContext.client->tick();
-        CHECK(err.errorCode == ClientErrorCode::No_Error);
+        CHECK(result.errorCode() == ClientErrorCode::No_Error);
 
         CHECK(disconnectEventFired);
         CHECK(disconnectReason == DisconnectReasonCode::NORMAL_DISCONNECTION);
@@ -73,9 +73,9 @@ TEST_SUITE("MqttClient Disconnect")
 
         DisconnectArgs args;
         args.willPublish = true;
-        auto err = testContext.client->disconnect(std::move(args));
+        auto result = testContext.client->disconnect(std::move(args));
         testContext.client->tick();
-        CHECK(err.errorCode == ClientErrorCode::No_Error);
+        CHECK(result.errorCode() == ClientErrorCode::No_Error);
 
         CHECK(disconnectEventFired);
         CHECK(disconnectReason == DisconnectReasonCode::DISCONNECT_WITH_WILL_MESSAGE);

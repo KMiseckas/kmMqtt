@@ -3,6 +3,7 @@
 
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Mqtt/Enums/ClientErrorCode.h>
+#include <cstring>
 
 namespace cleanMqtt
 {
@@ -10,14 +11,14 @@ namespace cleanMqtt
 	{
 		struct PUBLIC_API ClientError
 		{
-			constexpr ClientError() = default;
-			constexpr ClientError(const ClientErrorCode code)
+			ClientError() = default;
+			ClientError(const ClientErrorCode code)
 				: errorCode{ code } {}
-			constexpr ClientError(const ClientErrorCode code, const char* msg)
+			ClientError(const ClientErrorCode code, const char* msg)
 				: errorCode{code}, errorMsg{msg}{}
 
 			ClientErrorCode errorCode{ ClientErrorCode::No_Error };
-			const char* errorMsg{ "" };
+			std::string errorMsg{ "" };
 
 			constexpr bool noError() const noexcept { return errorCode == ClientErrorCode::No_Error; }
 			

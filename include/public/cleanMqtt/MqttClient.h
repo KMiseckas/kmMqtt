@@ -7,6 +7,7 @@
 #include "cleanMqtt/Interfaces/IWebSocket.h"
 #include "cleanMqtt/Environments/DefaultEnvironmentFactory.h"
 #include "cleanMqtt/Mqtt/ClientError.h"
+#include "cleanMqtt/Mqtt/ReqResult.h"
 #include "cleanMqtt/Mqtt/MqttConnectionInfo.h"
 #include "cleanMqtt/Mqtt/MqttClientEvents.h"
 #include "cleanMqtt/Mqtt/Enums/ConnectionStatus.h"
@@ -74,9 +75,9 @@ namespace cleanMqtt
 			 * @param args The connection arguments for establishing the MQTT connection.
 			 * @param address The address of the MQTT broker to connect to.
 			 * 
-			 * @return ClientError indicating the result of the connection attempt.
+			 * @return ReqResult indicating the result of the connection attempt.
 			 */
-			ClientError connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
+			ReqResult connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
 
 			/**
 			 * @brief Publishes a message to a specified topic with the given payload and options.
@@ -85,9 +86,9 @@ namespace cleanMqtt
 			 * @param payload The payload of the message to be published.
 			 * @param options The options for publishing the message.
 			 * 
-			 * @return ClientError indicating the result of the publish attempt.
+			 * @return ReqResult indicating the result of the publish attempt.
 			 */
-			ClientError publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
+			ReqResult publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
 
 			/**
 			 * @brief Subscribe to the specified topics with the given subscribe options.
@@ -95,9 +96,9 @@ namespace cleanMqtt
 			 * @param topics The topics to which the client is subscribing.
 			 * @param options The subscribe options.
 			 * 
-			 * @return ClientError indicating the result of the subscribe attempt.
+			 * @return ReqResult indicating the result of the subscribe attempt.
 			 */
-			ClientError subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
+			ReqResult subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
 
 			/**
 			 * @brief Unsubscribe from the specified topics with the given unsubscribe options.
@@ -105,18 +106,18 @@ namespace cleanMqtt
 			 * @param topics The topics from which the client is unsubscribing.
 			 * @param options The unsubscribe options.
 			 * 
-			 * @return ClientError indicating the result of the unsubscribe attempt.
+			 * @return ReqResult indicating the result of the unsubscribe attempt.
 			 */
-			ClientError unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
+			ReqResult unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
 
 			/**
 			 * @brief Disconnects from the MQTT broker using the provided disconnect arguments.
 			 * 
 			 * @param args The disconnect arguments for terminating the MQTT connection.
 			 * 
-			 * @return ClientError indicating the result of the disconnect attempt.
+			 * @return ReqResult indicating the result of the disconnect attempt.
 			 */
-			ClientError disconnect(DisconnectArgs&& args = {}) noexcept;
+			ReqResult disconnect(DisconnectArgs&& args = {}) noexcept;
 
 			/**
 			 * @brief Shuts down the MQTT client, releasing all resources and stopping any ongoing operations.

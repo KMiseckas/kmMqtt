@@ -174,8 +174,8 @@ TEST_SUITE("MqttClient API Tests")
 		ByteBuffer payload(10);
 		PublishOptions options;
 		
-		auto err = testContext.client->publish("test/topic", std::move(payload), std::move(options));
-		CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+		auto result = testContext.client->publish("test/topic", std::move(payload), std::move(options));
+		CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
 	}
 
 	TEST_CASE("Publish - QOS_0 Success")
@@ -266,8 +266,8 @@ TEST_SUITE("MqttClient API Tests")
 		topics.push_back(Topic("test/topic", Qos::QOS_0));
 		
 		SubscribeOptions options;
-		auto err = testContext.client->subscribe(topics, std::move(options));
-		CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+		auto result = testContext.client->subscribe(topics, std::move(options));
+		CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
 	}
 
 	TEST_CASE("Subscribe - Empty Topics Returns Error")
@@ -278,8 +278,8 @@ TEST_SUITE("MqttClient API Tests")
 		std::vector<Topic> emptyTopics;
 		SubscribeOptions options;
 		
-		auto err = testContext.client->subscribe(emptyTopics, std::move(options));
-		CHECK(err.errorCode == ClientErrorCode::Invalid_Argument);
+		auto result = testContext.client->subscribe(emptyTopics, std::move(options));
+		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
 	}
 
 	TEST_CASE("Subscribe - Single Topic Success")
@@ -335,8 +335,8 @@ TEST_SUITE("MqttClient API Tests")
 		topics.push_back(Topic("test/topic", Qos::QOS_0));
 		
 		UnSubscribeOptions options;
-		auto err = testContext.client->unSubscribe(topics, std::move(options));
-		CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+		auto result = testContext.client->unSubscribe(topics, std::move(options));
+		CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
 	}
 
 	TEST_CASE("UnSubscribe - Empty Topics Returns Error")
@@ -347,8 +347,8 @@ TEST_SUITE("MqttClient API Tests")
 		std::vector<Topic> emptyTopics;
 		UnSubscribeOptions options;
 		
-		auto err = testContext.client->unSubscribe(emptyTopics, std::move(options));
-		CHECK(err.errorCode == ClientErrorCode::Invalid_Argument);
+		auto result = testContext.client->unSubscribe(emptyTopics, std::move(options));
+		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
 	}
 
 	TEST_CASE("UnSubscribe - Single Topic Success")
@@ -384,8 +384,8 @@ TEST_SUITE("MqttClient API Tests")
 	TEST_CASE("Disconnect - Not Connected Returns Error")
 	{
 		TestClientContext testContext;
-		auto err = testContext.client->disconnect();
-		CHECK(err.errorCode == ClientErrorCode::Not_Connected);
+		auto result = testContext.client->disconnect();
+		CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
 	}
 
 	TEST_CASE("Disconnect - When Connected Success")
@@ -652,8 +652,8 @@ TEST_SUITE("MqttClient API Tests")
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("localhost", "1883");
 		
-		auto err = testContext.client->connect(std::move(args), std::move(address));
-		CHECK(err.errorCode == ClientErrorCode::Invalid_Argument);
+		auto result = testContext.client->connect(std::move(args), std::move(address));
+		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
 	}
 
 	TEST_CASE("Error Handling - Invalid Will Correlation Data Size")
@@ -667,8 +667,8 @@ TEST_SUITE("MqttClient API Tests")
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("localhost", "1883");
 		
-		auto err = testContext.client->connect(std::move(args), std::move(address));
-		CHECK(err.errorCode == ClientErrorCode::Invalid_Argument);
+		auto result = testContext.client->connect(std::move(args), std::move(address));
+		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
 	}
 
 	TEST_CASE("Error Handling - Will Without Topic")
@@ -683,8 +683,8 @@ TEST_SUITE("MqttClient API Tests")
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("localhost", "1883");
 		
-		auto err = testContext.client->connect(std::move(args), std::move(address));
-		CHECK(err.errorCode == ClientErrorCode::Missing_Argument);
+		auto result = testContext.client->connect(std::move(args), std::move(address));
+		CHECK(result.errorCode() == ClientErrorCode::Missing_Argument);
 	}
 
 	TEST_CASE("Connection Status Transitions")

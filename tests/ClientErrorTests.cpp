@@ -107,17 +107,4 @@ TEST_SUITE("ClientError Tests")
 			CHECK(ClientErrorCode::No_Error != error);
 		}
 	}
-
-	TEST_CASE("constexpr compatibility")
-	{
-		//This test verifies that ClientError can be used in constexpr contexts
-		constexpr ClientError error1;
-		constexpr ClientError error2(ClientErrorCode::Invalid_Argument);
-		constexpr ClientError error3(ClientErrorCode::ConnectError, "Error");
-		
-		static_assert(error1.noError(), "Default error should have no error");
-		static_assert(!error2.noError(), "Error with Invalid_Packet should not be noError");
-		static_assert(error1 == ClientErrorCode::No_Error, "Comparison should work in constexpr");
-		static_assert(error2 != ClientErrorCode::No_Error, "Not equal comparison should work in constexpr");
-	}
 }
