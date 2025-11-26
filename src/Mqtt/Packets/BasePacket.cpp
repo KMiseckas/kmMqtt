@@ -53,15 +53,17 @@ namespace cleanMqtt
 
 			m_fixedHeader.packetType = getPacketType();
 
+			//Calculate and set remaining length in fixed header
 			if (!m_fixedHeader.remainingLength.setValue(static_cast<std::uint32_t>(calculateFixedHeaderRemainingLength())))
 			{
 				return EncodeResult{ EncodeErrorCode::INTERNAL_ERROR, "Failed to set remaining length in fixed header. Remaing length size" };
 			}
 
-			const std::size_t bufferCapacity = m_fixedHeader.getEncodedBytesSize() + static_cast<std::size_t>(m_fixedHeader.remainingLength.uint32Value());
+			const std::size_t bufferCapacity{ m_fixedHeader.getEncodedBytesSize() + static_cast<std::size_t>(m_fixedHeader.remainingLength.uint32Value()) };
 
 			try
 			{
+				//Minimum packet size is 2 bytes (1 byte for type and flags + minimum 1 byte for remaining length)
 				if (bufferCapacity < 2)
 				{
 					LogException("BasePacket", std::runtime_error("Not enough packet data. Cannot encode packet with less than 2 bytes of data."));
@@ -92,6 +94,7 @@ namespace cleanMqtt
 			DecodeResult result;
 			result.packetType = getPacketType();
 
+			//Minimum packet size is 2 bytes (1 byte for type and flags + minimum 1 byte for remaining length)
 			if (m_dataBuffer.size() < 2)
 			{
 				LogError("BasePacket", "Cannot decode packet with less than 2 bytes of data.");
