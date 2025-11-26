@@ -722,7 +722,6 @@ namespace cleanMqtt
 				PubAckCallback pubAckCallback{ std::bind(&MqttClientImpl::handleReceivedPublishAck, this, std::placeholders::_1) };
 				SubAckCallback subAckCallback{ std::bind(&MqttClientImpl::handleReceivedSubscribeAcknowledge, this, std::placeholders::_1) };
 				UnSubAckCallback unSubAckCallback{ std::bind(&MqttClientImpl::handleReceivedUnSubscribeAcknowledge, this, std::placeholders::_1) };
-				//TODO puback receive
 
 				m_receiveQueue.setConnectAcknowledgeCallback(conAckCallback);
 				m_receiveQueue.setDisconnectCallback(disconnectCallback);

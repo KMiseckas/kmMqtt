@@ -216,8 +216,6 @@ namespace cleanMqtt
 
 			namespace
 			{
-				//TODO maybe we can reuse return pointers rather than allocating new ones? (careful if multithreaded!)
-
 				void* decodeUInt8(const ByteBuffer& buffer)
 				{
 					return new std::uint8_t(buffer.readUint8());
