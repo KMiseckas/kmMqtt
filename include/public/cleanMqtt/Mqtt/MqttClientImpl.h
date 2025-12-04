@@ -2,9 +2,7 @@
 #define INCLUDE_CLEANMQTT_MQTT_MQTTCLIENTIMPL_H
 
 #include "cleanMqtt/Config.h"
-#include "cleanMqtt/GlobalMacros.h"
 #include "cleanMqtt/Interfaces/IWebSocket.h"
-#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
 #include "cleanMqtt/Mqtt/ClientError.h"
 #include "cleanMqtt/Mqtt/Enums/ConnectionStatus.h"
 #include "cleanMqtt/Mqtt/MqttClientEvents.h"
@@ -20,19 +18,23 @@
 #include "cleanMqtt/Mqtt/Params/PubAckOptions.h"
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
 #include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
-#include "cleanMqtt/Mqtt/Params/UnSubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/Topic.h"
+#include "cleanMqtt/Mqtt/Params/UnSubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Transport/ReceiveQueue.h"
 #include "cleanMqtt/Mqtt/Transport/SendQueue.h"
+#include "cleanMqtt/MqttClientOptions.h"
 #include "cleanMqtt/Utils/Deferrer.h"
 #include "cleanMqtt/Utils/PacketIdPool.h" 
-#include "cleanMqtt/MqttClientOptions.h"
+#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
 
 #include <atomic>
+#include <condition_variable>
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <condition_variable>
+#include <cleanMqtt/Mqtt/Params/PubRecOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubRelOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubCompOptions.h>
 
 namespace cleanMqtt
 {
@@ -76,6 +78,10 @@ else\
 			ReconnectEvent& onReconnectEvent() noexcept;
 			PublishEvent& onPublishEvent() noexcept;
 			PublishAckEvent& onPublishAckEvent() noexcept;
+			PublishCompleteEvent& onPublishCompleteEvent() noexcept;
+			PublishReceivedEvent& onPublishReceivedEvent() noexcept;
+			PublishReleasedEvent& onPublishReleasedEvent() noexcept;
+			//TODO add `onPublishStatusEvent()` Incorporates all QoS related publish events without the packet data.
 			SubscribeAckEvent& onSubscribeAckEvent() noexcept;
 			UnSubscribeAckEvent& onUnSubscribeAckEvent() noexcept;
 
@@ -85,6 +91,9 @@ else\
 
 		private:
 			void pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept;
+			void pubRec(std::uint16_t packetId, PubRecReasonCode code, PubRecOptions&& options) noexcept;
+			void pubRel(std::uint16_t packetId, PubRelReasonCode code, PubRelOptions&& options) noexcept;
+			void pubComp(std::uint16_t packetId, PubCompReasonCode code, PubCompOptions&& options) noexcept;
 
 			bool tryStartBrokerRedirection(std::uint8_t failedConnectionReasonCode, const Properties& properties) noexcept;
 			void reconnect();
@@ -100,14 +109,17 @@ else\
 			void handleSocketErrorEvent(int error);
 
 			void handlePingSentEvent();
+			void handlePubCompSentEvent(std::uint16_t packetId);
+			void handlePubRecSentEvent(std::uint16_t packetId);
+			void handlePubRelSentEvent(std::uint16_t packetId);
 
 			void handleReceivedConnectAcknowledge(ConnectAck&& packet);
 			void handleReceivedDisconnect(Disconnect&& packet);
 			void handleReceivedPublish(Publish&& packet);
 			void handleReceivedPublishAck(PublishAck&& packet);
-			//void handleReceivedPublishComplete();
-			//void handleReceivedPublishReceived();
-			//void handleReceivedPublishReleased();
+			void handleReceivedPublishComp(PublishComp&& packet);
+			void handleReceivedPublishRec(PublishRec&& packet);
+			void handleReceivedPublishRel(PublishRel&& packet);
 			void handleReceivedSubscribeAcknowledge(SubscribeAck&& packet);
 			void handleReceivedUnSubscribeAcknowledge(UnSubscribeAck&& packet);
 			void handleReceivedPingResponse(PingResp&& packet);
@@ -146,6 +158,9 @@ else\
 			ReconnectEvent m_reconnectEvent;
 			PublishEvent m_publishEvent;
 			PublishAckEvent m_pubAckEvent;
+			PublishCompleteEvent m_pubCompEvent;
+			PublishReceivedEvent m_pubRecEvent;
+			PublishReleasedEvent m_pubRelEvent;
 			SubscribeAckEvent m_subAckEvent;
 			UnSubscribeAckEvent m_unSubAckEvent;
 

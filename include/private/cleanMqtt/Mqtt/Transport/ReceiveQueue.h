@@ -3,7 +3,7 @@
 
 #include "cleanMqtt/GlobalMacros.h"
 #include "cleanMqtt/ByteBuffer.h"
-#include "cleanMqtt/Mqtt/Packets/Connection/Connect.h"
+#include "cleanMqtt/Mqtt/Packets/ErrorCodes.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/ConnectAck.h"
 #include "cleanMqtt/Mqtt/Packets/Connection/Disconnect.h"
 #include "cleanMqtt/Mqtt/Packets/Publish/Publish.h"
@@ -11,6 +11,9 @@
 #include "cleanMqtt/Mqtt/Packets/Publish/PublishAck.h"
 #include "cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h"
 #include "cleanMqtt/Mqtt/Packets/UnSubscribe/UnSubscribeAck.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/PublishComp.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/PublishRec.h"
+#include "cleanMqtt/Mqtt/Packets/Publish/PublishRel.h"
 
 #include <queue>
 #include <mutex>
@@ -26,9 +29,9 @@ namespace cleanMqtt
 		using DisconnectCallback = std::function<void(Disconnect&&)>;
 		using PubCallback = std::function<void(Publish&&)>;
 		using PubAckCallback = std::function<void(PublishAck&&)>;
-		//using PubCompCallback = void (MqttClient::*)(const ConnectAck&);
-		//using PubRecvCallback = void (MqttClient::*)(const ConnectAck&);
-		//using PubRelCallback = void (MqttClient::*)(const ConnectAck&);
+		using PubCompCallback = std::function<void(PublishComp&&)>;
+		using PubRecCallback = std::function<void(PublishRec&&)>;
+		using PubRelCallback = std::function<void(PublishRel&&)>;
 		using SubAckCallback = std::function<void(SubscribeAck&&)>;
 		using UnSubAckCallback = std::function<void(UnSubscribeAck&&)>;
 		using PingRespCallback = std::function<void(PingResp&&)>;
@@ -50,17 +53,14 @@ namespace cleanMqtt
 			void setDisconnectCallback(DisconnectCallback& callback) noexcept;
 			void setPublishCallback(PubCallback& callback) noexcept;
 			void setPublishAcknowledgeCallback(PubAckCallback& callback) noexcept;
-			//void setPublishCompleteCallback() noexcept;
-			//void setPublishReceivedCallback() noexcept;
-			//void setPublishReleasedCallback() noexcept;
+			void setPublishReceivedCallback(PubRecCallback& callback) noexcept;
+			void setPublishReleaseCallback(PubRelCallback& callback) noexcept;
+			void setPublishCompleteCallback(PubCompCallback& callback) noexcept;
 			void setSubscribeAcknowledgeCallback(SubAckCallback& callback) noexcept;
 			void setUnSubscribeAcknowledgeCallback(UnSubAckCallback& callback) noexcept;
 			void setPingResponseCallback(PingRespCallback& callback) noexcept;
-			//TODO: Add more callbacks as needed
 
 		private:
-			bool tryAddFailedResult(DecodeResult&& result) noexcept;
-
 			std::queue<ByteBuffer> m_inQueueData;
 			std::queue<ByteBuffer> m_inProgressData;
 
@@ -72,6 +72,9 @@ namespace cleanMqtt
 			PingRespCallback m_pingRespCallback;
 			SubAckCallback m_subAckCallback;
 			UnSubAckCallback m_unSubAckCallback;
+			PubCompCallback m_pubCompCallback;
+			PubRecCallback m_pubRecCallback;
+			PubRelCallback m_pubRelCallback;
 
 			std::mutex m_mutex;
 		};

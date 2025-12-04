@@ -1,5 +1,15 @@
 #include <cleanMqtt/Mqtt/PacketHelper.h>
 
+#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubCompOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubRecOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubRelOptions.h>
+#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
+
 namespace cleanMqtt
 {
 	namespace mqtt
@@ -152,6 +162,48 @@ namespace cleanMqtt
 
 			PubAckVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
 			return PublishAck{ std::move(varHeader) };
+		}
+
+		PublishRec createPubRecPacket(std::uint16_t packetId, PubRecReasonCode reasonCode, const PubRecOptions& options) noexcept
+		{
+			Properties properties;
+			properties.tryAddProperty<PropertyType::REASON_STRING>(UTF8String{ options.reasonString }, !options.reasonString.empty());
+
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
+			}
+
+			PubRecVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
+			return PublishRec{ std::move(varHeader) };
+		}
+
+		PublishRel createPubRelPacket(std::uint16_t packetId, PubRelReasonCode reasonCode, const PubRelOptions& options) noexcept
+		{
+			Properties properties;
+			properties.tryAddProperty<PropertyType::REASON_STRING>(UTF8String{ options.reasonString }, !options.reasonString.empty());
+
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
+			}
+
+			PubRelVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
+			return PublishRel{ std::move(varHeader) };
+		}
+
+		PublishComp createPubCompPacket(std::uint16_t packetId, PubCompReasonCode reasonCode, const PubCompOptions& options) noexcept
+		{
+			Properties properties;
+			properties.tryAddProperty<PropertyType::REASON_STRING>(UTF8String{ options.reasonString }, !options.reasonString.empty());
+
+			for (const auto& property : options.userProperties)
+			{
+				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
+			}
+
+			PubCompVariableHeader varHeader{ packetId, reasonCode, std::move(properties) };
+			return PublishComp{ std::move(varHeader) };
 		}
 
 		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept

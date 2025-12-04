@@ -1,6 +1,8 @@
 #ifndef CLEANMQTT_MQTT_TRANSPORT_SENDRESULTDATA_H
 #define CLEANMQTT_MQTT_TRANSPORT_SENDRESULTDATA_H
 
+#include "cleanMqtt/Mqtt/Packets/ErrorCodes.h"
+
 namespace cleanMqtt
 {
 	namespace mqtt
@@ -16,7 +18,7 @@ namespace cleanMqtt
 		struct PUBLIC_API SendResultData
 		{
 			SendResultData() noexcept = default;
-			SendResultData(std::size_t size, bool sent, NoSendReason reason, mqtt::EncodeResult encodeResult, int error = 0) noexcept
+			SendResultData(std::size_t size, bool sent, NoSendReason reason, EncodeResult encodeResult, int error = 0) noexcept
 				: packetSize{ size }, wasSent{ sent }, noSendReason{ reason }, encodeResult{ encodeResult }, socketError{ error }
 			{
 			}
@@ -24,7 +26,7 @@ namespace cleanMqtt
 			std::size_t packetSize{ 0U };
 			bool wasSent{ false };
 			NoSendReason noSendReason{ NoSendReason::NONE };
-			mqtt::EncodeResult encodeResult;
+			EncodeResult encodeResult;
 			int socketError{ 0 };
 		};
 	}

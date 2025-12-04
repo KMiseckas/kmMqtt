@@ -115,6 +115,21 @@ namespace cleanMqtt
 			m_onPingSentCallback = callback;
 		}
 
+		void SendQueue::setOnPubCompSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept
+		{
+			m_onPubCompSentCallback = callback;
+		}
+
+		void SendQueue::setOnPubRelSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept
+		{
+			m_onPubRelSentCallback = callback;
+		}
+
+		void SendQueue::setOnPubRecSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept
+		{
+			m_onPubRecSentCallback = callback;
+		}
+
 		bool SendQueue::trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult)
 		{
 			if (m_nextPacketComposersBatch.size() <= 0)
@@ -147,6 +162,7 @@ namespace cleanMqtt
 					return false;
 				}
 
+				//Track if there is a ping packet in the batch for callback later.
 				if(result.encodeResult.packetType == PacketType::PING_REQUQEST)
 				{
 					if (!hasPingPacket)
@@ -155,8 +171,13 @@ namespace cleanMqtt
 						hasPingPacket = true;
 					}
 				}
-
-				//TODO check max packet size.
+				else if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE ||
+					result.encodeResult.packetType == PacketType::PUBLISH_RECEIVED ||
+					result.encodeResult.packetType == PacketType::PUBLISH_RELEASED)
+				{
+					//Track specific packets in buffer for notifying listeners when sent.
+					m_packetsMetadataInBuffer.push_back({ fullOutgoingDataSize + result.encodedData.size(), result.encodeResult.packetType,  result.encodeResult.packetId });
+				}
 
 				fullOutgoingDataSize += result.encodedData.size();
 				encodedDataQueue.push_back(std::move(result.encodedData));
@@ -200,6 +221,24 @@ namespace cleanMqtt
 							m_onPingSentCallback();
 						}
 
+						for each(auto& metadata in m_packetsMetadataInBuffer)
+						{
+							switch (metadata.packetType)
+							{
+							case PacketType::PUBLISH_COMPLETE:
+								m_onPubCompSentCallback(metadata.packetId);
+								break;
+							case PacketType::PUBLISH_RELEASED:
+								m_onPubRelSentCallback(metadata.packetId);
+								break;
+							case PacketType::PUBLISH_RECEIVED:
+								m_onPubRecSentCallback(metadata.packetId);
+								break;
+							}
+						}
+
+						m_packetsMetadataInBuffer.clear();
+
 						//Reset buffer to free up memory if over max allowed persistent size.
 						if (m_sendBuffer.capacity() > MAX_ALLOWED_PERSISTENT_SEND_BUFFER_SIZE)
 						{
@@ -220,6 +259,27 @@ namespace cleanMqtt
 							{
 								//Ping packet was sent successfully.
 								m_onPingSentCallback();
+							}
+
+							for each(auto& metadata in m_packetsMetadataInBuffer)
+							{
+								if (sendResult >= static_cast<int>(metadata.endByteInBuffer))
+								{
+									switch (metadata.packetType)
+									{
+									case PacketType::PUBLISH_COMPLETE:
+										m_onPubCompSentCallback(metadata.packetId);
+										break;
+									case PacketType::PUBLISH_RELEASED:
+										m_onPubRelSentCallback(metadata.packetId);
+										break;
+									case PacketType::PUBLISH_RECEIVED:
+										m_onPubRecSentCallback(metadata.packetId);
+										break;
+									}
+
+									m_packetsMetadataInBuffer.erase(m_packetsMetadataInBuffer.begin());
+								}
 							}
 						}
 

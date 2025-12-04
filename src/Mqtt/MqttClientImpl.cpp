@@ -11,6 +11,9 @@
 #include <cleanMqtt/Logger/LoggerInstance.h>
 #include <cleanMqtt/Logger/DefaultLogger.h>
 #include <cleanMqtt/Mqtt/ReqResult.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/PubRecComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/PubRelComposer.h>
+#include <cleanMqtt/Mqtt/Transport/Jobs/PubCompComposer.h>
 
 namespace cleanMqtt
 {
@@ -35,6 +38,9 @@ namespace cleanMqtt
 
 			m_sendQueue.setSocket(m_socket);
 			m_sendQueue.setOnPingSentCallback([this]() { handlePingSentEvent(); });
+			m_sendQueue.setOnPubCompSentCallback([this](std::uint16_t packetId) { handlePubCompSentEvent(packetId); });
+			m_sendQueue.setOnPubRecSentCallback([this](std::uint16_t packetId) { handlePubRecSentEvent(packetId); });
+			m_sendQueue.setOnPubRelSentCallback([this](std::uint16_t packetId) { handlePubRelSentEvent(packetId); });
 		}
 
 		MqttClientImpl::~MqttClientImpl()
@@ -317,6 +323,9 @@ namespace cleanMqtt
 			m_disconnectEvent.removeAll();
 			m_publishEvent.removeAll();
 			m_pubAckEvent.removeAll();
+			m_pubCompEvent.removeAll();
+			m_pubRecEvent.removeAll();
+			m_pubRelEvent.removeAll();
 			m_subAckEvent.removeAll();
 
 			m_socket->close();
@@ -461,6 +470,21 @@ namespace cleanMqtt
 			return m_pubAckEvent;
 		}
 
+		PublishCompleteEvent& MqttClientImpl::onPublishCompleteEvent() noexcept
+		{
+			return m_pubCompEvent;
+		}
+
+		PublishReceivedEvent& MqttClientImpl::onPublishReceivedEvent() noexcept
+		{
+			return m_pubRecEvent;
+		}
+
+		PublishReleasedEvent& MqttClientImpl::onPublishReleasedEvent() noexcept
+		{
+			return m_pubRelEvent;
+		}
+
 		SubscribeAckEvent& MqttClientImpl::onSubscribeAckEvent() noexcept
 		{
 			return m_subAckEvent;
@@ -488,9 +512,33 @@ namespace cleanMqtt
 
 		void MqttClientImpl::pubAck(std::uint16_t packetId, PubAckReasonCode code, PubAckOptions&& options) noexcept
 		{
-			LockGuard guard{ m_mutex };
-
 			m_sendQueue.addToQueue(std::make_unique<PubAckComposer>(&m_connectionInfo,
+				packetId,
+				code,
+				std::move(options)));
+		}
+
+		void MqttClientImpl::pubRec(std::uint16_t packetId, PubRecReasonCode code, PubRecOptions&& options) noexcept
+		{
+			m_sendQueue.addToQueue(std::make_unique<PubRecComposer>(&m_connectionInfo,
+				packetId,
+				code,
+				std::move(options)));
+		}
+
+		void MqttClientImpl::pubRel(std::uint16_t packetId, PubRelReasonCode code, PubRelOptions&& options) noexcept
+		{
+			m_sendQueue.addToQueue(std::make_unique<PubRelComposer>(&m_connectionInfo,
+				packetId,
+				code,
+				std::move(options)));
+		}
+
+		void MqttClientImpl::pubComp(std::uint16_t packetId, PubCompReasonCode code, PubCompOptions&& options) noexcept
+		{
+			m_connectionInfo.sessionState.updateMessage(packetId, PublishMessageStatus::NeedToSendPubComp);
+
+			m_sendQueue.addToQueue(std::make_unique<PubCompComposer>(&m_connectionInfo,
 				packetId,
 				code,
 				std::move(options)));
@@ -791,8 +839,32 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handlePingSentEvent()
 		{
+			//Record time ping was sent and set awaiting ping ack response back from broker.
 			m_connectionInfo.lastPingReqSentTime = std::chrono::steady_clock::now();
 			m_connectionInfo.awaitingPingResponse = true;
+		}
+
+		void MqttClientImpl::handlePubCompSentEvent(std::uint16_t packetId)
+		{
+			assert(packetId != 0 && "handlePubCompSentEvent(), packet ID cannot be 0.");
+
+			//Remove message from session state and release packet ID.
+			m_connectionInfo.sessionState.removeMessage(packetId);
+			m_packetIdPool.releaseId(packetId);
+		}
+
+		void MqttClientImpl::handlePubRecSentEvent(std::uint16_t packetId)
+		{
+			assert(packetId != 0 && "handlePubRecSentEvent(), packet ID cannot be 0.");
+
+			m_connectionInfo.sessionState.updateMessage(packetId, PublishMessageStatus::WaitingForPubRel);
+		}
+
+		void MqttClientImpl::handlePubRelSentEvent(std::uint16_t packetId)
+		{
+			assert(packetId != 0 && "handlePubRelSentEvent(), packet ID cannot be 0.");
+
+			m_connectionInfo.sessionState.updateMessage(packetId, PublishMessageStatus::WaitingForPubComp);
 		}
 
 		void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck&& packet)
@@ -900,9 +972,9 @@ namespace cleanMqtt
 			{
 				firePublishReceivedEvent(std::move(packet));
 			}
-			else
+			else //QOS 2
 			{
-
+				const auto packetId{ packet.getVariableHeader().packetIdentifier };
 			}
 			//If QoS is 1 or 2, we need to send a PUBACK or PUBREC packet back to the server + Store to Session State.
 			//const auto packetId{ packet.getVariableHeader().packetIdentifier};
@@ -936,7 +1008,47 @@ namespace cleanMqtt
 			m_connectionInfo.sessionState.removeMessage(packetId);
 			m_packetIdPool.releaseId(packetId);
 
-			DISPATCH_EVENT_TO_CONSUMER([&, id = packetId, p = std::move(packet)]() {m_pubAckEvent({ id }, p); });
+			DISPATCH_EVENT_TO_CONSUMER([&, id = packetId, p = std::move(packet)]() {m_pubAckEvent({ id,  packet.getVariableHeader().reasonCode }, p); });
+		}
+
+		void MqttClientImpl::handleReceivedPublishComp(PublishComp&& packet)
+		{
+			const auto packetId{ packet.getVariableHeader().packetId };
+
+			m_connectionInfo.sessionState.removeMessage(packetId);
+			m_packetIdPool.releaseId(packetId);
+
+			//TODO external event
+		}
+
+		void MqttClientImpl::handleReceivedPublishRec(PublishRec&& packet)
+		{
+			const auto packetId{ packet.getVariableHeader().packetId };
+			const auto reasonCode{ packet.getVariableHeader().reasonCode };
+
+			if (reasonCode >= PubRecReasonCode::UNSPECIFIED_ERROR)
+			{
+				LogWarning("MqttClient", "Received PUBREC packet with non-success reason code: %d for Packet ID %d. Cancelling publish message.",
+					static_cast<std::uint8_t>(reasonCode),
+					packetId);
+
+				m_connectionInfo.sessionState.removeMessage(packetId);
+				m_packetIdPool.releaseId(packetId);
+			}
+			else
+			{
+				pubRel(packetId, PubRelReasonCode::SUCCESS, PubRelOptions{});
+			}
+			//TODO external event
+		}
+
+		void MqttClientImpl::handleReceivedPublishRel(PublishRel&& packet)
+		{
+			const auto packetId{ packet.getVariableHeader().packetId };
+
+			pubComp(packetId, PubCompReasonCode::SUCCESS, PubCompOptions{});
+
+			//TODO external event
 		}
 
 		void MqttClientImpl::handleReceivedSubscribeAcknowledge(SubscribeAck&& packet)
@@ -1073,12 +1185,21 @@ namespace cleanMqtt
 			const auto qos{ packet.getVariableHeader().qos };
 			const auto id{ packet.getVariableHeader().packetIdentifier };
 
-			DISPATCH_EVENT_TO_CONSUMER([&, tName = std::move(topicName), pload = &packet.getPayloadHeader().payload, p = std::move(packet)]() {m_publishEvent({ std::move(tName), pload }, p); });
+			DISPATCH_EVENT_TO_CONSUMER([&, tName = topicName, pload = &packet.getPayloadHeader().payload, p = std::move(packet)]() {m_publishEvent({ std::move(tName), pload }, p); });
+
+			//TODO authorization check???? send failed pub ack?
 
 			//After packet is sent to application layer, send PUBACK packet back to the server (As per QOS 1 specification) 
 			if (qos == Qos::QOS_1)
 			{
 				pubAck(id, PubAckReasonCode::SUCCESS, PubAckOptions{});
+			}
+			else if (qos == Qos::QOS_2)
+			{
+				PublishMessageData data{ topicName, {} };
+				m_connectionInfo.sessionState.addMessage(id, std::move(data));
+
+				pubRec(id, PubRecReasonCode::SUCCESS, PubRecOptions{});
 			}
 		}
 

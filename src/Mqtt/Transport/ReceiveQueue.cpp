@@ -69,7 +69,7 @@ if (callback != nullptr)\
 				std::swap(m_inQueueData, m_inProgressData);
 			}
 
-			InProgressDataGuard inProgressDataGuard{ m_inProgressData };
+			InProgressDataGuard inProgressDataGuard{ m_inProgressData }; //RAII to clear in-progress data on exit
 			PacketType packetType{ PacketType::RESERVED };
 
 			LogTrace("ReceiveQueue", "Processing queue of %d received packets.", m_inProgressData.size());
@@ -110,14 +110,20 @@ if (callback != nullptr)\
 					break;
 				}
 				case PacketType::PUBLISH_COMPLETE:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(PublishComp, m_pubCompCallback);
 					break;
+				}
 				case PacketType::PUBLISH_RECEIVED:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(PublishRec, m_pubRecCallback);
 					break;
+				}
 				case PacketType::PUBLISH_RELEASED:
-					//TODO
+				{
+					HANDLE_RECEIVED_PACKET(PublishRel, m_pubRelCallback);
 					break;
+				}
 				case PacketType::SUBSCRIBE_ACKNOWLEDGE:
 				{
 					HANDLE_RECEIVED_PACKET(SubscribeAck, m_subAckCallback);
@@ -178,6 +184,9 @@ if (callback != nullptr)\
 			m_pubAckCallback = nullptr;
 			m_subAckCallback = nullptr;
 			m_unSubAckCallback = nullptr;
+			m_pubCompCallback = nullptr;
+			m_pubRecCallback = nullptr;
+			m_pubRelCallback = nullptr;
 		}
 
 		void ReceiveQueue::setConnectAcknowledgeCallback(ConAckCallback& callback) noexcept
@@ -213,6 +222,21 @@ if (callback != nullptr)\
 		void ReceiveQueue::setUnSubscribeAcknowledgeCallback(UnSubAckCallback& callback) noexcept
 		{
 			m_unSubAckCallback = callback;
+		}
+
+		void ReceiveQueue::setPublishCompleteCallback(PubCompCallback& callback) noexcept
+		{
+			m_pubCompCallback = callback;
+		}
+
+		void ReceiveQueue::setPublishReceivedCallback(PubRecCallback& callback) noexcept
+		{
+			m_pubRecCallback = callback;
+		}
+
+		void ReceiveQueue::setPublishReleaseCallback(PubRelCallback& callback) noexcept
+		{
+			m_pubRelCallback = callback;
 		}
 	}
 }

@@ -72,6 +72,7 @@ namespace cleanMqtt
 			PacketType packetType{ PacketType::RESERVED };
 			EncodeErrorCode code{ EncodeErrorCode::NO_ERROR };
 			std::string reason;
+			std::uint16_t packetId{ 0U };
 
 			inline bool isSuccess() const noexcept
 			{

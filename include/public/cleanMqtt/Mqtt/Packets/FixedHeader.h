@@ -6,6 +6,7 @@
 #include <cleanMqtt/Mqtt/Packets/PacketType.h>
 #include <cleanMqtt/Mqtt/Packets/FixedHeaderFlags.h>
 #include <cleanMqtt/Mqtt/Packets/DataTypes.h>
+
 #include <cstdint>
 
 namespace cleanMqtt

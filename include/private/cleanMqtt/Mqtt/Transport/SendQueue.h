@@ -29,6 +29,13 @@ namespace cleanMqtt
 
 		class SendQueue
 		{
+			struct PacketSectionMetadata
+			{
+				std::size_t endByteInBuffer{ 0U };
+				PacketType packetType{ PacketType::RESERVED };
+				std::uint16_t packetId{ 0U };
+			};
+
 		public:
 			SendQueue() noexcept;
 			virtual ~SendQueue();
@@ -39,6 +46,9 @@ namespace cleanMqtt
 			void clearQueue() noexcept;
 
 			void setOnPingSentCallback(const std::function<void()>& callback) noexcept;
+			void setOnPubCompSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept;
+			void setOnPubRelSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept;
+			void setOnPubRecSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept;
 
 		private:
 			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
@@ -46,6 +56,9 @@ namespace cleanMqtt
 
 			std::shared_ptr<IWebSocket> m_socket;
 			std::function<void()> m_onPingSentCallback;
+			std::function<void(std::uint16_t)> m_onPubCompSentCallback;
+			std::function<void(std::uint16_t)> m_onPubRelSentCallback;
+			std::function<void(std::uint16_t)> m_onPubRecSentCallback;
 			ByteBuffer m_sendBuffer;
 
 			std::uint8_t m_currentLocalRetry{ 0U };
@@ -57,6 +70,7 @@ namespace cleanMqtt
 			std::chrono::steady_clock::time_point m_lastRetryTime;
 
 			std::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
+			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
 
 			std::mutex m_mutex;
 		};

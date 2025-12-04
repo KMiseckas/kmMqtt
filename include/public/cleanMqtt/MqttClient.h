@@ -15,7 +15,6 @@
 #include "cleanMqtt/Mqtt/Params/ConnectArgs.h"
 #include "cleanMqtt/Mqtt/Params/DisconnectArgs.h"
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
-#include "cleanMqtt/Mqtt/Params/PubAckOptions.h"
 #include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/UnSubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/Topic.h"

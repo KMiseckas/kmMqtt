@@ -1,12 +1,17 @@
 #ifndef INCLUDE_CLEANMQTT_UTILS_PACKETIDPOOL_HEADER
 #define INCLUDE_CLEANMQTT_UTILS_PACKETIDPOOL_HEADER
 
-#include <cleanMqtt/GlobalMacros.h>
+#include "cleanMqtt/GlobalMacros.h"
 
 #include <cstdint>
 #include <stack>
 #include <bitset>
 #include <mutex>
+
+//Macro (instead of const) to allow changing in build tools. If QOS > 0 is rarely or never used, can reduce memory footprint by lowering this value.
+#if !defined(PACKET_POOL_ID_SIZE) || (PACKET_POOL_ID_SIZE > 65535U)
+#define PACKET_POOL_ID_SIZE 65535U
+#endif
 
 namespace cleanMqtt
 {
@@ -59,7 +64,7 @@ namespace cleanMqtt
 	private:
 		std::uint16_t m_nextId{ 1U };//0 is not a valid MQTT packet ID.
 		std::stack<std::uint16_t> m_availableIds{};
-		std::bitset<65535> m_usedIds;
+		std::bitset<PACKET_POOL_ID_SIZE> m_usedIds;
 		std::mutex m_mutex;
 	};
 }

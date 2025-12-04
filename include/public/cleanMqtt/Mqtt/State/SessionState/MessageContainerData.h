@@ -18,13 +18,11 @@ namespace cleanMqtt
 
 			//Outgoing QOS2
 			WaitingForPubRec,
-			NeedToSendPubRel,
 			WaitingForPubComp,
 
 			//Incoming QOS2
-			NeedToSendPubRec,
 			WaitingForPubRel,
-			NeedToSendPubComp
+			NeedToSendPubComp,
 		};
 
 		struct PUBLIC_API PublishMessageData
@@ -62,7 +60,7 @@ namespace cleanMqtt
 					case PublishMessageStatus::WaitingForPubComp:
 						return PacketType::PUBLISH_RELEASED;
 					case PublishMessageStatus::NeedToSendPubComp:
-					case PublishMessageStatus::NeedToSendPubRel:
+						return PacketType::PUBLISH_COMPLETE;
 					default:
 						return PacketType::RESERVED; // Should not happen, but just in case
 				}
