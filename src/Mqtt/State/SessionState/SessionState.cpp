@@ -8,7 +8,7 @@ namespace cleanMqtt
 		SessionState::SessionState(const char* clientId,
 			std::uint32_t sessionExpiryInterval,
 			std::uint32_t retryInterval,
-			ISessionStatePersistantStore* persistantStore) noexcept :
+			std::shared_ptr<ISessionStatePersistantStore> persistantStore) noexcept :
 			m_clientId{ clientId },
 			m_retryInterval{ Milliseconds(retryInterval)},
 			m_persistantStore { persistantStore },
@@ -45,6 +45,24 @@ namespace cleanMqtt
 			return *this;
 		}
 
+		ClientErrorCode SessionState::addPrevSessionState(const SessionState& prevSessionState) noexcept
+		{
+			for (const auto& msgData : prevSessionState.m_messages)
+			{
+				if (!m_messages.contains(msgData.data.packetID))
+				{
+					ClientErrorCode err{ addPrevStateMessage(msgData.data.packetID, msgData.data.publishMsgData) };
+
+					if (err != ClientErrorCode::No_Error)
+					{
+						return err;
+					}
+				}
+			}
+
+			return { ClientErrorCode::No_Error };
+		}
+
 		ClientErrorCode SessionState::addMessage(const std::uint16_t packetId, PublishMessageData publishMsgData) noexcept
 		{
 			TimePoint nextRetryTime{ std::chrono::steady_clock::now() + m_retryInterval };
@@ -58,7 +76,6 @@ namespace cleanMqtt
 					if (!m_persistantStore->write(m_clientId, static_cast<std::uint32_t>(m_sessionExpiryInterval.count()), data.data))
 					{
 						LogError("SessionState", "Failed to write to session state message to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
-						return ClientErrorCode::Failed_Writing_To_Persistent_Storage;
 					}
 
 					LogTrace("SessionState", "Session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
@@ -66,6 +83,26 @@ namespace cleanMqtt
 
 				m_messages.push(std::move(data));
 			}
+
+			return ClientErrorCode::No_Error;
+		}
+
+		ClientErrorCode SessionState::addPrevStateMessage(const std::uint16_t packetId, const PublishMessageData& publishMsgData) noexcept
+		{
+			//std::chrono::steady_clock::now() to Retry ASAP when restoring previous session state messages.
+			MessageContainerData data{ packetId, std::move(publishMsgData), std::chrono::steady_clock::now(), true };
+
+			if (m_persistantStore != nullptr)
+			{
+				if (!m_persistantStore->write(m_clientId, static_cast<std::uint32_t>(m_sessionExpiryInterval.count()), data.data))
+				{
+					LogWarning("SessionState", "Failed to write to previous session state message to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+				}
+
+				LogTrace("SessionState", "Previous session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
+			}
+
+			m_messages.push(std::move(data));
 
 			return ClientErrorCode::No_Error;
 		}

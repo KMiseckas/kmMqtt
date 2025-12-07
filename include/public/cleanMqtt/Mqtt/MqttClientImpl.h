@@ -146,6 +146,7 @@ else\
 			MqttClientOptions m_clientOptions;
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
+			std::shared_ptr<ISessionStatePersistantStore> m_persistantStore{ nullptr };
 
 			events::Deferrer m_eventDeferrer;
 			ErrorEvent m_errorEvent;

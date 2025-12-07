@@ -25,7 +25,7 @@ namespace cleanMqtt
             SessionState(const char* clientId,
                 std::uint32_t sessionExpiryInterval,
                 std::uint32_t retryInterval = 0U,
-                ISessionStatePersistantStore* persistantStore = nullptr) noexcept;
+                std::shared_ptr<ISessionStatePersistantStore> persistantStore = nullptr) noexcept;
 
             /**
 			 * @brief Copy constructor.
@@ -35,6 +35,13 @@ namespace cleanMqtt
 			SessionState(const SessionState&) noexcept;
 
 			SessionState& operator=(const SessionState&) noexcept;
+
+            /**
+			 * @brief Adds previous session state messages to the current session state.
+			 * @param prevSessionState The previous session state to add messages from.
+			 * @return ClientErrorCode indicating success or failure.
+             */
+            ClientErrorCode addPrevSessionState(const SessionState& prevSessionState) noexcept;
 
             /**
             * @brief Adds a message to the session state.
@@ -76,9 +83,12 @@ namespace cleanMqtt
 			bool shouldBringToFront(PublishMessageStatus oldStatus, PublishMessageStatus newStatus) const noexcept;
 
 		private:
+
+            ClientErrorCode addPrevStateMessage(const std::uint16_t packetId, const PublishMessageData& publishMsgData) noexcept;
+
 			const char* m_clientId;
             Milliseconds m_retryInterval;
-            ISessionStatePersistantStore* m_persistantStore{ nullptr };
+            std::shared_ptr<ISessionStatePersistantStore> m_persistantStore{ nullptr };
             Milliseconds m_sessionExpiryInterval;
             MessageContainer m_messages{};
 			mutable std::mutex m_mutex{};

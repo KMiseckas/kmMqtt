@@ -1,19 +1,19 @@
 #include "cleanMqtt/Mqtt/MqttClientImpl.h"
 
 #include "cleanMqtt/MqttClientOptions.h"
-#include <cleanMqtt/Mqtt/Transport/Jobs/ConnectComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PingComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PubAckComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
-#include <cleanMqtt/Logger/LoggerInstance.h>
-#include <cleanMqtt/Logger/DefaultLogger.h>
-#include <cleanMqtt/Mqtt/ReqResult.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PubRecComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PubRelComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PubCompComposer.h>
+#include "cleanMqtt/Mqtt/Transport/Jobs/ConnectComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/PingComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/PubAckComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h"
+#include "cleanMqtt/Mqtt/PacketHelper.h"
+#include "cleanMqtt/Logger/LoggerInstance.h"
+#include "cleanMqtt/Logger/DefaultLogger.h"
+#include "cleanMqtt/Mqtt/ReqResult.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/PubRecComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/PubRelComposer.h"
+#include "cleanMqtt/Mqtt/Transport/Jobs/PubCompComposer.h"
 
 namespace cleanMqtt
 {
@@ -22,7 +22,8 @@ namespace cleanMqtt
 		MqttClientImpl::MqttClientImpl(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions)
 			: m_clientOptions{ clientOptions },
 			m_config(env->createConfig()),
-			m_socket(env->createWebSocket())
+			m_socket(env->createWebSocket()),
+			m_persistantStore(env->createSessionStatePersistantStore())
 		{
 			if (getLogger() == nullptr)
 			{
@@ -902,10 +903,17 @@ namespace cleanMqtt
 					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(MAX_PACKET_SIZE);
 				}
 
+				const SessionState prevSessionState{ std::move(m_connectionInfo.sessionState) };
 				m_connectionInfo.sessionState = SessionState{ m_connectionInfo.connectArgs.clientId.c_str(),
 					m_connectionInfo.connectArgs.sessionExpiryInterval,
 					m_config.retryPublishIntervalMS,
-					nullptr };
+					m_persistantStore };
+
+				//If session present flag is set, merge previous session state into new one (e.g. pending publish, pubrec, pubrel...).
+				if (packet.getVariableHeader().flags.getFlagValue(ConnectAcknowledgeFlags::SESSION_PRESENT) == 1)
+				{
+					m_connectionInfo.sessionState.addPrevSessionState(prevSessionState); //Merge previous session state into new one.
+				}
 
 				//TODO read mqtt5 spec for rest of properties of Connect Ack (relating to publishing, subscribing and reconnection).
 
@@ -1287,10 +1295,6 @@ namespace cleanMqtt
 					else if(type == PacketType::PUBLISH_RELEASED)
 					{
 						pubRel(msg.data.packetID, PubRelReasonCode::SUCCESS, PubRelOptions{});
-					}
-					else if (type == PacketType::PUBLISH_COMPLETE)
-					{
-						pubComp(msg.data.packetID, PubCompReasonCode::SUCCESS, PubCompOptions{});
 					}
 				}
 				else
