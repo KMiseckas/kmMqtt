@@ -112,7 +112,7 @@ TEST_SUITE("MqttClient API Tests")
 		CHECK_NOTHROW(testContext.client->onDisconnectEvent());
 		CHECK_NOTHROW(testContext.client->onReconnectEvent());
 		CHECK_NOTHROW(testContext.client->onPublishEvent());
-		CHECK_NOTHROW(testContext.client->onPublishAckEvent());
+		CHECK_NOTHROW(testContext.client->onPublishCompletedEvent());
 		CHECK_NOTHROW(testContext.client->onSubscribeAckEvent());
 		CHECK_NOTHROW(testContext.client->onUnSubscribeAckEvent());
 	}

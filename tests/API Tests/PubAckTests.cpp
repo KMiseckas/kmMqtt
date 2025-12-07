@@ -26,12 +26,12 @@ TEST_SUITE("MqttClient PubAck")
         std::uint16_t ackedPacketId = 0;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
             ackedPacketId = details.packetId;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
-            CHECK(packet.getPacketType() == PacketType::PUBLISH_ACKNOWLEDGE);
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
+            CHECK(details.packetType == PacketType::PUBLISH_ACKNOWLEDGE);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -71,10 +71,10 @@ TEST_SUITE("MqttClient PubAck")
         bool pubAckEventFired = false;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -102,7 +102,7 @@ TEST_SUITE("MqttClient PubAck")
 
         std::vector<std::uint16_t> receivedPacketIds;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck&)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             receivedPacketIds.push_back(details.packetId);
         });
@@ -161,7 +161,7 @@ TEST_SUITE("MqttClient PubAck")
 
         std::vector<std::uint16_t> ackedPacketIds;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck&)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             ackedPacketIds.push_back(details.packetId);
         });
@@ -206,7 +206,7 @@ TEST_SUITE("MqttClient PubAck")
 
         bool pubAckEventFired = false;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck&)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails&)
         {
             pubAckEventFired = true;
         });
@@ -241,10 +241,10 @@ TEST_SUITE("MqttClient PubAck")
         bool pubAckEventFired = false;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -282,10 +282,10 @@ TEST_SUITE("MqttClient PubAck")
         bool pubAckEventFired = false;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -356,10 +356,10 @@ TEST_SUITE("MqttClient PubAck")
         bool pubAckEventFired = false;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -395,10 +395,10 @@ TEST_SUITE("MqttClient PubAck")
         bool pubAckEventFired = false;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -437,10 +437,10 @@ TEST_SUITE("MqttClient PubAck")
         bool pubAckEventFired = false;
         PubAckReasonCode receivedReasonCode = PubAckReasonCode::UNSPECIFIED_ERROR;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails&, const mqtt::PublishAck& packet)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             pubAckEventFired = true;
-            receivedReasonCode = packet.getVariableHeader().reasonCode;
+            receivedReasonCode = static_cast<PubAckReasonCode>(details.reasonCode);
         });
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
@@ -469,7 +469,7 @@ TEST_SUITE("MqttClient PubAck")
         std::vector<std::uint16_t> expectedOrder = { 1, 2, 3 };
         std::vector<std::uint16_t> actualOrder;
 
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck&)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             actualOrder.push_back(details.packetId);
         });

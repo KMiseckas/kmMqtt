@@ -208,16 +208,10 @@ TEST_SUITE("MessageContainerData Tests")
             CHECK(containerData.getRetryPacketType() == PacketType::PUBLISH_RELEASED);
         }
 
-        SUBCASE("NeedToSendPubRel returns RESERVED")
-        {
-            containerData.data.status = PublishMessageStatus::NeedToSendPubRel;
-            CHECK(containerData.getRetryPacketType() == PacketType::RESERVED);
-        }
-
-        SUBCASE("NeedToSendPubComp returns RESERVED")
+        SUBCASE("NeedToSendPubComp returns PUBLISH_COMPLETE")
         {
             containerData.data.status = PublishMessageStatus::NeedToSendPubComp;
-            CHECK(containerData.getRetryPacketType() == PacketType::RESERVED);
+            CHECK(containerData.getRetryPacketType() == PacketType::PUBLISH_COMPLETE);
         }
     }
 

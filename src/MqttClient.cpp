@@ -84,9 +84,9 @@ namespace cleanMqtt
 			return m_impl->onPublishEvent();
 		}
 
-		PublishAckEvent& MqttClient::onPublishAckEvent() noexcept
+		PublishCompletedEvent& MqttClient::onPublishCompletedEvent() noexcept
 		{
-			return m_impl->onPublishAckEvent();
+			return m_impl->onPublishCompletedEvent();
 		}
 
 		SubscribeAckEvent& MqttClient::onSubscribeAckEvent() noexcept

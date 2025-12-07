@@ -182,12 +182,13 @@ namespace cleanMqtt
 			PublishEvent& onPublishEvent() noexcept;
 
 			/**
-			 * @brief Accessor for the PublishAckEvent.
-			 * Invoked when a publish acknowledgment is received from the broker for a sent publish packet.
+			 * @brief Accessor for the PublishCompletedEvent.
+			 * Invoked when a packet for publish acknowledged, release, received, or complete is received from the broker for a sent publish packet.
+			 * Notifies of the general state of the publish process for its corresponding QOS level. Does not call back on QOS 0 publishes.
 			 * 
-			 * @return Reference to the PublishAckEvent instance.
+			 * @return Reference to the PublishCompletedEvent instance.
 			 */
-			PublishAckEvent& onPublishAckEvent() noexcept;
+			PublishCompletedEvent& onPublishCompletedEvent() noexcept;
 
 			/**
 			 * @brief Accessor for the SubscribeAckEvent.

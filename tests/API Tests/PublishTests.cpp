@@ -57,7 +57,7 @@ TEST_SUITE("MqttClient Publish")
         bool pubAckEventFired = false;
         std::uint16_t ackedPacketId = 0;
 
-		testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck&)
+		testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
 			{
 				pubAckEventFired = true;
 				ackedPacketId = details.packetId;
@@ -207,7 +207,7 @@ TEST_SUITE("MqttClient Publish")
 
         std::vector<std::uint16_t> packetIds;
         
-        testContext.client->onPublishAckEvent().add([&](const PublishAckEventDetails& details, const mqtt::PublishAck&)
+        testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
             packetIds.push_back(details.packetId);
         });
