@@ -77,11 +77,7 @@ else\
 			DisconnectEvent& onDisconnectEvent() noexcept;
 			ReconnectEvent& onReconnectEvent() noexcept;
 			PublishEvent& onPublishEvent() noexcept;
-			PublishAckEvent& onPublishAckEvent() noexcept;
-			PublishCompleteEvent& onPublishCompleteEvent() noexcept;
-			PublishReceivedEvent& onPublishReceivedEvent() noexcept;
-			PublishReleasedEvent& onPublishReleasedEvent() noexcept;
-			//TODO add `onPublishStatusEvent()` Incorporates all QoS related publish events without the packet data.
+			PublishCompletedEvent& onPublishCompletedEvent() noexcept;
 			SubscribeAckEvent& onSubscribeAckEvent() noexcept;
 			UnSubscribeAckEvent& onUnSubscribeAckEvent() noexcept;
 
@@ -157,10 +153,7 @@ else\
 			DisconnectEvent m_disconnectEvent;
 			ReconnectEvent m_reconnectEvent;
 			PublishEvent m_publishEvent;
-			PublishAckEvent m_pubAckEvent;
-			PublishCompleteEvent m_pubCompEvent;
-			PublishReceivedEvent m_pubRecEvent;
-			PublishReleasedEvent m_pubRelEvent;
+			PublishCompletedEvent m_pubCompletedEvent;
 			SubscribeAckEvent m_subAckEvent;
 			UnSubscribeAckEvent m_unSubAckEvent;
 

@@ -322,10 +322,7 @@ namespace cleanMqtt
 			m_connectEvent.removeAll();
 			m_disconnectEvent.removeAll();
 			m_publishEvent.removeAll();
-			m_pubAckEvent.removeAll();
-			m_pubCompEvent.removeAll();
-			m_pubRecEvent.removeAll();
-			m_pubRelEvent.removeAll();
+			m_pubCompletedEvent.removeAll(); //Not just for pubComp packet, but all publish packets; pubAck, pubRec, pubRel, pubComp
 			m_subAckEvent.removeAll();
 
 			m_socket->close();
@@ -465,24 +462,9 @@ namespace cleanMqtt
 			return m_publishEvent;
 		}
 
-		PublishAckEvent& MqttClientImpl::onPublishAckEvent() noexcept
+		PublishCompletedEvent& MqttClientImpl::onPublishCompletedEvent() noexcept
 		{
-			return m_pubAckEvent;
-		}
-
-		PublishCompleteEvent& MqttClientImpl::onPublishCompleteEvent() noexcept
-		{
-			return m_pubCompEvent;
-		}
-
-		PublishReceivedEvent& MqttClientImpl::onPublishReceivedEvent() noexcept
-		{
-			return m_pubRecEvent;
-		}
-
-		PublishReleasedEvent& MqttClientImpl::onPublishReleasedEvent() noexcept
-		{
-			return m_pubRelEvent;
+			return m_pubCompletedEvent;
 		}
 
 		SubscribeAckEvent& MqttClientImpl::onSubscribeAckEvent() noexcept
@@ -518,7 +500,7 @@ namespace cleanMqtt
 				std::move(options)));
 		}
 
-		void MqttClientImpl::pubRec(std::uint16_t packetId, PubRecReasonCode code, PubRecOptions&& options) noexcept
+		void MqttClientImpl::pubRec (std::uint16_t packetId, PubRecReasonCode code, PubRecOptions&& options) noexcept
 		{
 			m_sendQueue.addToQueue(std::make_unique<PubRecComposer>(&m_connectionInfo,
 				packetId,
@@ -968,37 +950,7 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleReceivedPublish(Publish&& packet)
 		{
-			if (packet.getVariableHeader().qos == Qos::QOS_0 || packet.getVariableHeader().qos == Qos::QOS_1)
-			{
-				firePublishReceivedEvent(std::move(packet));
-			}
-			else //QOS 2
-			{
-				const auto packetId{ packet.getVariableHeader().packetIdentifier };
-			}
-			//If QoS is 1 or 2, we need to send a PUBACK or PUBREC packet back to the server + Store to Session State.
-			//const auto packetId{ packet.getVariableHeader().packetIdentifier};
-
-			//PublishMessageData data{packet.getVariableHeader().}
-
-			//m_connectionInfo.sessionState.addMessage(packetId, )
-
-			/*if (packet.getVariableHeader().qos == Qos::QOS_1)
-			{
-					m_sendQueue.addToQueue(std::make_unique<SendPublishReceivedJob>(&m_connectionInfo,
-						[this](const BasePacket& packet) {return sendPacket(packet); },
-						packetId,
-						m_config.enforceMaxPacketSizeOnSend,
-						m_config.maxAllowedPacketSize));
-				}
-				else if (packet.getVariableHeader().qos == Qos::QOS_2)
-				{
-					m_sendQueue.addToQueue(std::make_unique<SendPublishReceivedJob>(&m_connectionInfo,
-						[this](const BasePacket& packet) {return sendPacket(packet); },
-						packetId,
-						m_config.enforceMaxPacketSizeOnSend,
-						m_config.maxAllowedPacketSize));
-				}*/
+			firePublishReceivedEvent(std::move(packet));
 		}
 
 		void MqttClientImpl::handleReceivedPublishAck(PublishAck&& packet)
@@ -1008,7 +960,7 @@ namespace cleanMqtt
 			m_connectionInfo.sessionState.removeMessage(packetId);
 			m_packetIdPool.releaseId(packetId);
 
-			DISPATCH_EVENT_TO_CONSUMER([&, id = packetId, p = std::move(packet)]() {m_pubAckEvent({ id,  packet.getVariableHeader().reasonCode }, p); });
+			DISPATCH_EVENT_TO_CONSUMER([&, rsnCode = static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode), id = packetId]() {m_pubCompletedEvent({ PacketType::PUBLISH_ACKNOWLEDGE, id, rsnCode }); });
 		}
 
 		void MqttClientImpl::handleReceivedPublishComp(PublishComp&& packet)
@@ -1018,7 +970,7 @@ namespace cleanMqtt
 			m_connectionInfo.sessionState.removeMessage(packetId);
 			m_packetIdPool.releaseId(packetId);
 
-			//TODO external event
+			DISPATCH_EVENT_TO_CONSUMER([&, rsnCode = static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode), id = packetId]() {m_pubCompletedEvent({ PacketType::PUBLISH_COMPLETE, id, rsnCode }); });
 		}
 
 		void MqttClientImpl::handleReceivedPublishRec(PublishRec&& packet)
@@ -1039,7 +991,8 @@ namespace cleanMqtt
 			{
 				pubRel(packetId, PubRelReasonCode::SUCCESS, PubRelOptions{});
 			}
-			//TODO external event
+			
+			DISPATCH_EVENT_TO_CONSUMER([&, rsnCode = static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode), id = packetId]() {m_pubCompletedEvent({ PacketType::PUBLISH_RECEIVED, id, rsnCode }); });
 		}
 
 		void MqttClientImpl::handleReceivedPublishRel(PublishRel&& packet)
@@ -1048,7 +1001,7 @@ namespace cleanMqtt
 
 			pubComp(packetId, PubCompReasonCode::SUCCESS, PubCompOptions{});
 
-			//TODO external event
+			DISPATCH_EVENT_TO_CONSUMER([&, rsnCode = static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode), id = packetId]() {m_pubCompletedEvent({ PacketType::PUBLISH_RELEASED, id, rsnCode }); });
 		}
 
 		void MqttClientImpl::handleReceivedSubscribeAcknowledge(SubscribeAck&& packet)
@@ -1329,11 +1282,15 @@ namespace cleanMqtt
 					}
 					else if (type == PacketType::PUBLISH_RECEIVED)
 					{
-						//TODO handle retrying PUBLISH_RECEIVED packet.
+						pubRec(msg.data.packetID, PubRecReasonCode::SUCCESS, PubRecOptions{});
 					}
 					else if(type == PacketType::PUBLISH_RELEASED)
 					{
-						//TODO handle retrying PUBLISH_RELEASED packet.
+						pubRel(msg.data.packetID, PubRelReasonCode::SUCCESS, PubRelOptions{});
+					}
+					else if (type == PacketType::PUBLISH_COMPLETE)
+					{
+						pubComp(msg.data.packetID, PubCompReasonCode::SUCCESS, PubCompOptions{});
 					}
 				}
 				else

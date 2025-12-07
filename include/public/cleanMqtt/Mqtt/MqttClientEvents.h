@@ -68,27 +68,25 @@ namespace cleanMqtt
 			const ByteBuffer* payload{ nullptr };
 		};
 
-		struct PublishAckEventDetails
-		{
-			std::uint16_t packetId{ 0 };
-			PubAckReasonCode reasonCode{ PubAckReasonCode::SUCCESS };
-		};
-
 		struct PublishCompleteEventDetails
 		{
+			PacketType packetType{ PacketType::RESERVED };
 			std::uint16_t packetId{ 0 };
-			PubCompReasonCode reasonCode{ PubCompReasonCode::SUCCESS };
-		};
+			std::uint8_t reasonCode{ 0 };
 
-		struct PublishReceivedEventDetails
-		{
-			std::uint16_t packetId{ 0 };
-			PubRecReasonCode reasonCode{ PubRecReasonCode::SUCCESS };
-		};
+			/**
+			 * @brief Checks if the publish operation was successful based on the reason code.
+			 * @return true if the reason code is success; false otherwise.
+			 */
+			bool isSuccess() const noexcept
+			{
+				static_assert(static_cast<std::uint8_t>(PubAckReasonCode::SUCCESS) == 0, "PubAckReasonCode::SUCCESS must be 0 for isSuccess() to work correctly.");
+				static_assert(static_cast<std::uint8_t>(PubCompReasonCode::SUCCESS) == 0, "PubCompReasonCode::SUCCESS must be 0 for isSuccess() to work correctly.");
+				static_assert(static_cast<std::uint8_t>(PubRecReasonCode::SUCCESS) == 0, "PubRecReasonCode::SUCCESS must be 0 for isSuccess() to work correctly.");
+				static_assert(static_cast<std::uint8_t>(PubRelReasonCode::SUCCESS) == 0, "PubRelReasonCode::SUCCESS must be 0 for isSuccess() to work correctly.");
 
-		struct PublishReleasedEventDetails
-		{
-			std::uint16_t packetId{ 0 };
+				return reasonCode == 0;
+			}
 		};
 
 		struct SubscribeAckEventDetails
@@ -109,10 +107,7 @@ namespace cleanMqtt
 		using ReconnectEvent = events::Event<const ReconnectEventDetails&, const ConnectAck&>;
 		using DisconnectEvent = events::Event<const DisconnectEventDetails&>;
 		using PublishEvent = events::Event<const PublishEventDetails&, const Publish&>;
-		using PublishAckEvent = events::Event<const PublishAckEventDetails&, const PublishAck&>;
-		using PublishCompleteEvent = events::Event<const PublishCompleteEventDetails&, const PublishComp&>;
-		using PublishReceivedEvent = events::Event<const PublishReceivedEventDetails&, const PublishRec&>;
-		using PublishReleasedEvent = events::Event<const PublishReleasedEventDetails&, const PublishRel&>;
+		using PublishCompletedEvent = events::Event<const PublishCompleteEventDetails&>;
 		using SubscribeAckEvent = events::Event<const SubscribeAckEventDetails&, const SubscribeAck&>;
 		using UnSubscribeAckEvent = events::Event<const UnSubscribeAckEventDetails&, const UnSubscribeAck&>;
 	}
