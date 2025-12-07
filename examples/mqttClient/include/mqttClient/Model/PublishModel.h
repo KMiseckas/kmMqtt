@@ -85,7 +85,7 @@ public:
 
 private:
     void setupEventHandlers();
-    void onPublishAck(const cleanMqtt::mqtt::PublishAckEventDetails& details, const cleanMqtt::mqtt::PublishAck& ack);
+    void onPublishCompleted(const cleanMqtt::mqtt::PublishCompleteEventDetails& details);
     void updateMessageStatus(std::uint16_t packetId, PublishMessageStatus status, const std::string& error = "");
     
     std::vector<PublishedMessage> m_publishedMessages;

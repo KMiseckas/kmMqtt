@@ -145,28 +145,32 @@ void PublishModel::setupEventHandlers()
     }
 
     // Register for publish acknowledgments
-    m_mqttClient->onPublishAckEvent().add([this](const cleanMqtt::mqtt::PublishAckEventDetails& details, const cleanMqtt::mqtt::PublishAck& ack)
+    m_mqttClient->onPublishCompletedEvent().add([this](const cleanMqtt::mqtt::PublishCompleteEventDetails& details)
     {
-        onPublishAck(details, ack);
+        onPublishCompleted(details);
     });
 }
 
-void PublishModel::onPublishAck(const cleanMqtt::mqtt::PublishAckEventDetails& details, const cleanMqtt::mqtt::PublishAck& ack)
+void PublishModel::onPublishCompleted(const cleanMqtt::mqtt::PublishCompleteEventDetails& details)
 {
     // Use FIFO approach - find the first SENT message and mark it as acknowledged
     for (auto& message : m_publishedMessages)
     {
         if (message.status == PublishMessageStatus::SENT)
         {
-            if (ack.getVariableHeader().reasonCode == cleanMqtt::mqtt::PubAckReasonCode::SUCCESS)
+            if (details.isSuccess())
             {
-                message.status = PublishMessageStatus::ACKNOWLEDGED;
+                if (details.packetType == cleanMqtt::mqtt::PacketType::PUBLISH_ACKNOWLEDGE)
+                {
+                    message.status = PublishMessageStatus::ACKNOWLEDGED;
+                }
+
                 message.lastError = "";
             }
             else
             {
                 message.status = PublishMessageStatus::FAILED;
-                message.lastError = "Pub Ack Reason Code: " + static_cast<int>(ack.getVariableHeader().reasonCode);
+                message.lastError = "Pub Ack Reason Code: " + static_cast<int>(details.reasonCode);
             }
             break; // Only update the first SENT message (FIFO)
         }
