@@ -5,7 +5,6 @@
 #include "cleanMqtt/Config.h"
 #include "cleanMqtt/Interfaces/ILogger.h"
 #include "cleanMqtt/Interfaces/IWebSocket.h"
-#include "cleanMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h"
 
 #include <memory>
 #include <string>
@@ -41,15 +40,6 @@ namespace cleanMqtt
 		 * @return A shared pointer to an IWebSocket implementation for network communication.
 		 */
 		virtual std::shared_ptr<IWebSocket> createWebSocket() const noexcept = 0;
-
-		/**
-		 * @brief Creates a persistent store for MQTT session state.
-		 * This method creates a storage mechanism for persisting MQTT session state,
-		 * allowing sessions to be recovered across client restarts.
-		 * 
-		 * @return A unique pointer to an ISessionStatePersistantStore implementation.
-		 */
-		virtual std::shared_ptr<mqtt::ISessionStatePersistantStore> createSessionStatePersistantStore() const noexcept { return nullptr; }
 	};
 }
 

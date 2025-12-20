@@ -108,6 +108,7 @@ else\
 			void handlePubCompSentEvent(std::uint16_t packetId);
 			void handlePubRecSentEvent(std::uint16_t packetId);
 			void handlePubRelSentEvent(std::uint16_t packetId);
+			void handleDisconnectSentEvent();
 
 			void handleReceivedConnectAcknowledge(ConnectAck&& packet);
 			void handleReceivedDisconnect(Disconnect&& packet);
@@ -146,7 +147,6 @@ else\
 			MqttClientOptions m_clientOptions;
 			MqttConnectionInfo m_connectionInfo;
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
-			std::shared_ptr<ISessionStatePersistantStore> m_persistantStore{ nullptr };
 
 			events::Deferrer m_eventDeferrer;
 			ErrorEvent m_errorEvent;

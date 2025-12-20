@@ -7,11 +7,10 @@ namespace cleanMqtt
 	{
 		SessionState::SessionState(const char* clientId,
 			std::uint32_t sessionExpiryInterval,
-			std::uint32_t retryInterval,
-			std::shared_ptr<ISessionStatePersistantStore> persistantStore) noexcept :
+			std::uint32_t retryInterval) noexcept :
 			m_clientId{ clientId },
 			m_retryInterval{ Milliseconds(retryInterval)},
-			m_persistantStore { persistantStore },
+			m_persistantStore{ nullptr }, //TODO: Add persistant store parameter later.
 			m_sessionExpiryInterval{ Milliseconds(sessionExpiryInterval)}
 		{
 		}
@@ -71,7 +70,8 @@ namespace cleanMqtt
 			{
 				LockGuard guard{ m_mutex };
 
-				if (m_persistantStore != nullptr)
+				//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
+				/*if (m_persistantStore != nullptr)
 				{
 					if (!m_persistantStore->write(m_clientId, static_cast<std::uint32_t>(m_sessionExpiryInterval.count()), data.data))
 					{
@@ -79,7 +79,7 @@ namespace cleanMqtt
 					}
 
 					LogTrace("SessionState", "Session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
-				}
+				}*/
 
 				m_messages.push(std::move(data));
 			}
@@ -92,7 +92,8 @@ namespace cleanMqtt
 			//std::chrono::steady_clock::now() to Retry ASAP when restoring previous session state messages.
 			MessageContainerData data{ packetId, std::move(publishMsgData), std::chrono::steady_clock::now(), true };
 
-			if (m_persistantStore != nullptr)
+			//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
+			/*if (m_persistantStore != nullptr)
 			{
 				if (!m_persistantStore->write(m_clientId, static_cast<std::uint32_t>(m_sessionExpiryInterval.count()), data.data))
 				{
@@ -100,7 +101,7 @@ namespace cleanMqtt
 				}
 
 				LogTrace("SessionState", "Previous session state message written to persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
-			}
+			}*/
 
 			m_messages.push(std::move(data));
 
@@ -134,7 +135,8 @@ namespace cleanMqtt
 					m_messages.moveToEnd(packetId);
 				}
 
-				m_persistantStore->updateMessage(m_clientId, packetId, newStatus, bringToFront);
+				//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
+				//m_persistantStore->updateMessage(m_clientId, packetId, newStatus, bringToFront);
 			}
 		}
 		
@@ -145,7 +147,8 @@ namespace cleanMqtt
 
 				m_messages.erase(packetId);
 
-				if (m_persistantStore != nullptr)
+				//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
+				/*if (m_persistantStore != nullptr)
 				{
 					if (!m_persistantStore->removeMessage(m_clientId, packetId))
 					{
@@ -153,7 +156,7 @@ namespace cleanMqtt
 					}
 
 					LogTrace("SessionState", "Session state message removed from persistant storage, Client ID: %s, Packet ID: %d", m_clientId, packetId);
-				}
+				}*/
 			}
 		}
 
@@ -164,7 +167,8 @@ namespace cleanMqtt
 
 				m_messages.clear();
 
-				if (m_persistantStore != nullptr)
+				//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
+				/*if (m_persistantStore != nullptr)
 				{
 					if (!m_persistantStore->removeFromStore(m_clientId))
 					{
@@ -172,7 +176,7 @@ namespace cleanMqtt
 					}
 
 					LogTrace("SessionState", "Session state messages cleared from persistant storage, Client ID: %s", m_clientId);
-				}
+				}*/
 			}
 		}
 

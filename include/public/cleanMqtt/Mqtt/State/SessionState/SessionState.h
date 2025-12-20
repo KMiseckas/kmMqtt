@@ -20,12 +20,10 @@ namespace cleanMqtt
             * @param clientId The client identifier.
             * @param sessionExpiryInterval The session expiry interval in seconds.
             * @param retryInterval The retry interval for message delivery attempts.
-            * @param persistantStore Optional persistent store for session state.
             */
             SessionState(const char* clientId,
                 std::uint32_t sessionExpiryInterval,
-                std::uint32_t retryInterval = 0U,
-                std::shared_ptr<ISessionStatePersistantStore> persistantStore = nullptr) noexcept;
+                std::uint32_t retryInterval = 0U) noexcept;
 
             /**
 			 * @brief Copy constructor.

@@ -14,6 +14,7 @@
 #include "cleanMqtt/Mqtt/Transport/Jobs/PubRecComposer.h"
 #include "cleanMqtt/Mqtt/Transport/Jobs/PubRelComposer.h"
 #include "cleanMqtt/Mqtt/Transport/Jobs/PubCompComposer.h"
+#include <cleanMqtt/Mqtt/Transport/Jobs/DisconnectComposer.h>
 
 namespace cleanMqtt
 {
@@ -22,8 +23,7 @@ namespace cleanMqtt
 		MqttClientImpl::MqttClientImpl(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions)
 			: m_clientOptions{ clientOptions },
 			m_config(env->createConfig()),
-			m_socket(env->createWebSocket()),
-			m_persistantStore(env->createSessionStatePersistantStore())
+			m_socket(env->createWebSocket())
 		{
 			if (getLogger() == nullptr)
 			{
@@ -42,6 +42,7 @@ namespace cleanMqtt
 			m_sendQueue.setOnPubCompSentCallback([this](std::uint16_t packetId) { handlePubCompSentEvent(packetId); });
 			m_sendQueue.setOnPubRecSentCallback([this](std::uint16_t packetId) { handlePubRecSentEvent(packetId); });
 			m_sendQueue.setOnPubRelSentCallback([this](std::uint16_t packetId) { handlePubRelSentEvent(packetId); });
+			m_sendQueue.setOnDisconnectSentCallback([this]() { handleDisconnectSentEvent(); });
 		}
 
 		MqttClientImpl::~MqttClientImpl()
@@ -624,7 +625,14 @@ namespace cleanMqtt
 					return;
 				}
 
-				//Bypass send queue and send packet ASAP to not wait for next tick before performing disconnect.
+				//Try gracefully disconnecting by sending Disconnect packet through send queue.
+				if (args.gracefulDisconnect)
+				{
+					m_sendQueue.addToQueue(std::make_unique<DisconnectComposer>(&m_connectionInfo, DisconnectArgs( args ), reason));
+					return;
+				}
+
+				//Ignore graceful disconnection - bypass send queue and send packet ASAP. Consider Disconnect done straight away.
 				Disconnect packet{ createDisconnectPacket(m_connectionInfo, args, reason) };
 				auto encodeResult{ packet.encode() };
 
@@ -640,8 +648,6 @@ namespace cleanMqtt
 					LogWarning("MqttClient", "Failed to encode disconnect packet during internal disconnect. Skipping sending to broker.");
 				}
 
-				//TODO add graceful disconnect handling, e.g. wait for all packets to be sent before closing socket. Means we cant just clear the queue here.
-				//Maybe new function.
 				if (args.clearQueue)
 				{
 					m_sendQueue.clearQueue();
@@ -654,8 +660,6 @@ namespace cleanMqtt
 				if (!m_socket->close())
 				{
 					LogError("MqttClient", "Error closing socket properly during internal disconnect: %d", m_socket->getLastError());
-
-					//TODO maybe self force termination? Add terminate event?
 				}
 
 				clearState();
@@ -850,6 +854,22 @@ namespace cleanMqtt
 			m_connectionInfo.sessionState.updateMessage(packetId, PublishMessageStatus::WaitingForPubComp);
 		}
 
+		void MqttClientImpl::handleDisconnectSentEvent()
+		{
+			m_sendQueue.clearQueue();
+			m_connectionStatus = ConnectionStatus::DISCONNECTED;
+			m_socket->setOnDisconnectCallback(nullptr);
+
+			if (!m_socket->close())
+			{
+				LogError("MqttClient", "Error closing socket properly during internal disconnect: %d", m_socket->getLastError());
+			}
+
+			clearState();
+
+			DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, true, ClientErrorCode::No_Error }); });
+		}
+
 		void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck&& packet)
 		{
 			//Connection counts as succeeded for any ConnectReasonCode < 128U so report back as connection success, else start failure proccess.
@@ -906,8 +926,7 @@ namespace cleanMqtt
 				const SessionState prevSessionState{ std::move(m_connectionInfo.sessionState) };
 				m_connectionInfo.sessionState = SessionState{ m_connectionInfo.connectArgs.clientId.c_str(),
 					m_connectionInfo.connectArgs.sessionExpiryInterval,
-					m_config.retryPublishIntervalMS,
-					m_persistantStore };
+					m_config.retryPublishIntervalMS };
 
 				//If session present flag is set, merge previous session state into new one (e.g. pending publish, pubrec, pubrel...).
 				if (packet.getVariableHeader().flags.getFlagValue(ConnectAcknowledgeFlags::SESSION_PRESENT) == 1)
@@ -1095,6 +1114,7 @@ namespace cleanMqtt
 					LogError("MqttClient", "Client does not allow topic aliases but server has sent us a topic alias of value %d.", *topicAlias);
 
 					DisconnectArgs args;
+					args.gracefulDisconnect = false;
 					args.disconnectReasonText = "Client does not allow topic aliases but server has sent us a topic alias";
 
 					DISPATCH_EVENT_TO_CONSUMER([&, reasonText = args.disconnectReasonText.c_str()]() {m_errorEvent({ ClientErrorCode::Recv_Topic_Alias_Disallowed, reasonText }, {}); });
@@ -1111,6 +1131,7 @@ namespace cleanMqtt
 						m_connectionInfo.connectArgs.maximumTopicAliases);
 
 					DisconnectArgs args;
+					args.gracefulDisconnect = false;
 					args.disconnectReasonText = "Publish packet TOPIC ALIAS value is invalid.";
 
 					DISPATCH_EVENT_TO_CONSUMER([&, reasonText = args.disconnectReasonText.c_str()]() {m_errorEvent({ ClientErrorCode::Recv_Invalid_Topic_Alias, reasonText }, {}); });
@@ -1136,6 +1157,7 @@ namespace cleanMqtt
 				LogError("MqttClient", "Publish packet TOPIC ALIAS is invalid and TOPIC NAME is empty.");
 
 				DisconnectArgs args;
+				args.gracefulDisconnect = false;
 				args.disconnectReasonText = "Publish packet TOPIC ALIAS is invalid and TOPIC NAME is empty.";
 
 				DISPATCH_EVENT_TO_CONSUMER([&, reasonText = args.disconnectReasonText.c_str()]() {m_errorEvent({ ClientErrorCode::Recv_Empty_Topic_Name_And_Invalid_Alias, reasonText }, {}); });
@@ -1200,6 +1222,7 @@ namespace cleanMqtt
 					if (elapsedTimeSincePingReq > m_config.pingTimeOutMS)
 					{
 						DisconnectArgs args;
+						args.gracefulDisconnect = false;
 						args.clearQueue = true;
 						args.disconnectReasonText = "Failed ping: Did not receive PingResp packet.";
 
@@ -1241,6 +1264,7 @@ namespace cleanMqtt
 			if (!m_batchResultData.isRecoverable)
 			{
 				DisconnectArgs args;
+				args.gracefulDisconnect = false;
 				args.disconnectReasonText = "Hit unrecoverable error in sending packet: " + m_batchResultData.unrecoverableReasonStr +
 					", Encode result: " + m_batchResultData.lastSendResult.encodeResult.reason;
 				args.clearQueue = true;
@@ -1390,7 +1414,7 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleDecodeError(const DecodeResult& result) noexcept
 		{
-			DisconnectArgs args{ false, true };
+			DisconnectArgs args{ false, false, true };
 			args.disconnectReasonText = result.reason;
 
 			LogInfo("MqttClient", "Failed to decode received packet. Packet Type: %d, Reason: %s", static_cast<std::uint8_t>(result.packetType), result.reason.c_str());

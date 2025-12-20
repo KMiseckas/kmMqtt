@@ -24,6 +24,16 @@ namespace cleanMqtt
             virtual ~ISessionStatePersistantStore() = default;
 
             /**
+             * @brief Initializes the session state store for a specific client ID.
+             *
+             * This method is called when an MQTT client finishes connecting.
+             *
+             * @param clientId The identifier of the mqtt client.
+             * @return true if the initialization was successful, false otherwise.
+			 */
+            virtual bool initialize(const char* clientId) = 0;
+
+            /**
              * @brief Writes a Publish packets to the session state persistant storage.
              *
              * This method is called when an outgoing QoS 1 or QoS 2

@@ -13,16 +13,16 @@ namespace cleanMqtt
 	{
 		struct PUBLIC_API DisconnectArgs
 		{
-			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(DisconnectArgs)
-
-			DisconnectArgs(bool requestWillPublish = false, bool clearSendQueue = true) noexcept
-				: willPublish{ requestWillPublish },
+			DisconnectArgs(bool gracefulDisconnect = true, bool requestWillPublish = false, bool clearSendQueue = true) noexcept
+				: gracefulDisconnect{ gracefulDisconnect },
+				willPublish{ requestWillPublish },
 				clearQueue{clearSendQueue}
 			{
 			}
 
 			DisconnectArgs(DisconnectArgs&& other) noexcept
-				: willPublish{other.willPublish},
+				: gracefulDisconnect{other.gracefulDisconnect},
+				willPublish{ other.willPublish },
 				clearQueue{other.clearQueue},
 				sessionExpiryInterval{other.sessionExpiryInterval},
 				disconnectReasonText{std::move(other.disconnectReasonText)},
@@ -30,8 +30,35 @@ namespace cleanMqtt
 			{
 			}
 
+			DisconnectArgs(const DisconnectArgs& other)
+			{
+				gracefulDisconnect = other.gracefulDisconnect;
+				willPublish = other.willPublish;
+				clearQueue = other.clearQueue;
+				sessionExpiryInterval = other.sessionExpiryInterval;
+				disconnectReasonText = other.disconnectReasonText;
+				userProperties = other.userProperties;
+			}
+
 			~DisconnectArgs() noexcept
 			{
+			}
+
+			DisconnectArgs& operator=(const DisconnectArgs& other)
+			{
+				if (this == &other)
+				{
+					return *this;
+				}
+
+				gracefulDisconnect = other.gracefulDisconnect;
+				willPublish = other.willPublish;
+				clearQueue = other.clearQueue;
+				sessionExpiryInterval = other.sessionExpiryInterval;
+				disconnectReasonText = other.disconnectReasonText;
+				userProperties = other.userProperties;
+
+				return *this;
 			}
 
 			DisconnectArgs& operator=(DisconnectArgs&& other) noexcept
@@ -41,6 +68,7 @@ namespace cleanMqtt
 					return *this;
 				}
 
+				gracefulDisconnect = other.gracefulDisconnect;
 				willPublish = other.willPublish;
 				clearQueue = other.clearQueue;
 				sessionExpiryInterval = other.sessionExpiryInterval;
@@ -50,6 +78,7 @@ namespace cleanMqtt
 				return *this;
 			}
 
+			bool gracefulDisconnect{ true };
 			bool willPublish{ false };
 			bool clearQueue{ true };
 			uint32_t sessionExpiryInterval{ 0U };
