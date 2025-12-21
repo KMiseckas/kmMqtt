@@ -76,79 +76,47 @@ TEST_SUITE("SessionState Tests")
 {
     TEST_CASE("Constructor initializes members")
     {
-        std::shared_ptr<DummyPersistantStore> store = std::make_shared<DummyPersistantStore>();
-        SessionState state("client1", 1000, 500, store);
+        SessionState state("client1", 1000, 500);
     }
 
     TEST_CASE("addMessage No_Error")
     {
-        std::shared_ptr<DummyPersistantStore> store = std::make_shared<DummyPersistantStore>();
-        SessionState state("client2", 1000, 500, store);
+        SessionState state("client2", 1000, 500);
 
         ByteBuffer bytes{ 0 };
         PublishMessageData msgData{ "", std::move(bytes), {} };
         auto result = state.addMessage(42, std::move(msgData));
         CHECK(result == ClientErrorCode::No_Error);
-        CHECK(store->log.size() == 1);
-        CHECK(store->log[0].find("write:client2") != std::string::npos);
     }
 
-    TEST_CASE("addMessage error on store write fail")
+    TEST_CASE("updateMessage updates status")
     {
-        struct FailingStore : DummyPersistantStore
-        {
-            bool write(const char* clientId, std::uint32_t expiry, const SavedData& data) override
-            {
-                return false;
-            }
-        };
-
-        std::shared_ptr<FailingStore> store = std::make_shared<FailingStore>();
-        SessionState state("client3", 1000, 500, store);
+        SessionState state("client4", 1000, 500);
 
         ByteBuffer bytes{ 0 };
         PublishMessageData msgData{ "", std::move(bytes), {} };
-        auto result = state.addMessage(43, std::move(msgData));
-        CHECK(result == ClientErrorCode::Failed_Writing_To_Persistent_Storage);
-    }
-
-    TEST_CASE("updateMessage updates status and calls persistantStore")
-    {
-        std::shared_ptr<DummyPersistantStore> store = std::make_shared<DummyPersistantStore>();
-        SessionState state("client4", 1000, 500, store);
-
-        ByteBuffer bytes{ 0 };
-        PublishMessageData msgData{ "", std::move(bytes), {} };
-        state.addMessage(44, std::move(msgData));
+        CHECK(state.addMessage(44, std::move(msgData)) == ClientErrorCode::No_Error);
         state.updateMessage(44, PublishMessageStatus::WaitingForPubComp);
-        CHECK(store->log.size() == 2);
-        CHECK(store->log[1].find("update:client4") != std::string::npos);
     }
 
-    TEST_CASE("removeMessage erases and calls persistantStore")
+    TEST_CASE("removeMessage erases")
     {
-        std::shared_ptr<DummyPersistantStore> store = std::make_shared<DummyPersistantStore>();
-        SessionState state("client5", 1000, 500, store);
+        SessionState state("client5", 1000, 500);
 
         ByteBuffer bytes{ 0 };
         PublishMessageData msgData{ "", std::move(bytes), {} };
-        state.addMessage(45, std::move(msgData));
+		CHECK(state.addMessage(45, std::move(msgData)) == ClientErrorCode::No_Error);
         state.removeMessage(45);
-        CHECK(store->log.size() == 2);
-        CHECK(store->log[1].find("remove:client5") != std::string::npos);
     }
 
-    TEST_CASE("clear removes all and calls persistantStore")
+    TEST_CASE("clear removes all")
     {
-        std::shared_ptr<DummyPersistantStore> store = std::make_shared<DummyPersistantStore>();
-        SessionState state("client6", 1000, 500, store);
+        SessionState state("client6", 1000, 500);
 
         ByteBuffer bytes{ 0 };
         PublishMessageData msgData{ "", std::move(bytes), {} };
-        state.addMessage(46, std::move(msgData));
+        CHECK(state.addMessage(46, std::move(msgData)) == ClientErrorCode::No_Error);
         state.clear();
-        CHECK(store->log.size() == 2);
-        CHECK(store->log[1].find("clear:client6") != std::string::npos);
     }
 }
 

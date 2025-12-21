@@ -1,7 +1,15 @@
-#include <mqttClient/Model/OutputModel.h>
+#include "mqttClient/Model/OutputModel.h"
+
+#include <cleanMqtt/Interfaces/ILogger.h>
+#include <cleanMqtt/MqttClient.h>
+
 #include <chrono>
+#include <ctime>
 #include <iomanip>
+#include <mutex>
+#include <ostream>
 #include <sstream>
+#include <string>
 
 OutputModel::OutputModel() noexcept
 {
@@ -28,7 +36,14 @@ void OutputModel::AddOutput(cleanMqtt::LogLevel logLevel, const std::string cate
 	auto time_t{ std::chrono::system_clock::to_time_t(now) };
 
 	std::stringstream ss;
-	ss << "[" << std::put_time(std::localtime(&time_t), "%H:%M:%S") << "] ";
+	std::tm tm_buf{};
+#ifdef _WIN32
+	localtime_s(&tm_buf, &time_t);
+	ss << "[" << std::put_time(&tm_buf, "%H:%M:%S") << "] ";
+#else
+	localtime_r(&time_t, &tm_buf);
+	ss << "[" << std::put_time(&tm_buf, "%H:%M:%S") << "] ";
+#endif
 	logEntry = ss.str();
 
 	switch (logLevel)
@@ -120,8 +135,14 @@ void OutputModel::enableFileLogging(const std::string& filepath)
 		
 		auto now{ std::chrono::system_clock::now() };
 		auto time_t{ std::chrono::system_clock::to_time_t(now) };
+		std::tm tm_buf{};
+#ifdef _WIN32
+		localtime_s(&tm_buf, &time_t);
+#else
+		localtime_r(&time_t, &tm_buf);
+#endif
 		m_logFile << "\n=== MqttClient - Log Session Started: " 
-				  << std::put_time(std::localtime(&time_t), "%Y-%m-%d %H:%M:%S") 
+				  << std::put_time(&tm_buf, "%Y-%m-%d %H:%M:%S") 
 				  << " ===\n";
 		m_logFile.flush();
 	}

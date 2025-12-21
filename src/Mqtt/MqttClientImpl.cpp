@@ -628,7 +628,8 @@ namespace cleanMqtt
 				//Try gracefully disconnecting by sending Disconnect packet through send queue.
 				if (args.gracefulDisconnect)
 				{
-					m_sendQueue.addToQueue(std::make_unique<DisconnectComposer>(&m_connectionInfo, DisconnectArgs( args ), reason));
+					m_gracefulDisconnectReason = reason;
+					m_sendQueue.addToQueue(std::make_unique<DisconnectComposer>(&m_connectionInfo, DisconnectArgs( args ), m_gracefulDisconnectReason));
 					return;
 				}
 
@@ -856,7 +857,7 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleDisconnectSentEvent()
 		{
-			m_sendQueue.clearQueue();
+			m_sendQueue.clearQueue(true);
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 			m_socket->setOnDisconnectCallback(nullptr);
 
@@ -867,7 +868,7 @@ namespace cleanMqtt
 
 			clearState();
 
-			DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, true, ClientErrorCode::No_Error }); });
+			DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ m_gracefulDisconnectReason, false, true, ClientErrorCode::No_Error }); });
 		}
 
 		void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck&& packet)

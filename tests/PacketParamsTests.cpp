@@ -322,7 +322,7 @@ TEST_SUITE("Packet Params Tests")
 
 		SUBCASE("With will publish")
 		{
-			DisconnectArgs args(true);
+			DisconnectArgs args(true, true);
 			
 			CHECK(args.willPublish == true);
 			CHECK(args.clearQueue == true);
@@ -330,7 +330,7 @@ TEST_SUITE("Packet Params Tests")
 
 		SUBCASE("With custom parameters")
 		{
-			DisconnectArgs args(true, false);
+			DisconnectArgs args(true, true, false);
 			
 			CHECK(args.willPublish == true);
 			CHECK(args.clearQueue == false);
@@ -339,13 +339,14 @@ TEST_SUITE("Packet Params Tests")
 
 	TEST_CASE("DisconnectArgs - Move Constructor")
 	{
-		DisconnectArgs original(true, false);
+		DisconnectArgs original(true, true, false);
 		original.sessionExpiryInterval = 7200;
 		original.disconnectReasonText = "Server shutdown";
 		original.userProperties["reason"] = "maintenance";
 
 		DisconnectArgs moved(std::move(original));
 
+		CHECK(moved.gracefulDisconnect == true);
 		CHECK(moved.willPublish == true);
 		CHECK(moved.clearQueue == false);
 		CHECK(moved.sessionExpiryInterval == 7200);
@@ -355,13 +356,14 @@ TEST_SUITE("Packet Params Tests")
 
 	TEST_CASE("DisconnectArgs - Move Assignment")
 	{
-		DisconnectArgs original(false, true);
+		DisconnectArgs original(false, false, true);
 		original.disconnectReasonText = "Client disconnect";
 		original.userProperties["status"] = "normal";
 
 		DisconnectArgs target;
 		target = std::move(original);
 
+		CHECK(target.gracefulDisconnect == false);
 		CHECK(target.willPublish == false);
 		CHECK(target.clearQueue == true);
 		CHECK(target.disconnectReasonText == "Client disconnect");

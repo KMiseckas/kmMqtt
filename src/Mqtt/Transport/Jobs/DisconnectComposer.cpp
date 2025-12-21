@@ -7,7 +7,7 @@ namespace cleanMqtt
 	{
 		ComposeResult DisconnectComposer::compose() noexcept
 		{
-			Connect packet{ createDisconnectPacket(*m_mqttConnectionInfo, m_options, m_reasonCode) };
+			Disconnect packet{ createDisconnectPacket(*m_mqttConnectionInfo, m_options, m_reasonCode) };
 			EncodeResult result{ packet.encode() };
 
 			return ComposeResult{ result, packet.extractDataBuffer() };

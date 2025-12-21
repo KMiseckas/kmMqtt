@@ -174,6 +174,8 @@ else\
 
 			std::shared_ptr<IWebSocket> m_socket{ nullptr };
 			ByteBuffer m_leftOverBuffer{ 0U };
+
+			DisconnectReasonCode m_gracefulDisconnectReason{ DisconnectReasonCode::NORMAL_DISCONNECTION };
 		};
 	}
 }

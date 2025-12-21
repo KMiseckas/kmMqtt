@@ -43,12 +43,13 @@ namespace cleanMqtt
 			void setSocket(std::shared_ptr<IWebSocket> socket) noexcept;
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
-			void clearQueue() noexcept;
+			void clearQueue(const bool graceful = false) noexcept;
 
 			void setOnPingSentCallback(const std::function<void()>& callback) noexcept;
 			void setOnPubCompSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept;
 			void setOnPubRelSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept;
 			void setOnPubRecSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept;
+			void setOnDisconnectSentCallback(const std::function<void()>& callback) noexcept;
 
 		private:
 			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
@@ -59,6 +60,7 @@ namespace cleanMqtt
 			std::function<void(std::uint16_t)> m_onPubCompSentCallback;
 			std::function<void(std::uint16_t)> m_onPubRelSentCallback;
 			std::function<void(std::uint16_t)> m_onPubRecSentCallback;
+			std::function<void()> m_onDisconnectSentCallback;
 			ByteBuffer m_sendBuffer;
 
 			std::uint8_t m_currentLocalRetry{ 0U };
@@ -73,6 +75,7 @@ namespace cleanMqtt
 			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
 
 			std::mutex m_mutex;
+			bool m_startGracefulClear{ false };
 		};
 	}
 }

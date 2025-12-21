@@ -51,6 +51,12 @@ namespace cleanMqtt
 
 				if (!trySendBatch(outResult, m_lastSendData))
 				{
+					if (m_startGracefulClear)
+					{
+						m_startGracefulClear = false;
+						return;
+					}
+
 					LogInfo("SendQueue", "Failed to proccess and send an outgoing packet. Reason: %d.", static_cast<std::uint8_t>(m_lastSendData.noSendReason));
 
 					if (m_lastSendData.noSendReason == NoSendReason::SOCKET_SEND_ERROR)
@@ -98,16 +104,23 @@ namespace cleanMqtt
 			outResult.lastSendResult = m_lastSendData;
 		}
 
-        void SendQueue::clearQueue() noexcept
+        void SendQueue::clearQueue(const bool graceful) noexcept
         {
-            LockGuard guard{ m_mutex };
+			if (graceful)
+			{
+				m_startGracefulClear = true;
+			}
+			else
+			{
+				LockGuard guard{ m_mutex };
 
-            for (const auto& c : m_nextPacketComposersBatch)
-            {
-				c->cancel();
-            }
+				for (const auto& c : m_nextPacketComposersBatch)
+				{
+					c->cancel();
+				}
 
-            m_nextPacketComposersBatch.clear();
+				m_nextPacketComposersBatch.clear();
+			}
         }
 
 		void SendQueue::setOnPingSentCallback(const std::function<void()>& callback) noexcept
@@ -128,6 +141,11 @@ namespace cleanMqtt
 		void SendQueue::setOnPubRecSentCallback(const std::function<void(std::uint16_t)>& callback) noexcept
 		{
 			m_onPubRecSentCallback = callback;
+		}
+
+		void SendQueue::setOnDisconnectSentCallback(const std::function<void()>& callback) noexcept
+		{
+			m_onDisconnectSentCallback = callback;
 		}
 
 		bool SendQueue::trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult)
@@ -173,7 +191,8 @@ namespace cleanMqtt
 				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE ||
 					result.encodeResult.packetType == PacketType::PUBLISH_RECEIVED ||
-					result.encodeResult.packetType == PacketType::PUBLISH_RELEASED)
+					result.encodeResult.packetType == PacketType::PUBLISH_RELEASED ||
+					result.encodeResult.packetType == PacketType::DISCONNECT)
 				{
 					//Track specific packets in buffer for notifying listeners when sent.
 					m_packetsMetadataInBuffer.push_back({ fullOutgoingDataSize + result.encodedData.size(), result.encodeResult.packetType,  result.encodeResult.packetId });
@@ -204,6 +223,17 @@ namespace cleanMqtt
 
 			while (partialSendLoopCount <= kMax_Partial_Send_Loops)
 			{
+				if (m_startGracefulClear)
+				{
+					LogInfo("SendQueue", "Gracefully clearing send queue after successful send.");
+					for (const auto& c : m_nextPacketComposersBatch)
+					{
+						c->cancel();
+					}
+					m_nextPacketComposersBatch.clear();
+					return false;
+				}
+
 				partialSendLoopCount++;
 
 				sendResult = sendData(m_sendBuffer);
@@ -213,6 +243,11 @@ namespace cleanMqtt
 					outResult.controlPacketSent = true;
 					outResult.totalBytesSent = sendResult;
 
+					/**
+					 * If all data was sent successfully, clear buffer and return.
+					 * If only partial data was sent, remove sent data from buffer and loop to try send remaining data.
+					 * Notify relevant listeners of sent packets.
+					 */
 					if (sendResult == static_cast<int>(m_sendBuffer.size()))
 					{
 						if (hasPingPacket)
@@ -233,6 +268,9 @@ namespace cleanMqtt
 								break;
 							case PacketType::PUBLISH_RECEIVED:
 								m_onPubRecSentCallback(metadata.packetId);
+								break;
+							case PacketType::DISCONNECT:
+								m_onDisconnectSentCallback();
 								break;
 							}
 						}
@@ -275,6 +313,9 @@ namespace cleanMqtt
 										break;
 									case PacketType::PUBLISH_RECEIVED:
 										m_onPubRecSentCallback(metadata.packetId);
+										break;
+									case PacketType::DISCONNECT:
+										m_onDisconnectSentCallback();
 										break;
 									}
 
