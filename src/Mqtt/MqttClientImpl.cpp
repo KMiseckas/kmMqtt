@@ -780,9 +780,7 @@ namespace cleanMqtt
 				}
 				else
 				{
-					//TODO maybe try reconnect to other addresses if provided rather than straight disconnect?
-
-					//DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(ConnectAck{})]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
+					DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(ConnectAck{})]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
 				}
 			}
 		}
@@ -818,9 +816,10 @@ namespace cleanMqtt
 			}
 		}
 
-		void MqttClientImpl::handleSocketErrorEvent(int /*error*/)
+		void MqttClientImpl::handleSocketErrorEvent(int error)
 		{
-			// TODO: Implement handleSocketErrorEvent
+			LogError("MqttClient", "Shutting down, socket error occurred: %d", error);
+			shutdown();
 		}
 
 		void MqttClientImpl::handlePingSentEvent()
@@ -1169,7 +1168,7 @@ namespace cleanMqtt
 
 			DISPATCH_EVENT_TO_CONSUMER([&, tName = topicName, pload = &packet.getPayloadHeader().payload, p = std::move(packet)]() {m_publishEvent({ std::move(tName), pload }, p); });
 
-			//TODO authorization check???? send failed pub ack?
+			//TODO authorization check (adapter?) ? send failed pub ack?
 
 			//After packet is sent to application layer, send PUBACK packet back to the server (As per QOS 1 specification) 
 			if (qos == Qos::QOS_1)

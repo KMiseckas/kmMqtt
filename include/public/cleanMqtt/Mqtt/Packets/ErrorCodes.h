@@ -22,7 +22,6 @@ namespace cleanMqtt
 		{
 			NO_ERROR = 0U,
 			INTERNAL_ERROR
-			//TODO : Add more error codes for encoding errors, currently only internal error is defined. See BasePacket::encode() for where its being set.
 		};
 
 		struct DecodeResult
