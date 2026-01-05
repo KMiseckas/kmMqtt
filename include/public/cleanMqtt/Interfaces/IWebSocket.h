@@ -3,13 +3,31 @@
 
 #include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/ByteBuffer.h>
+#include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
 #include <functional>
 
 namespace cleanMqtt
 {
+	/**
+	 * Callback invoked when the WebSocket connects.
+	 */
 	using OnConnectCallback = std::function<void(bool)>;
+
+	/**
+	 * Callback invoked when the WebSocket disconnects.
+	 */
 	using OnDisconnectCallback = std::function<void()>;
+
+	/**
+	 * Callback invoked when data is received over the WebSocket.
+	 * The ByteBuffer is moved to avoid unnecessary copies.
+	 */
 	using OnRecvdCallback = std::function<void(ByteBuffer&&)>;
+
+	/**
+	 * Callback invoked when an error occurs on the WebSocket.
+	 * The uint16_t parameter represents the error code.
+	 */
 	using OnErrorCallback = std::function<void(std::uint16_t)>;
 
 	/**
@@ -28,7 +46,7 @@ namespace cleanMqtt
 		 * @param port The port of the server.
 		 * @return True if the operation to request a connect proccessed correctly, false otherwise.
 		 */
-		virtual bool connect(const std::string& hostname, const std::string& port = "80") noexcept = 0;
+		virtual bool connect(const mqtt::Address& address) noexcept = 0;
 
 		/**
 		 * @brief Send data over the WebSocket connection.

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "cleanmqtt",
+  "version": "0.0.1",
+  "description": "C++14 MQTT client library with WebSocket, threading, and cross platform support",
+  "homepage": "https://github.com/KMiseckas/CleanMQTT",
+  "dependencies": [
+    {
+      "name": "openssl",
+      "$comment": "Required for WebSocket Secure (WSS) support when BUILD_IXWEBSOCKET is enabled to build with default IWebSocket implementation."
+    }
+  ],
+  "builtin-baseline": "af752f21c9d79ba3df9cb0250ce2233933f58486"
+}

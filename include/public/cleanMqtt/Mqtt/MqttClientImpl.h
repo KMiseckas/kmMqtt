@@ -20,6 +20,9 @@
 #include "cleanMqtt/Mqtt/Params/SubscribeOptions.h"
 #include "cleanMqtt/Mqtt/Params/Topic.h"
 #include "cleanMqtt/Mqtt/Params/UnSubscribeOptions.h"
+#include <cleanMqtt/Mqtt/Params/PubRecOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubRelOptions.h>
+#include <cleanMqtt/Mqtt/Params/PubCompOptions.h>
 #include "cleanMqtt/Mqtt/Transport/ReceiveQueue.h"
 #include "cleanMqtt/Mqtt/Transport/SendQueue.h"
 #include "cleanMqtt/MqttClientOptions.h"
@@ -32,9 +35,6 @@
 #include <memory>
 #include <mutex>
 #include <thread>
-#include <cleanMqtt/Mqtt/Params/PubRecOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubRelOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubCompOptions.h>
 
 namespace cleanMqtt
 {

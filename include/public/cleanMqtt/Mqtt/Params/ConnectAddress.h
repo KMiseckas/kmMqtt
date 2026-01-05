@@ -16,51 +16,79 @@ namespace cleanMqtt
 		{
 			Address() = default;
 
-			static Address createIp4(const char* ip, const char* port) noexcept
+			static Address createIp4(const char* scheme, const char* ip, const char* port, const char* path) noexcept
 			{
-				return Address(ip, port, LocatorType::IP4);
+				return Address(scheme, ip, port, path, LocatorType::IP4);
 			}
 
-			static Address createIp6(const char* ip, const char* port) noexcept
+			static Address createIp6(const char* scheme, const char* ip, const char* port, const char* path) noexcept
 			{
-				return Address(ip, port, LocatorType::IP6);
+				return Address(scheme, ip, port, path, LocatorType::IP6);
 			}
 
-			static Address createURL(const char* hostname, const char* port) noexcept
+			static Address createURL(const char* scheme, const char* hostname, const char* port, const char* path) noexcept
 			{
-				return Address(hostname, port, LocatorType::HOSTNAME);
+				return Address(scheme, hostname, port, path, LocatorType::HOSTNAME);
 			}
 
-			static std::vector<Address> toAddress(const char* targetAddress)
+			static std::vector<Address> toAddress(const char* urls)
 			{
+				if (urls == nullptr || urls[0] == '\0')
+				{
+					return std::vector<Address>();
+				}
+
 				std::vector<Address> addresses;
-				std::vector<std::string> tokens = splitByDelimiter(targetAddress, " ");
+				std::vector<std::string> tokens = splitByDelimiter(urls, " ");
 
 				for (const std::string& token : tokens)
 				{
+					//Check if token has a scheme
+					std::string scheme;
+					std::string addressPart = token;
+					std::string path;
+
+					static constexpr const char* schemeSeperator{ "://" };
+					static constexpr std::size_t schemeSeperatorLen{ 3 };
+					
+					std::size_t schemeEnd{ token.find(schemeSeperator) };
+					if (schemeEnd != std::string::npos)
+					{
+						scheme = token.substr(0, schemeEnd);
+						addressPart = token.substr(schemeEnd + schemeSeperatorLen);
+					}
+
+					//Get path
+					std::size_t pathStart = addressPart.find('/');
+					if (pathStart != std::string::npos)
+					{
+						path = addressPart.substr(pathStart + 1); //Skip the first '/' character
+						addressPart = addressPart.substr(0, pathStart);
+					}
+
 					const std::regex ipv4Regex(R"((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d{1,5}))?)");
 					const std::regex ipv6Regex(R"(\[([a-fA-F0-9:]+)\](?::(\d{1,5}))?)");
 
 					std::smatch result;
 
-					if (std::regex_match(token, result, ipv4Regex))
+					if (std::regex_match(addressPart, result, ipv4Regex))
 					{
 						if (result.size() < 3)
 						{
 							return addresses;
 						}
 
-						Address address{ result[1].str().c_str(), result[2].str().c_str(), LocatorType::IP4};
+						Address address = Address::createIp4(scheme.c_str(), result[1].str().c_str(), result[2].str().c_str(), path.c_str());
 						addresses.push_back(address);
 					}
-					else if (std::regex_match(token, result, ipv6Regex))
+					else if (std::regex_match(addressPart, result, ipv6Regex))
 					{
 						if (result.size() < 3)
 						{
 							return addresses;
 						}
 
-						Address address{ result[1].str().c_str(), result[2].str().c_str(), LocatorType::IP6 };
+						Address address = Address::createIp6(scheme.c_str(), result[1].str().c_str(), result[2].str().c_str(), path.c_str());
 						addresses.push_back(address);
 					}
 					else
@@ -70,7 +98,7 @@ namespace cleanMqtt
 
 						if (tryParseHostnameAddress(token, hostname, port))
 						{
-							Address address{ hostname.c_str(), port.c_str(), LocatorType::HOSTNAME };
+							Address address = Address::createURL(scheme.c_str(), hostname.c_str(), port.c_str(), path.c_str());
 							addresses.push_back(address);
 						}
 					}
@@ -128,6 +156,35 @@ namespace cleanMqtt
 				return m_port;
 			}
 
+			inline const std::string& scheme() const noexcept
+			{
+				return m_scheme;
+			}
+
+			inline const std::string& path() const noexcept
+			{
+				return m_path;
+			}
+
+			inline std::string url() const noexcept
+			{
+				std::string urlStr;
+				if (!m_scheme.empty())
+				{
+					urlStr += m_scheme + "://";
+				}
+				urlStr += m_hostname;
+				if (!m_port.empty())
+				{
+					urlStr += ":" + m_port;
+				}
+				if (!m_path.empty())
+				{
+					urlStr += "/" + m_path;
+				}
+				return urlStr;
+			}
+
 			bool operator==(const Address& other) const
 			{
 				if (&other == this)
@@ -140,19 +197,23 @@ namespace cleanMqtt
 					return false;
 				}
 
-				return other.m_hostname == m_hostname && other.m_port == m_port;
+				return other.m_scheme == m_scheme && other.m_hostname == m_hostname && other.m_port == m_port && other.m_path == m_path;
 			}
 
 		private:
-			Address(const char* val, const char* port, LocatorType type) noexcept
+			Address(const char* scheme, const char* val, const char* port, const char* path, LocatorType type) noexcept
 				: m_hostname{ val },
 				m_port{ port },
+				m_scheme{ scheme },
+				m_path{ path },
 				m_locatorType {type}
 			{
 			}
 
 			std::string m_hostname{ "" };
 			std::string m_port{ "" };
+			std::string m_scheme{ "" };
+			std::string m_path{ "" };
 			LocatorType m_locatorType{ LocatorType::UNKNOWN };
 		};
 
@@ -160,7 +221,7 @@ namespace cleanMqtt
 		{
 			ConnectAddress() noexcept
 			{
-				primaryAddress = Address::createURL("", "80");
+				primaryAddress = Address::createURL("", "", "80", "");
 			}
 
 			ConnectAddress(Address primary) noexcept

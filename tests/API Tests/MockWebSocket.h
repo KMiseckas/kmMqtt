@@ -27,11 +27,11 @@ public:
     std::queue<ByteBuffer> pendingResponses;
     bool connected = false;
 
-    bool connect(const std::string& hostname, const std::string& port = "80") noexcept override 
+    bool connect(const mqtt::Address& address) noexcept override
     {
         connectCalled = true;
-        lastHost = hostname;
-        lastPort = port;
+        lastHost = address.hostname();
+        lastPort = address.port();
         connected = connectResult;
         isConnectedResult = connectResult;
 

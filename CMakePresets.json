@@ -14,13 +14,21 @@
         "BYTEBUFFER_SBO_MAX_SIZE": 256,
         "ENABLE_UNIQUEFUNCTION_SBO": true,
         "UNIQUEFUNCTION_SBO_MAX_SIZE": 32,
-        "LOG_BUFFER_SIZE": 2048
+        "LOG_BUFFER_SIZE": 2048,
+        "BUILD_IXWEBSOCKET": true
       },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
       }
+    },
+    {
+      "name": "windows-vcpkg",
+      "hidden": true,
+      "inherits": "windows-base",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "description": "Windows preset with vcpkg toolchain (requires VCPKG_ROOT environment variable)",
     },
     {
       "name": "linux-base",
@@ -33,7 +41,8 @@
         "BYTEBUFFER_SBO_MAX_SIZE": 256,
         "ENABLE_UNIQUEFUNCTION_SBO": true,
         "UNIQUEFUNCTION_SBO_MAX_SIZE": 32,
-        "LOG_BUFFER_SIZE": 2048
+        "LOG_BUFFER_SIZE": 2048,
+        "BUILD_IXWEBSOCKET": true
       },
       "condition": {
         "type": "equals",
@@ -44,7 +53,7 @@
     {
       "name": "x64-debug",
       "displayName": "x64 Debug",
-      "inherits": "windows-base",
+      "inherits": "windows-vcpkg",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -56,7 +65,7 @@
     {
       "name": "x64-debug-sanitizers",
       "displayName": "x64 Debug - With ASAN/UBSAN",
-      "inherits": "windows-base",
+      "inherits": "windows-vcpkg",
       "architecture": {
         "value": "x64",
         "strategy": "external"
@@ -78,7 +87,7 @@
     {
       "name": "x86-debug",
       "displayName": "x86 Debug",
-      "inherits": "windows-base",
+      "inherits": "windows-vcpkg",
       "architecture": {
         "value": "x86",
         "strategy": "external"

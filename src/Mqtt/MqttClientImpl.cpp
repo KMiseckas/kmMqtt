@@ -119,9 +119,7 @@ namespace cleanMqtt
 
 				LogInfo("MqttClient", "Socket attempting to connect.");
 
-				const bool sConnectResult{ m_socket->connect(
-					m_connectionInfo.connectAddress.primaryAddress.hostname(),
-					m_connectionInfo.connectAddress.primaryAddress.port()) };
+				const bool sConnectResult{ m_socket->connect(m_connectionInfo.connectAddress.primaryAddress) };
 
 				if (!sConnectResult)
 				{
@@ -607,7 +605,7 @@ namespace cleanMqtt
 				m_connectionInfo.connectArgs.protocolName.c_str());
 
 			LogInfo("MqttClient", "Socket attempting to connect.");
-			m_socket->connect(m_connectionInfo.reconnectAddress.primaryAddress.hostname(), m_connectionInfo.reconnectAddress.primaryAddress.port());
+			m_socket->connect(m_connectionInfo.reconnectAddress.primaryAddress);
 
 			m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
 		}

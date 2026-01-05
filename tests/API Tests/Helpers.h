@@ -52,7 +52,7 @@ struct TestClientContext
     static cleanMqtt::mqtt::ConnectAddress getDefaultConnectAddress()
     {
         cleanMqtt::mqtt::ConnectAddress address;
-        address.primaryAddress = cleanMqtt::mqtt::Address::createURL("localhost", "1883");
+        address.primaryAddress = cleanMqtt::mqtt::Address::createURL("", "localhost", "1883", "");
         return address;
 	}
 

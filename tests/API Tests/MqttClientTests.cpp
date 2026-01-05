@@ -77,7 +77,7 @@ TEST_SUITE("MqttClient API Tests")
 	{
 		TestClientContext testContext;
 		auto address = mqtt::ConnectAddress();
-		address.primaryAddress = mqtt::Address::createURL("test.mqtt.broker", "8883");
+		address.primaryAddress = mqtt::Address::createURL("", "test.mqtt.broker", "8883", "");
 		
 		testContext.tryConnect(ClientErrorCode::No_Error, testContext.getDefaultConnectArgs(), std::move(address));
 		
@@ -632,7 +632,7 @@ TEST_SUITE("MqttClient API Tests")
 			
 			ConnectArgs args("DestructorTest");
 			ConnectAddress address;
-			address.primaryAddress = Address::createURL("localhost", "1883");
+			address.primaryAddress = Address::createURL("", "localhost", "1883", "");
 			
 			CHECK(client.connect(std::move(args), std::move(address)).noError());
 			CHECK(client.tick().noError());
@@ -650,7 +650,7 @@ TEST_SUITE("MqttClient API Tests")
 		args.will->payload = std::make_unique<BinaryData>();
 		
 		ConnectAddress address;
-		address.primaryAddress = Address::createURL("localhost", "1883");
+		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
 		
 		auto result = testContext.client->connect(std::move(args), std::move(address));
 		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
@@ -665,7 +665,7 @@ TEST_SUITE("MqttClient API Tests")
 		args.will->correlationData = std::make_unique<BinaryData>();
 		
 		ConnectAddress address;
-		address.primaryAddress = Address::createURL("localhost", "1883");
+		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
 		
 		auto result = testContext.client->connect(std::move(args), std::move(address));
 		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
@@ -681,7 +681,7 @@ TEST_SUITE("MqttClient API Tests")
 		args.will->payload = std::make_unique<BinaryData>(1, data);
 		
 		ConnectAddress address;
-		address.primaryAddress = Address::createURL("localhost", "1883");
+		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
 		
 		auto result = testContext.client->connect(std::move(args), std::move(address));
 		CHECK(result.errorCode() == ClientErrorCode::Missing_Argument);

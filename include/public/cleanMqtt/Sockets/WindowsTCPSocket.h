@@ -18,13 +18,13 @@
 
 namespace cleanMqtt
 {
-	class PUBLIC_API DefaultWinWebsocket : public IWebSocket
+	class PUBLIC_API WindowsTCPSocket : public IWebSocket
 	{
 	public:
-		DefaultWinWebsocket();
-		~DefaultWinWebsocket() override;
+		WindowsTCPSocket();
+		~WindowsTCPSocket() override;
 
-		bool connect(const std::string& hostname, const std::string& port = "80") noexcept override;
+		bool connect(const mqtt::Address& address) noexcept override;
 		int send(const ByteBuffer& data) noexcept override;
 		bool close() noexcept override;
 		void tick() noexcept override;

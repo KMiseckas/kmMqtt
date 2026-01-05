@@ -1,21 +1,21 @@
 #if defined(_WIN32) || defined(_WIN64)
-#include "cleanMqtt/Sockets/DefaultWinWebsocket.h"
+#include "cleanMqtt/Sockets/WindowsTCPSocket.h"
 
 namespace cleanMqtt
 {
-	DefaultWinWebsocket::DefaultWinWebsocket()
+	WindowsTCPSocket::WindowsTCPSocket()
 		: m_socket(INVALID_SOCKET), m_event(WSA_INVALID_EVENT)
 	{
 		m_connected = false;
 	}
 
-	DefaultWinWebsocket::~DefaultWinWebsocket()
+	WindowsTCPSocket::~WindowsTCPSocket()
 	{
 		close();
 		WSACleanup();
 	}
 
-	bool DefaultWinWebsocket::connect(const std::string& hostname, const std::string& port) noexcept
+	bool WindowsTCPSocket::connect(const mqtt::Address& address) noexcept
 	{
 		logInfo("Starting connect().");
 		WSADATA wsaData;
@@ -31,7 +31,7 @@ namespace cleanMqtt
 		hints.ai_socktype = SOCK_STREAM;
 
 		//Resolve hostname.
-		if (getaddrinfo(hostname.c_str(), port.c_str(), &hints, &result) != 0)
+		if (getaddrinfo(address.hostname().c_str(), address.port().c_str(), &hints, &result) != 0)
 		{
 			logError("getaddinfo() failed, error: ");
 			WSACleanup();
@@ -94,7 +94,7 @@ namespace cleanMqtt
 		return true;
 	}
 
-	int DefaultWinWebsocket::send(const ByteBuffer& data) noexcept
+	int WindowsTCPSocket::send(const ByteBuffer& data) noexcept
 	{
 		if (!m_connected || m_socket == INVALID_SOCKET)
 		{
@@ -104,7 +104,7 @@ namespace cleanMqtt
 		return ::send(m_socket, reinterpret_cast<const char*>(data.bytes()), static_cast<int>(data.size()), 0);
 	}
 
-	bool DefaultWinWebsocket::close() noexcept
+	bool WindowsTCPSocket::close() noexcept
 	{
 		if (m_socket != INVALID_SOCKET)
 		{
@@ -124,7 +124,7 @@ namespace cleanMqtt
 		return true;
 	}
 
-	void DefaultWinWebsocket::tick() noexcept
+	void WindowsTCPSocket::tick() noexcept
 	{
 		if (WSAWaitForMultipleEvents(1, &m_event, FALSE, 0, FALSE) == WSA_WAIT_TIMEOUT)
 		{
@@ -214,22 +214,22 @@ namespace cleanMqtt
 		}
 	}
 
-	bool DefaultWinWebsocket::isConnected() const noexcept
+	bool WindowsTCPSocket::isConnected() const noexcept
 	{
 		return m_connected;
 	}
 
-	int DefaultWinWebsocket::getLastError() const noexcept
+	int WindowsTCPSocket::getLastError() const noexcept
 	{
 		return WSAGetLastError();
 	}
 
-	int DefaultWinWebsocket::getLastCloseCode() const noexcept
+	int WindowsTCPSocket::getLastCloseCode() const noexcept
 	{
 		return 0;
 	}
 
-	const char* DefaultWinWebsocket::getLastCloseReason() const noexcept
+	const char* WindowsTCPSocket::getLastCloseReason() const noexcept
 	{
 		return "N/A";
 	}

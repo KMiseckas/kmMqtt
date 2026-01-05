@@ -1,6 +1,6 @@
 #if defined(__linux__)
 #include <cleanMqtt/Environments/DefaultLinuxEnv.h>
-#include <cleanMqtt/Sockets/DefaultLinuxWebsocket.h>
+#include <cleanMqtt/Sockets/DefaultWebsocket.h>
 
 namespace cleanMqtt
 {
@@ -11,7 +11,7 @@ namespace cleanMqtt
 
 	std::shared_ptr<IWebSocket> DefaultLinuxEnv::createWebSocket() const noexcept
 	{
-		return std::make_shared<DefaultLinuxWebsocket>();
+		return std::make_shared<DefaultWebsocket>();
 	}
 } // namespace cleanMqtt
 

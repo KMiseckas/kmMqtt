@@ -22,6 +22,10 @@ whether they are empty to force properties to always have a value when they reac
 May be useful if broker for some reason doesnt follow MQTT spec correctly and requires property 
 to not be empty, however ideally this should be toggled to `OFF` and broker fixed to follow specs." OFF)
 
+#WebSocket
+option(BUILD_IXWEBSOCKET "Should IXWebSocket library be built and linked? Also builds with IXWebsocket implementation for IWebsocket.
+OpenSSL must be installed on the system or pointed to via CMAKE_PREFIX_PATH." ON)
+
 message(STATUS "Mqtt Library Options:")
 message(STATUS "  BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 message(STATUS "  BUILD_UNIT_TESTS: ${BUILD_UNIT_TESTS}")
@@ -36,7 +40,7 @@ message(STATUS "  ENABLE_ASAN: ${ENABLE_ASAN}")
 message(STATUS "  ENABLE_UBSAN: ${ENABLE_UBSAN}")
 message(STATUS "  ENABLE_TSAN: ${ENABLE_TSAN}")
 message(STATUS "  ENABLE_MSAN: ${ENABLE_MSAN}")
-
+message(STATUS "  BUILD_IXWEBSOCKET: ${BUILD_IXWEBSOCKET}")
 
 # Sets
 set(LOG_BUFFER_SIZE 2048 CACHE STRING "Fixed log buffer size in bytes")

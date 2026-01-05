@@ -1,5 +1,13 @@
 ﻿cmake_minimum_required (VERSION 3.5)
 
+# vcpkg integration (optional, only if VCPKG_ROOT is set or vcpkg toolchain is used)
+# This allows vcpkg to provide dependencies like OpenSSL on desktop platforms
+# Console platforms and custom toolchains should provide OpenSSL via their own toolchain files
+if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+    message(STATUS "Using vcpkg toolchain from VCPKG_ROOT: $ENV{VCPKG_ROOT}")
+endif()
+
 include(cmake/options.cmake)
 
 project (
@@ -52,6 +60,80 @@ if(ENABLE_UNIQUEFUNCTION_SBO)
     target_compile_definitions(${PROJECT_NAME} PUBLIC ENABLE_UNIQUEFUNCTION_SBO)
 else()
     target_compile_definitions(${PROJECT_NAME} PUBLIC UNIQUEFUNCTION_SBO_MAX_SIZE=0)
+endif()
+
+# IXWebSocket integration (Default websocket implementation)
+if(BUILD_IXWEBSOCKET)
+    message(STATUS "Fetching IXWebSocket library...")
+    include(FetchContent)
+    
+    # Find OpenSSL using standard CMake mechanisms
+    # OpenSSL can be provided by:
+    #   - vcpkg (desktop platforms: Windows/Linux/macOS)
+    #   - System package manager (Linux: libssl-dev, macOS: brew)
+    #   - Platform SDK (console platforms)
+    #   - Custom toolchain file (CMAKE_TOOLCHAIN_FILE)
+    #   - Manual installation (OPENSSL_ROOT_DIR or CMAKE_PREFIX_PATH)
+    #
+    # Desktop setup instructions:
+    #   - vcpkg (recommended for Windows):
+    #       1. Install vcpkg: https://github.com/microsoft/vcpkg
+    #       2. Set VCPKG_ROOT environment variable
+    #       3. vcpkg install openssl (automatic after cmake configuration via vcpkg manifest mode)
+    #       OR use: -DCMAKE_TOOLCHAIN_FILE=[vcpkg root]/scripts/buildsystems/vcpkg.cmake
+    #
+    #   - Linux: sudo apt-get install libssl-dev (Debian/Ubuntu)
+    #            sudo yum install openssl-devel (RHEL/CentOS/Fedora)
+    #
+    #   - macOS: brew install openssl
+    #            May need: -DCMAKE_PREFIX_PATH="$(brew --prefix openssl)"
+    #
+    # Console platforms:
+    #   - Provide OpenSSL via your platform's toolchain file
+    #   - Set OPENSSL_ROOT_DIR to your platform's OpenSSL installation
+    #
+    # For more information: https://cmake.org/cmake/help/latest/module/FindOpenSSL.html
+    
+    find_package(OpenSSL REQUIRED)
+    
+    if(NOT OpenSSL_FOUND)
+        message(FATAL_ERROR 
+            "OpenSSL not found!\n"
+            "IXWebSocket requires OpenSSL for WSS (secure WebSocket) support.\n"
+            "\n"
+            "Desktop platforms:\n"
+            "  - Windows: Use vcpkg (set VCPKG_ROOT env var) or manual installation\n"
+            "  - Linux: Install libssl-dev via your package manager\n"
+            "  - macOS: Install via Homebrew (brew install openssl)\n"
+            "\n"
+            "Console platforms:\n"
+            "  - Provide OpenSSL via your platform's toolchain file\n"
+            "  - Set OPENSSL_ROOT_DIR or use CMAKE_TOOLCHAIN_FILE\n"
+            "\n"
+            "See CMakeLists.txt comments for detailed instructions."
+        )
+    endif()
+    
+    message(STATUS "Found OpenSSL ${OPENSSL_VERSION}: ${OPENSSL_INCLUDE_DIR}")
+    
+    # Enable TLS and OpenSSL support in IXWebSocket
+    set(USE_TLS ON CACHE BOOL "Enable TLS support in IXWebSocket" FORCE)
+    set(USE_OPEN_SSL ON CACHE BOOL "Enable OpenSSL in IXWebSocket" FORCE)
+    
+    # Disable zlib compression (not required for TLS, can be enabled separately if needed)
+    set(USE_ZLIB OFF CACHE BOOL "Disable zlib compression in IXWebSocket" FORCE)
+    
+    FetchContent_Declare(
+        ixwebsocket
+        GIT_REPOSITORY https://github.com/machinezone/IXWebSocket.git
+        GIT_TAG v11.4.5
+    )
+    FetchContent_MakeAvailable(ixwebsocket)
+    
+    # Link using standard CMake targets (works with vcpkg, system, and custom OpenSSL)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ixwebsocket)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC BUILD_IXWEBSOCKET)
+    message(STATUS "IXWebSocket library integrated successfully with TLS/OpenSSL support")
 endif()
 
 if(ENABLE_WARNINGS_AS_ERRORS)
@@ -137,6 +219,7 @@ if(BUILD_EXAMPLES)
 endif()
 
 if(BUILD_UNIT_TESTS)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Minimum CMake version for unit tests")
     add_subdirectory(tests)
 endif()
 

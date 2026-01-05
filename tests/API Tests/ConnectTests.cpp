@@ -23,7 +23,7 @@ TEST_SUITE("MqttClient Connect")
     TEST_CASE("Empty Hostname")
     {
         TestClientContext testContext;
-        auto address = Address::createURL("", "1883");
+        auto address = Address::createURL("", "", "1883", "");
         testContext.tryConnect(ClientErrorCode::Missing_Argument, testContext.getDefaultConnectArgs(), std::move(address));
     }
 

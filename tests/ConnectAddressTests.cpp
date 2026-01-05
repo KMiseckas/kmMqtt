@@ -162,44 +162,44 @@ TEST_SUITE("ConnectAddress Tests")
 		SUBCASE("Adding")
 		{
 			std::vector<Address> addresses;
-			addresses.push_back(Address::createIp6(k_ipv6_1_hostname, k_ipv6_1_port));
-			addresses.push_back(Address::createIp6(k_ipv6_2_hostname, k_ipv6_2_port));
+			addresses.push_back(Address::createIp6("wss", k_ipv6_1_hostname, k_ipv6_1_port, ""));
+			addresses.push_back(Address::createIp6("", k_ipv6_2_hostname, k_ipv6_2_port, ""));
 
 			reconnectAddress.addAddresses(addresses);
 
 			CHECK(reconnectAddress.primaryAddress.hostname() == k_ipv4_1_hostname);
-			CHECK(reconnectAddress.otherAddresses.size() == 3);
-			CHECK(reconnectAddress.otherAddresses[2].hostname() == k_ipv6_2_hostname);
-			CHECK(reconnectAddress.otherAddresses[2].locatorType() == LocatorType::IP6);
+			CHECK(reconnectAddress.otherAddresses.size() == 4);
+			CHECK(reconnectAddress.otherAddresses[3].hostname() == k_ipv6_2_hostname);
+			CHECK(reconnectAddress.otherAddresses[3].locatorType() == LocatorType::IP6);
 			CHECK(reconnectAddress.usedAddresses.size() == 0);
 
 			CHECK(reconnectAddress.tryCycleToNextPrimaryAddress() == true);
 			CHECK(reconnectAddress.tryCycleToNextPrimaryAddress() == true);
 
 			CHECK(reconnectAddress.primaryAddress.hostname() == k_url_1_hostname);
-			CHECK(reconnectAddress.otherAddresses.size() == 1);
-			CHECK(reconnectAddress.otherAddresses[0].hostname() == k_ipv6_2_hostname);
-			CHECK(reconnectAddress.otherAddresses[0].locatorType() == LocatorType::IP6);
+			CHECK(reconnectAddress.otherAddresses.size() == 2);
+			CHECK(reconnectAddress.otherAddresses[1].hostname() == k_ipv6_2_hostname);
+			CHECK(reconnectAddress.otherAddresses[1].locatorType() == LocatorType::IP6);
 			CHECK(reconnectAddress.usedAddresses.size() == 2);
 
 			//Try test duplicates addition
 			reconnectAddress.addAddresses(addresses);
 
 			CHECK(reconnectAddress.primaryAddress.hostname() == k_url_1_hostname);
-			CHECK(reconnectAddress.otherAddresses.size() == 1);
-			CHECK(reconnectAddress.otherAddresses[0].hostname() == k_ipv6_2_hostname);
-			CHECK(reconnectAddress.otherAddresses[0].locatorType() == LocatorType::IP6);
+			CHECK(reconnectAddress.otherAddresses.size() == 2);
+			CHECK(reconnectAddress.otherAddresses[1].hostname() == k_ipv6_2_hostname);
+			CHECK(reconnectAddress.otherAddresses[1].locatorType() == LocatorType::IP6);
 			CHECK(reconnectAddress.usedAddresses.size() == 2);
 
 			addresses.clear();
-			addresses.push_back(Address::createURL(k_url_1_hostname, k_url_1_port));
-			addresses.push_back(Address::createURL(k_url_1_hostname, k_url_1_port));
+			addresses.push_back(Address::createURL("wss",k_url_1_hostname, k_url_1_port, ""));
+			addresses.push_back(Address::createURL("", k_url_1_hostname, k_url_1_port, ""));
 			reconnectAddress.addAddresses(addresses);
 
 			CHECK(reconnectAddress.primaryAddress.hostname() == k_url_1_hostname);
-			CHECK(reconnectAddress.otherAddresses.size() == 1);
-			CHECK(reconnectAddress.otherAddresses[0].hostname() == k_ipv6_2_hostname);
-			CHECK(reconnectAddress.otherAddresses[0].locatorType() == LocatorType::IP6);
+			CHECK(reconnectAddress.otherAddresses.size() == 4);
+			CHECK(reconnectAddress.otherAddresses[1].hostname() == k_ipv6_2_hostname);
+			CHECK(reconnectAddress.otherAddresses[1].locatorType() == LocatorType::IP6);
 			CHECK(reconnectAddress.usedAddresses.size() == 2);
 		}
 
