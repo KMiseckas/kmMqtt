@@ -42,8 +42,7 @@ namespace cleanMqtt
 
 		/**
 		 * @brief Connect to a WebSocket server.
-		 * @param hostname The hostname of the server.
-		 * @param port The port of the server.
+		 * @param address The address to connect to.
 		 * @return True if the operation to request a connect proccessed correctly, false otherwise.
 		 */
 		virtual bool connect(const mqtt::Address& address) noexcept = 0;
