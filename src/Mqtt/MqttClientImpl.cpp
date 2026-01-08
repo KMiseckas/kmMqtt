@@ -194,6 +194,12 @@ namespace cleanMqtt
 				return ReqResult{ ClientErrorCode::Invalid_Argument, "Cannot subscribe to an empty list of topics!" };
 			}
 
+			if (!m_connectionInfo.subscribeIdentifiersSupported && options.subscribeIdentifier.uint32Value() > 0)
+			{
+				LogError("MqttClient", "Subscribe Identifiers not supported by broker.");
+				return ReqResult{ ClientErrorCode::SubscribeIdentifiersNotSupported, "Subscribe Identifiers not supported by broker." };
+			}
+
 			auto packetId{ m_packetIdPool.getId() };
 
 			{
@@ -870,6 +876,8 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck&& packet)
 		{
+			//TODO 4.9 Flow Control - Handle RECEIVE_MAXIMUM property from Connect Ack packet.
+
 			//Connection counts as succeeded for any ConnectReasonCode < 128U so report back as connection success, else start failure proccess.
 			if (packet.getVariableHeader().reasonCode < ConnectReasonCode::UNSPECIFIED_ERROR)
 			{
@@ -898,27 +906,42 @@ namespace cleanMqtt
 
 				//Set-up max server topic alias
 				const std::uint16_t* serverTopicAliasMax{ nullptr };
-				if (packet.getVariableHeader().properties.tryGetProperty<std::uint16_t>(PropertyType::TOPIC_ALIAS_MAXIMUM, serverTopicAliasMax))
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::TOPIC_ALIAS_MAXIMUM, serverTopicAliasMax))
 				{
 					m_connectionInfo.maxServerTopicAlias = *serverTopicAliasMax;
 				}
 
 				//Check is retain available
 				const std::uint8_t* retainAvailable{ 0 };
-				if (packet.getVariableHeader().properties.tryGetProperty<std::uint8_t>(PropertyType::RETAIN_AVAILABLE, retainAvailable))
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::RETAIN_AVAILABLE, retainAvailable))
 				{
 					m_connectionInfo.isRetainAvailable = *retainAvailable == 1;
 				}
 
 				//Set-up max server packet size
 				const std::uint32_t* maxPacketSize{ nullptr };
-				if (packet.getVariableHeader().properties.tryGetProperty<std::uint32_t>(PropertyType::MAXIMUM_PACKET_SIZE, maxPacketSize))
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::MAXIMUM_PACKET_SIZE, maxPacketSize))
 				{
 					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(*maxPacketSize);
 				}
 				else
 				{
 					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(MAX_PACKET_SIZE);
+				}
+
+				//TODO implement 3.2.2.3.3 Receive Maximum internal to SDK?
+
+				const UTF8String* assignedClientId{ nullptr };
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::ASSIGNED_CLIENT_IDENTIFIER, assignedClientId))
+				{
+					m_connectionInfo.connectArgs.clientId = assignedClientId->getString();
+					LogInfo("MqttClient", "Broker assigned client identifier: %s", m_connectionInfo.connectArgs.clientId.c_str());
+				}
+
+				const uint8_t* subIdentifierAvailable{ nullptr };
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::SUBSCRIPTION_IDENTIFIER_AVAILABLE, subIdentifierAvailable))
+				{
+					m_connectionInfo.subscribeIdentifiersSupported = *subIdentifierAvailable == 1;
 				}
 
 				const SessionState prevSessionState{ std::move(m_connectionInfo.sessionState) };
@@ -929,6 +952,20 @@ namespace cleanMqtt
 				//If session present flag is set, merge previous session state into new one (e.g. pending publish, pubrec, pubrel...).
 				if (packet.getVariableHeader().flags.getFlagValue(ConnectAcknowledgeFlags::SESSION_PRESENT) == 1)
 				{
+					if (prevSessionState.getClientId().empty())
+					{
+						LogError("MqttClient", "Broker indicated existing session present, but client has no previous session state to restore.");
+
+						if (m_connectionStatus == ConnectionStatus::RECONNECTING)
+						{
+							handleFailedReconnect(std::move(packet), ClientErrorCode::Server_Session_Present_Mismatch);
+						}
+						else
+						{
+							handleFailedConnect(std::move(packet), ClientErrorCode::Server_Session_Present_Mismatch);
+						}
+					}
+
 					m_connectionInfo.sessionState.addPrevSessionState(prevSessionState); //Merge previous session state into new one.
 				}
 
@@ -963,8 +1000,6 @@ namespace cleanMqtt
 				{
 					handleFailedConnect(std::move(packet));
 				}
-
-				//TODO read mqtt5 spec for properties of Connect Ack (relating to publishing, subscribing and reconnection).
 			}
 		}
 
@@ -1326,13 +1361,13 @@ namespace cleanMqtt
 			}
 		}
 
-		void MqttClientImpl::handleFailedReconnect(ConnectAck&& packet)
+		void MqttClientImpl::handleFailedReconnect(ConnectAck&& packet, ClientErrorCode errorCode)
 		{
 			LogDebug("MqttClient", "Client could not reconnect. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
 			m_socket->close();
 			m_receiveQueue.clear();
 
-			if (m_connectionInfo.reconnectAddress.tryCycleToNextPrimaryAddress())
+			if (errorCode == ClientErrorCode::No_Error && m_connectionInfo.reconnectAddress.tryCycleToNextPrimaryAddress())
 			{
 				reconnect();
 			}
@@ -1340,16 +1375,16 @@ namespace cleanMqtt
 			{
 				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
-				DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet)]() {m_reconnectEvent({ ReconnectionStatus::FAILED, false, 0, ClientErrorCode::No_Error }, p); });
+				DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet)]() {m_reconnectEvent({ ReconnectionStatus::FAILED, false, 0, errorCode }, p); });
 
 				if (m_connectionInfo.hasBeenConnected)
 				{
-					DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, false, ClientErrorCode::No_Error }); });
+					DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, false, errorCode }); });
 				}
 			}
 		}
 
-		void MqttClientImpl::handleFailedConnect(ConnectAck&& packet)
+		void MqttClientImpl::handleFailedConnect(ConnectAck&& packet, ClientErrorCode errorCode)
 		{
 			m_connectionStatus = ConnectionStatus::DISCONNECTED;
 			LogDebug("MqttClient", "Client could not connect to broker. ConnectReasonCode: %d", static_cast<std::uint8_t>(packet.getVariableHeader().reasonCode));
@@ -1369,7 +1404,7 @@ namespace cleanMqtt
 			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
-			DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet)]() {m_connectEvent({ false, true, ClientErrorCode::No_Error }, p); });
+			DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet)]() {m_connectEvent({ false, true, errorCode }, p); });
 		}
 
 		void MqttClientImpl::handleTimeOutConnect()

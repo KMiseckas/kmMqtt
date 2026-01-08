@@ -38,6 +38,7 @@ namespace cleanMqtt
 			std::size_t maxServerPacketSize{ MAX_PACKET_SIZE };
 			std::uint16_t serverKeepAlive{ 0U };
 			bool isRetainAvailable{ true };
+			bool subscribeIdentifiersSupported{ true };
 			SessionState sessionState{ "", 0 };
 			std::vector<PendingSubscription> pendingSubscriptions;
 			std::vector<PendingUnSubscription> pendingUnSubscriptions;

@@ -129,8 +129,8 @@ else\
 			void tickReceivePackets();
 			void tickPendingPublishMessageRetries();
 
-			void handleFailedReconnect(ConnectAck&& packet);
-			void handleFailedConnect(ConnectAck&& packet);
+			void handleFailedReconnect(ConnectAck&& packet, ClientErrorCode errorCode = ClientErrorCode::No_Error);
+			void handleFailedConnect(ConnectAck&& packet, ClientErrorCode errorCode = ClientErrorCode::No_Error);
 			void handleTimeOutConnect();
 			void handleTimeOutReconnect();
 			void handleDecodeError(const DecodeResult& result) noexcept;

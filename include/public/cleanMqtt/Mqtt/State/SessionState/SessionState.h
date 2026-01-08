@@ -76,6 +76,13 @@ namespace cleanMqtt
             */
             void clear() noexcept;
 
+			/**
+            * @brief Gets the client identifier.
+            * 
+            * @return The client identifier.
+			*/
+			std::string getClientId() const noexcept { return std::string{ m_clientId }; }
+
         protected:
 
 			bool shouldBringToFront(PublishMessageStatus oldStatus, PublishMessageStatus newStatus) const noexcept;
