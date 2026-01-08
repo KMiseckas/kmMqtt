@@ -1,6 +1,9 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include "cleanMqtt/Sockets/WindowsTCPSocket.h"
 
+#include <mutex>
+#include <ws2tcpip.h>
+
 namespace cleanMqtt
 {
 	WindowsTCPSocket::WindowsTCPSocket()
