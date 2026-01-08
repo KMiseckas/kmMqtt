@@ -3,16 +3,11 @@
 #ifndef INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H
 #define INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWINWEBSOCKET_H
 
-#include <cleanMqtt/Interfaces/IWebSocket.h>
+#include "cleanMqtt/Interfaces/IWebSocket.h"
 
 #include <winsock2.h>
-#include <ws2tcpip.h>
 #include <string>
 #include <functional>
-#include <vector>
-#include <iostream>
-#include <mutex>
-#include <thread>
 
 #pragma comment(lib, "Ws2_32.lib")
 
