@@ -876,8 +876,6 @@ namespace cleanMqtt
 
 		void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck&& packet)
 		{
-			//TODO 4.9 Flow Control - Handle RECEIVE_MAXIMUM property from Connect Ack packet.
-
 			//Connection counts as succeeded for any ConnectReasonCode < 128U so report back as connection success, else start failure proccess.
 			if (packet.getVariableHeader().reasonCode < ConnectReasonCode::UNSPECIFIED_ERROR)
 			{
@@ -929,7 +927,14 @@ namespace cleanMqtt
 					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(MAX_PACKET_SIZE);
 				}
 
-				//TODO implement 3.2.2.3.3 Receive Maximum internal to SDK?
+				const uint32_t* serverReceiveMaximum{ nullptr };
+				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::RECEIVE_MAXIMUM, serverReceiveMaximum))
+				{
+					if (serverReceiveMaximum != 0) //0 Means default limit.
+					{
+						m_connectionInfo.receiveMaximumAsServer = *serverReceiveMaximum;
+					}
+				}
 
 				const UTF8String* assignedClientId{ nullptr };
 				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::ASSIGNED_CLIENT_IDENTIFIER, assignedClientId))

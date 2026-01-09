@@ -1,6 +1,7 @@
 #ifndef INCLUDE_CLEANMQTT_MQTT_SENDQUEUE_H
 #define INCLUDE_CLEANMQTT_MQTT_SENDQUEUE_H
 
+#include <cleanMqtt/GlobalMacros.h>
 #include <cleanMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 #include <cstdint>
@@ -41,6 +42,7 @@ namespace cleanMqtt
 			virtual ~SendQueue();
 
 			void setSocket(std::shared_ptr<IWebSocket> socket) noexcept;
+			void setReceiveMaximum(ReceiveMaximumCounter* const counter, const uint32_t receiveMaximumClient, const uint32_t receiveMaximumBroker) noexcept;
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
 			void clearQueue(const bool graceful = false) noexcept;
@@ -73,6 +75,10 @@ namespace cleanMqtt
 
 			std::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
 			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
+
+			ReceiveMaximumCounter* m_receiveMaximumCounter{ nullptr };
+			std::uint32_t m_receiveMaximumClient{ RECEIVE_MAXIMUM_DEFAULT };
+			std::uint32_t m_receiveMaximumBroker{ RECEIVE_MAXIMUM_DEFAULT };
 
 			std::mutex m_mutex;
 			bool m_startGracefulClear{ false };

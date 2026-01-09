@@ -20,6 +20,12 @@ namespace cleanMqtt
 	{
 		struct SessionState;
 
+		struct ReceiveMaximumCounter
+		{
+			std::uint32_t received{ 0U };
+			std::uint32_t sent{ 0U };
+		};
+
 		struct PUBLIC_API MqttConnectionInfo
 		{
 			ConnectArgs connectArgs{ "CLIENT ID" };
@@ -39,10 +45,13 @@ namespace cleanMqtt
 			std::uint16_t serverKeepAlive{ 0U };
 			bool isRetainAvailable{ true };
 			bool subscribeIdentifiersSupported{ true };
+			std::uint32_t receiveMaximumAsClient{ RECEIVE_MAXIMUM_DEFAULT };
+			std::uint32_t receiveMaximumAsServer{ RECEIVE_MAXIMUM_DEFAULT };
 			SessionState sessionState{ "", 0 };
 			std::vector<PendingSubscription> pendingSubscriptions;
 			std::vector<PendingUnSubscription> pendingUnSubscriptions;
 			TopicAliases topicAliases;
+			ReceiveMaximumCounter receiveMaximumCounter{ 0U, 0U };
 
 			void clear(bool clearSessionState = false) noexcept;
 

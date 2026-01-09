@@ -56,6 +56,8 @@ namespace cleanMqtt
 			};
 			virtual ~IPacketComposer() {};
 
+			virtual bool canSend() const noexcept {return true;};
+			virtual Qos getQos() const noexcept { return Qos::QOS_0; };
 			virtual ComposeResult compose() noexcept = 0;
 			virtual void cancel() noexcept = 0;
 

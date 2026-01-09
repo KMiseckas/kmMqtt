@@ -20,6 +20,13 @@ namespace cleanMqtt
 			m_socket = socket;
 		}
 
+		void SendQueue::setReceiveMaximum(ReceiveMaximumCounter* const counter, const uint32_t receiveMaximumClient, const uint32_t receiveMaximumBroker) noexcept
+		{
+			m_receiveMaximumCounter = counter;
+			m_receiveMaximumClient = receiveMaximumClient;
+			m_receiveMaximumBroker = receiveMaximumBroker;
+		}
+
 		void SendQueue::addToQueue(PacketSendJobPtr packetSendJob)
 		{
 			LockGuard guard{ m_mutex };
@@ -165,6 +172,11 @@ namespace cleanMqtt
 
 			for (const auto& c : m_nextPacketComposersBatch)
 			{
+				if (!c->canSend())
+				{
+					continue;
+				}
+
 				auto result{ c->compose() };
 
 				if (!result.encodeResult.isSuccess())
@@ -189,13 +201,47 @@ namespace cleanMqtt
 						hasPingPacket = true;
 					}
 				}
+				else if (result.encodeResult.packetType == PacketType::PUBLISH_ACKNOWLEDGE)
+				{
+					if (m_receiveMaximumCounter->received == m_receiveMaximumClient)
+					{
+						LogInfo("SendQueue", "Client exited `receive maximum` limit. (%d/%d).", m_receiveMaximumCounter->received, m_receiveMaximumClient);
+					}
+
+					m_receiveMaximumCounter->received--;
+				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE ||
 					result.encodeResult.packetType == PacketType::PUBLISH_RECEIVED ||
 					result.encodeResult.packetType == PacketType::PUBLISH_RELEASED ||
 					result.encodeResult.packetType == PacketType::DISCONNECT)
 				{
+					if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE)
+					{
+						if (m_receiveMaximumCounter->received == m_receiveMaximumClient)
+						{
+							LogInfo("SendQueue", "Client exited `receive maximum` limit. (%d/%d).", m_receiveMaximumCounter->received, m_receiveMaximumClient);
+						}
+
+						m_receiveMaximumCounter->received--;
+					}
+
 					//Track specific packets in buffer for notifying listeners when sent.
 					m_packetsMetadataInBuffer.push_back({ fullOutgoingDataSize + result.encodedData.size(), result.encodeResult.packetType,  result.encodeResult.packetId });
+				}
+				else if (result.encodeResult.packetType == PacketType::PUBLISH)
+				{
+					if (c->getQos() != Qos::QOS_0)
+					{
+						//Increment receive maximum
+						m_receiveMaximumCounter->sent++;
+
+						if (m_receiveMaximumCounter->sent == m_receiveMaximumBroker)
+						{
+							LogWarning("SendQueue",
+								"Client reached brokers `receive maximum` limit (%d). Waiting for broker publish replies to exit limit before sending more QOS1/QOS2 publish messages.",
+								m_receiveMaximumBroker);
+						}
+					}
 				}
 
 				fullOutgoingDataSize += result.encodedData.size();
@@ -269,6 +315,8 @@ namespace cleanMqtt
 							case PacketType::PUBLISH_RECEIVED:
 								m_onPubRecSentCallback(metadata.packetId);
 								break;
+							case PacketType::PUBLISH:
+								break;
 							case PacketType::DISCONNECT:
 								m_onDisconnectSentCallback();
 								break;
@@ -313,6 +361,8 @@ namespace cleanMqtt
 										break;
 									case PacketType::PUBLISH_RECEIVED:
 										m_onPubRecSentCallback(metadata.packetId);
+										break;
+									case PacketType::PUBLISH:
 										break;
 									case PacketType::DISCONNECT:
 										m_onDisconnectSentCallback();

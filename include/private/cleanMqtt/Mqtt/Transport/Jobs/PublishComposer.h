@@ -19,7 +19,9 @@ namespace cleanMqtt
 				ByteBuffer&& payload,
 				PublishOptions&& pubOptions) noexcept;
 
+			bool canSend() const noexcept override;
 			ComposeResult compose() noexcept override;
+			Qos getQos() const noexcept override;
 			void cancel() noexcept override;
 
 		private:

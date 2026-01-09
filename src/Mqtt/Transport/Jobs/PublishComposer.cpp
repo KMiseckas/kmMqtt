@@ -20,12 +20,27 @@ namespace cleanMqtt
 		{
 		}
 
+		bool PublishComposer::canSend() const noexcept
+		{
+			if (m_publishOptions.qos == Qos::QOS_0)
+			{
+				return true;
+			}
+
+			return m_mqttConnectionInfo->receiveMaximumCounter.sent < m_mqttConnectionInfo->receiveMaximumAsClient;
+		}
+
 		ComposeResult PublishComposer::compose() noexcept
 		{
 			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic.c_str(), m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
 
 			return ComposeResult{ result, packet.extractDataBuffer() };
+		}
+
+		Qos PublishComposer::getQos() const noexcept
+		{
+			return m_publishOptions.qos;
 		}
 
 		void PublishComposer::cancel() noexcept
