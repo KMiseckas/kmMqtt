@@ -14,7 +14,7 @@
 #include "cleanMqtt/Mqtt/Transport/Jobs/PubRecComposer.h"
 #include "cleanMqtt/Mqtt/Transport/Jobs/PubRelComposer.h"
 #include "cleanMqtt/Mqtt/Transport/Jobs/PubCompComposer.h"
-#include <cleanMqtt/Mqtt/Transport/Jobs/DisconnectComposer.h>
+#include "cleanMqtt/Mqtt/Transport/Jobs/DisconnectComposer.h"
 
 namespace cleanMqtt
 {
@@ -762,6 +762,9 @@ namespace cleanMqtt
 				PubCallback pubCallback{ std::bind(&MqttClientImpl::handleReceivedPublish, this, std::placeholders::_1) };
 				PingRespCallback pingRespCallback{ std::bind(&MqttClientImpl::handleReceivedPingResponse, this, std::placeholders::_1) };
 				PubAckCallback pubAckCallback{ std::bind(&MqttClientImpl::handleReceivedPublishAck, this, std::placeholders::_1) };
+				PubRecCallback pubRecCallback{ std::bind(&MqttClientImpl::handleReceivedPublishRec, this, std::placeholders::_1) };
+				PubRelCallback pubRelCallback{ std::bind(&MqttClientImpl::handleReceivedPublishRel, this, std::placeholders::_1) };
+				PubCompCallback pubCompCallback{ std::bind(&MqttClientImpl::handleReceivedPublishComp, this, std::placeholders::_1) };
 				SubAckCallback subAckCallback{ std::bind(&MqttClientImpl::handleReceivedSubscribeAcknowledge, this, std::placeholders::_1) };
 				UnSubAckCallback unSubAckCallback{ std::bind(&MqttClientImpl::handleReceivedUnSubscribeAcknowledge, this, std::placeholders::_1) };
 
@@ -770,6 +773,9 @@ namespace cleanMqtt
 				m_receiveQueue.setPublishCallback(pubCallback);
 				m_receiveQueue.setPingResponseCallback(pingRespCallback);
 				m_receiveQueue.setPublishAcknowledgeCallback(pubAckCallback);
+				m_receiveQueue.setPublishReleaseCallback(pubRelCallback);
+				m_receiveQueue.setPublishCompleteCallback(pubCompCallback);
+				m_receiveQueue.setPublishReceivedCallback(pubRecCallback);
 				m_receiveQueue.setSubscribeAcknowledgeCallback(subAckCallback);
 				m_receiveQueue.setUnSubscribeAcknowledgeCallback(unSubAckCallback);
 
