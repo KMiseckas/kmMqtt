@@ -2,6 +2,7 @@
 #include "cleanMqtt/Mqtt/Packets/PacketType.h"
 #include "cleanMqtt/Mqtt/Packets/PacketUtils.h"
 #include "cleanMqtt/Mqtt/Packets/ErrorCodes.h"
+#include "cleanMqtt/Mqtt/ReceiveMaximumTracker.h"
 
 namespace cleanMqtt
 {
@@ -101,22 +102,93 @@ if (callback != nullptr)\
 				}
 				case PacketType::PUBLISH:
 				{
-					HANDLE_RECEIVED_PACKET(Publish, m_pubCallback);
+					Publish packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode();
+
+					if (!decodeResult.isSuccess())
+					{
+						LogInfo("ReceiveQueue", "Failed to decode packet.");
+						return decodeResult;
+					}
+
+					if (packet.getVariableHeader().qos != Qos::QOS_0)
+					{
+						if (!m_receiveMaximumTrackerPtr->decrementReceiveAllowance(packet.getVariableHeader().packetIdentifier))
+						{
+							LogError("ReceiveQueue", "Receive Maximum would exceeded. Receive Maximum: %u", m_receiveMaximumTrackerPtr->getMaxReceiveAllowance());
+
+							decodeResult.code = DecodeErrorCode::RECEIVE_MAXIMUM_EXCEEDED;
+							decodeResult.reason = "Receive Maximum exceeded.";
+							return decodeResult;
+						}
+					}
+					
+					if (m_pubCallback != nullptr) 
+					{
+						m_pubCallback(std::move(packet));
+					};
+
 					break;
 				}
 				case PacketType::PUBLISH_ACKNOWLEDGE:
 				{
-					HANDLE_RECEIVED_PACKET(PublishAck, m_pubAckCallback);
+					PublishAck packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode();
+
+					if (!decodeResult.isSuccess())
+					{
+						LogInfo("ReceiveQueue", "Failed to decode packet.");
+						return decodeResult;
+					}
+
+					m_receiveMaximumTrackerPtr->incrementSendAllowance(packet.getVariableHeader().packetId);
+
+					if (m_pubAckCallback != nullptr)
+					{
+						m_pubAckCallback(std::move(packet));
+					};
+
 					break;
 				}
 				case PacketType::PUBLISH_COMPLETE:
 				{
-					HANDLE_RECEIVED_PACKET(PublishComp, m_pubCompCallback);
+					PublishComp packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode();
+
+					if (!decodeResult.isSuccess()) 
+					{
+						LogInfo("ReceiveQueue", "Failed to decode packet.");
+						return decodeResult;
+					}
+
+					m_receiveMaximumTrackerPtr->incrementSendAllowance(packet.getVariableHeader().packetId);
+
+					if (m_pubCompCallback != nullptr) 
+					{
+						m_pubCompCallback(std::move(packet));
+					};
 					break;
 				}
 				case PacketType::PUBLISH_RECEIVED:
 				{
-					HANDLE_RECEIVED_PACKET(PublishRec, m_pubRecCallback);
+					PublishRec packet{ std::move(m_inProgressData.front()) };
+					decodeResult = packet.decode();
+
+					if (!decodeResult.isSuccess())
+					{
+						LogInfo("ReceiveQueue", "Failed to decode packet.");
+						return decodeResult;
+					}
+
+					if (packet.getVariableHeader().reasonCode >= PubRecReasonCode::UNSPECIFIED_ERROR)
+					{
+						m_receiveMaximumTrackerPtr->incrementSendAllowance(packet.getVariableHeader().packetId);
+					}
+
+					if (m_pubRecCallback != nullptr) 
+					{
+						m_pubRecCallback(std::move(packet));
+					};
 					break;
 				}
 				case PacketType::PUBLISH_RELEASED:
@@ -207,6 +279,11 @@ if (callback != nullptr)\
 		void ReceiveQueue::setPingResponseCallback(PingRespCallback& callback) noexcept
 		{
 			m_pingRespCallback = callback;
+		}
+
+		void ReceiveQueue::setReceiveMaximumTracker(ReceiveMaximumTracker* const tracker) noexcept
+		{
+			m_receiveMaximumTrackerPtr = tracker;
 		}
 
 		void ReceiveQueue::setPublishAcknowledgeCallback(PubAckCallback& callback) noexcept

@@ -15,7 +15,8 @@ namespace cleanMqtt
 			UNSPECIFIED_ERROR,
 			MALFORMED_PACKET,
 			PROTOCOL_ERROR,
-			INTERNAL_ERROR
+			INTERNAL_ERROR,
+			RECEIVE_MAXIMUM_EXCEEDED
 		};
 
 		enum class EncodeErrorCode : std::uint8_t
@@ -52,6 +53,8 @@ namespace cleanMqtt
 				case DecodeErrorCode::MALFORMED_PACKET:
 					return DisconnectReasonCode::MALFORMED_PACKET;
 				case DecodeErrorCode::UNSPECIFIED_ERROR:
+				case DecodeErrorCode::RECEIVE_MAXIMUM_EXCEEDED:
+					return DisconnectReasonCode::RECEIVE_MAXIMUM_EXCEEDED;
 				case DecodeErrorCode::NO_ERROR:
 					break;
 				}

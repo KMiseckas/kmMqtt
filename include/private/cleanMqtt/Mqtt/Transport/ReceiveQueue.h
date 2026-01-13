@@ -36,6 +36,8 @@ namespace cleanMqtt
 		using UnSubAckCallback = std::function<void(UnSubscribeAck&&)>;
 		using PingRespCallback = std::function<void(PingResp&&)>;
 
+		struct ReceiveMaximumTracker;
+
 		class ReceiveQueue
 		{
 		public:
@@ -60,6 +62,7 @@ namespace cleanMqtt
 			void setUnSubscribeAcknowledgeCallback(UnSubAckCallback& callback) noexcept;
 			void setPingResponseCallback(PingRespCallback& callback) noexcept;
 
+			void setReceiveMaximumTracker(ReceiveMaximumTracker* const tracker) noexcept;
 		private:
 			std::queue<ByteBuffer> m_inQueueData;
 			std::queue<ByteBuffer> m_inProgressData;
@@ -75,6 +78,8 @@ namespace cleanMqtt
 			PubCompCallback m_pubCompCallback;
 			PubRecCallback m_pubRecCallback;
 			PubRelCallback m_pubRelCallback;
+
+			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
 
 			std::mutex m_mutex;
 		};

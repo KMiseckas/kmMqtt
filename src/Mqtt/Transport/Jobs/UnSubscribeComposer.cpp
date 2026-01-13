@@ -23,6 +23,7 @@ namespace cleanMqtt
 		{
 			UnSubscribe packet{ createUnSubscribePacket(m_packetId, m_topics, m_unSubscribeOptions) };
 			EncodeResult result{ packet.encode() };
+			result.packetId = m_packetId;
 
 			return ComposeResult{ result, packet.extractDataBuffer() };
 		}

@@ -9,6 +9,7 @@ namespace cleanMqtt
 		{
 			PublishRec packet{ createPubRecPacket(m_publishPacketId, m_reasonCode, m_options) };
 			EncodeResult result{ packet.encode() };
+			result.packetId = m_publishPacketId;
 
 			return ComposeResult{ result, packet.extractDataBuffer() };
 		}

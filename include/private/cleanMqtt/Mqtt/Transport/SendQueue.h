@@ -5,7 +5,6 @@
 #include <cleanMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <cleanMqtt/Interfaces/IWebSocket.h>
 #include <cstdint>
-#include <queue>
 #include <chrono>
 #include <memory>
 #include <string>
@@ -28,6 +27,8 @@ namespace cleanMqtt
 
 		using PacketSendJobPtr = std::unique_ptr<IPacketComposer>;
 
+		struct ReceiveMaximumTracker;
+
 		class SendQueue
 		{
 			struct PacketSectionMetadata
@@ -42,7 +43,7 @@ namespace cleanMqtt
 			virtual ~SendQueue();
 
 			void setSocket(std::shared_ptr<IWebSocket> socket) noexcept;
-			void setReceiveMaximum(ReceiveMaximumCounter* const counter, const uint32_t receiveMaximumClient, const uint32_t receiveMaximumBroker) noexcept;
+			void setReceiveMaximumTracker(ReceiveMaximumTracker* const tracker) noexcept;
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
 			void clearQueue(const bool graceful = false) noexcept;
@@ -76,7 +77,7 @@ namespace cleanMqtt
 			std::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
 			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
 
-			ReceiveMaximumCounter* m_receiveMaximumCounter{ nullptr };
+			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
 			std::uint32_t m_receiveMaximumClient{ RECEIVE_MAXIMUM_DEFAULT };
 			std::uint32_t m_receiveMaximumBroker{ RECEIVE_MAXIMUM_DEFAULT };
 

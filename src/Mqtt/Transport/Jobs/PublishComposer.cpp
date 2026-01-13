@@ -1,5 +1,5 @@
-#include <cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
+#include "cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h"
+#include "cleanMqtt/Mqtt/PacketHelper.h"
 
 namespace cleanMqtt
 {
@@ -10,13 +10,15 @@ namespace cleanMqtt
 			const std::uint16_t packetId,
 			std::string topic,
 			ByteBuffer&& payload,
-			PublishOptions&& pubOptions) noexcept :
+			PublishOptions&& pubOptions,
+			ReceiveMaximumTracker* recMaxTracker) noexcept :
 			IPacketComposer(connectionInfo),
 			m_packetIdPool{ packetIdPool },
 			m_packetId{ packetId },
 			m_topic{ std::move(topic) },
 			m_payload{ std::move(payload) },
-			m_publishOptions{ std::move(pubOptions) }
+			m_publishOptions{ std::move(pubOptions) },
+			m_recMaxTracker{ recMaxTracker }
 		{
 		}
 
@@ -27,13 +29,14 @@ namespace cleanMqtt
 				return true;
 			}
 
-			return m_mqttConnectionInfo->receiveMaximumCounter.sent < m_mqttConnectionInfo->receiveMaximumAsClient;
+			return m_recMaxTracker->hasSendAllowance();
 		}
 
 		ComposeResult PublishComposer::compose() noexcept
 		{
 			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic.c_str(), m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
+			result.packetId = m_packetId;
 
 			return ComposeResult{ result, packet.extractDataBuffer() };
 		}

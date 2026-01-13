@@ -4,6 +4,7 @@
 #include <cleanMqtt/Mqtt/Transport/IPacketComposer.h>
 #include "cleanMqtt/Mqtt/Params/PublishOptions.h"
 #include <cleanMqtt/Utils/PacketIdPool.h>
+#include "cleanMqtt/Mqtt/ReceiveMaximumTracker.h"
 
 namespace cleanMqtt
 {
@@ -17,7 +18,8 @@ namespace cleanMqtt
 				const std::uint16_t packetId,
 				std::string topic,
 				ByteBuffer&& payload,
-				PublishOptions&& pubOptions) noexcept;
+				PublishOptions&& pubOptions,
+				ReceiveMaximumTracker* recMaxTracker) noexcept;
 
 			bool canSend() const noexcept override;
 			ComposeResult compose() noexcept override;
@@ -30,6 +32,7 @@ namespace cleanMqtt
 			std::string m_topic{ nullptr };
 			ByteBuffer m_payload;
 			PublishOptions m_publishOptions;
+			ReceiveMaximumTracker* m_recMaxTracker;
 		};
 	}
 }

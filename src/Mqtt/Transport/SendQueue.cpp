@@ -1,5 +1,6 @@
 #include "cleanMqtt/Mqtt/Transport/SendQueue.h"
-#include <cleanMqtt/Logger/Log.h>
+#include "cleanMqtt/Logger/Log.h"
+#include "cleanMqtt/Mqtt/ReceiveMaximumTracker.h"
 
 namespace cleanMqtt
 {
@@ -20,11 +21,9 @@ namespace cleanMqtt
 			m_socket = socket;
 		}
 
-		void SendQueue::setReceiveMaximum(ReceiveMaximumCounter* const counter, const uint32_t receiveMaximumClient, const uint32_t receiveMaximumBroker) noexcept
+		void SendQueue::setReceiveMaximumTracker(ReceiveMaximumTracker* tracker) noexcept
 		{
-			m_receiveMaximumCounter = counter;
-			m_receiveMaximumClient = receiveMaximumClient;
-			m_receiveMaximumBroker = receiveMaximumBroker;
+			m_receiveMaximumTrackerPtr = tracker;
 		}
 
 		void SendQueue::addToQueue(PacketSendJobPtr packetSendJob)
@@ -163,6 +162,17 @@ namespace cleanMqtt
 				return true;
 			}
 
+			if (m_startGracefulClear)
+			{
+				LogInfo("SendQueue", "Gracefully clearing send queue.");
+				for (const auto& c : m_nextPacketComposersBatch)
+				{
+					c->cancel();
+				}
+				m_nextPacketComposersBatch.clear();
+				return false;
+			}
+
 			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_nextPacketComposersBatch.size());
 
 			std::vector<ByteBuffer> encodedDataQueue;
@@ -170,10 +180,13 @@ namespace cleanMqtt
 			bool hasPingPacket{ false };
 			std::size_t pingPacketLastByte{ 0 };
 
-			for (const auto& c : m_nextPacketComposersBatch)
+			std::vector<PacketSendJobPtr> delayedPublishPckts;
+
+			for (auto& c : m_nextPacketComposersBatch)
 			{
 				if (!c->canSend())
 				{
+					delayedPublishPckts.push_back(std::move(c));
 					continue;
 				}
 
@@ -203,12 +216,7 @@ namespace cleanMqtt
 				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH_ACKNOWLEDGE)
 				{
-					if (m_receiveMaximumCounter->received == m_receiveMaximumClient)
-					{
-						LogInfo("SendQueue", "Client exited `receive maximum` limit. (%d/%d).", m_receiveMaximumCounter->received, m_receiveMaximumClient);
-					}
-
-					m_receiveMaximumCounter->received--;
+					m_receiveMaximumTrackerPtr->incrementReceiveAllowance(result.encodeResult.packetId);
 				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE ||
 					result.encodeResult.packetType == PacketType::PUBLISH_RECEIVED ||
@@ -217,12 +225,7 @@ namespace cleanMqtt
 				{
 					if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE)
 					{
-						if (m_receiveMaximumCounter->received == m_receiveMaximumClient)
-						{
-							LogInfo("SendQueue", "Client exited `receive maximum` limit. (%d/%d).", m_receiveMaximumCounter->received, m_receiveMaximumClient);
-						}
-
-						m_receiveMaximumCounter->received--;
+						m_receiveMaximumTrackerPtr->incrementReceiveAllowance(result.encodeResult.packetId);
 					}
 
 					//Track specific packets in buffer for notifying listeners when sent.
@@ -232,15 +235,7 @@ namespace cleanMqtt
 				{
 					if (c->getQos() != Qos::QOS_0)
 					{
-						//Increment receive maximum
-						m_receiveMaximumCounter->sent++;
-
-						if (m_receiveMaximumCounter->sent == m_receiveMaximumBroker)
-						{
-							LogWarning("SendQueue",
-								"Client reached brokers `receive maximum` limit (%d). Waiting for broker publish replies to exit limit before sending more QOS1/QOS2 publish messages.",
-								m_receiveMaximumBroker);
-						}
+						m_receiveMaximumTrackerPtr->decrementSendAllowance(result.encodeResult.packetId);
 					}
 				}
 
@@ -248,7 +243,7 @@ namespace cleanMqtt
 				encodedDataQueue.push_back(std::move(result.encodedData));
 			}
 
-			m_nextPacketComposersBatch.clear();
+			m_nextPacketComposersBatch = std::move(delayedPublishPckts);
 
 			if (fullOutgoingDataSize > m_sendBuffer.capacity())
 			{
@@ -269,17 +264,6 @@ namespace cleanMqtt
 
 			while (partialSendLoopCount <= kMax_Partial_Send_Loops)
 			{
-				if (m_startGracefulClear)
-				{
-					LogInfo("SendQueue", "Gracefully clearing send queue after successful send.");
-					for (const auto& c : m_nextPacketComposersBatch)
-					{
-						c->cancel();
-					}
-					m_nextPacketComposersBatch.clear();
-					return false;
-				}
-
 				partialSendLoopCount++;
 
 				sendResult = sendData(m_sendBuffer);

@@ -49,6 +49,7 @@ namespace cleanMqtt
 	inline bool separateMqttPacketByteBuffers(const ByteBuffer& buffer, std::vector<ByteBuffer>& packets, std::size_t& leftOverPosition)
 	{
 		packets.clear();
+		leftOverPosition = 0;
 
 		size_t packetStart{ 0 };
 		while (packetStart < buffer.size())

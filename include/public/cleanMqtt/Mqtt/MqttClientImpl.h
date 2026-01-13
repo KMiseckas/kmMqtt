@@ -28,7 +28,8 @@
 #include "cleanMqtt/MqttClientOptions.h"
 #include "cleanMqtt/Utils/Deferrer.h"
 #include "cleanMqtt/Utils/PacketIdPool.h" 
-#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
+#include "cleanMqtt/Interfaces/IMqttEnvironment.h"
+#include "cleanMqtt/Mqtt/ReceiveMaximumTracker.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -146,6 +147,7 @@ else\
 
 			MqttClientOptions m_clientOptions;
 			MqttConnectionInfo m_connectionInfo;
+			ReceiveMaximumTracker m_receiveMaximumTracker{ RECEIVE_MAXIMUM_DEFAULT, RECEIVE_MAXIMUM_DEFAULT };
 			ConnectionStatus m_connectionStatus{ ConnectionStatus::DISCONNECTED };
 
 			events::Deferrer m_eventDeferrer;

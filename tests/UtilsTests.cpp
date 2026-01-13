@@ -132,7 +132,7 @@ TEST_SUITE("Utils Tests")
 		//Helper to create MQTT packet with proper variable length encoding
 		auto makeLargePacket = [&](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer
 			{
-				mqtt::VariableByteInteger remainingLength{ mqtt::VariableByteInteger::tryCreateFromValue(payload.size())};
+				mqtt::VariableByteInteger remainingLength{ mqtt::VariableByteInteger::tryCreateFromValue(static_cast<std::uint32_t>(payload.size()))};
 				ByteBuffer buf(1 + remainingLength.uint32Value() + payload.size());
 				buf.append(&type, 1);
 				remainingLength.encode(buf);

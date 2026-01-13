@@ -116,6 +116,7 @@ namespace cleanMqtt
 				m_connectionInfo.connectArgs = std::move(args);
 				m_connectionInfo.connectAddress = std::move(address);
 				m_connectionInfo.reconnectAddress.reset(m_connectionInfo.connectAddress);
+				m_connectionInfo.receiveMaximumAsClient = m_connectionInfo.connectArgs.receiveMaximum == 0 ? RECEIVE_MAXIMUM_DEFAULT : m_connectionInfo.connectArgs.receiveMaximum;
 
 				LogInfo("MqttClient", "Socket attempting to connect.");
 
@@ -171,7 +172,8 @@ namespace cleanMqtt
 				packetId,
 				topic,
 				std::move(payload),
-				std::move(options)));
+				std::move(options),
+				&m_receiveMaximumTracker));
 
 			LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
 
@@ -927,13 +929,21 @@ namespace cleanMqtt
 					m_connectionInfo.maxServerPacketSize = static_cast<std::size_t>(MAX_PACKET_SIZE);
 				}
 
-				const uint32_t* serverReceiveMaximum{ nullptr };
+				//Check brokers receive maximum limits
+				const uint16_t* serverReceiveMaximum{ nullptr };
 				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::RECEIVE_MAXIMUM, serverReceiveMaximum))
 				{
 					if (serverReceiveMaximum != 0) //0 Means default limit.
 					{
 						m_connectionInfo.receiveMaximumAsServer = *serverReceiveMaximum;
 					}
+				}
+
+				//Set-up receive maximum tracker with limits for broker and client.
+				{
+					m_receiveMaximumTracker = ReceiveMaximumTracker{ m_connectionInfo.receiveMaximumAsClient, m_connectionInfo.receiveMaximumAsServer };
+					m_sendQueue.setReceiveMaximumTracker(&m_receiveMaximumTracker);
+					m_receiveQueue.setReceiveMaximumTracker(&m_receiveMaximumTracker);
 				}
 
 				const UTF8String* assignedClientId{ nullptr };
@@ -1348,7 +1358,8 @@ namespace cleanMqtt
 							msg.data.packetID,
 							msg.data.publishMsgData.topic,
 							std::move(payloadCopy),
-							std::move(options)));
+							std::move(options),
+							&m_receiveMaximumTracker));
 					}
 					else if (type == PacketType::PUBLISH_RECEIVED)
 					{
