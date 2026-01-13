@@ -43,7 +43,7 @@ TEST_SUITE("MqttClient Receive Maximum")
             disconnectReason = details.reasonCode;
         });
 
-		//Queue up byte buffer of three PUBLISH QOS 1 packets to exceed receive maximum of 2
+        // Queue up byte buffer of three PUBLISH QOS 1 packets together to exceed receive maximum of 2
         ByteBuffer pub(51);
         pub += 0x32; // PUBLISH QOS 1, DUP=0, RETAIN=0
         pub += 0x0F; // Remaining length
@@ -103,11 +103,10 @@ TEST_SUITE("MqttClient Receive Maximum")
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(pub, packets, leftOver) == true);
         REQUIRE(leftOver == 0);
-		REQUIRE(packets.size() == 3);
+        REQUIRE(packets.size() == 3);
 
         testContext.receiveResponse(pub);
         CHECK(testContext.client->tick().noError());
-        CHECK(disconnectEventFired == true);
 
         // Should disconnect with RECEIVE_MAXIMUM_EXCEEDED
         CHECK(disconnectEventFired);
@@ -224,5 +223,309 @@ TEST_SUITE("MqttClient Receive Maximum")
         const MqttConnectionInfo& info = testContext.client->getConnectionInfo();
         CHECK(info.receiveMaximumAsClient == 65535);
         CHECK(info.receiveMaximumAsServer == 65535);
+    }
+
+    TEST_CASE("Receive Maximum - Client side - QOS 0 does not affect receive maximum")
+    {
+        Config config;
+        config.pingAlways = false;
+
+        TestClientContext testContext{ config };
+
+        ConnectArgs args{ "Id" };
+        args.receiveMaximum = 2;
+        args.keepAliveInSec = 60;
+
+        ConnectAddress address{ Address::createURL("", "localhost", "1883", "") };
+        testContext.client->connect(std::move(args), std::move(address));
+        CHECK(testContext.client->tick().noError());
+
+        ByteBuffer connAckBuffer(5);
+        connAckBuffer += 0x20;
+        connAckBuffer += 0x03;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x00;
+
+        testContext.receiveResponse(connAckBuffer);
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+
+        // Queue up byte buffer of three PUBLISH QOS 1 packets together to exceed receive maximum of 2
+        ByteBuffer pub(42);
+        pub += 0x30; // PUBLISH QOS 1, DUP=0, RETAIN=0
+        pub += 0x0C; // Remaining length
+        pub += 0x00; // Topic length MSB
+        pub += 0x04; // Topic length LSB
+        pub += 't';
+        pub += 'e';
+        pub += 's';
+        pub += 't';
+        pub += 0x00; // No properties
+        pub += 0x01; // Payload
+        pub += 0x02;
+        pub += 0x03;
+        pub += 0x04;
+        pub += 0x05;
+
+        pub += 0x30; // PUBLISH QOS 1
+        pub += 0x0C; // Remaining length
+        pub += 0x00; // Topic length MSB
+        pub += 0x04; // Topic length LSB
+        pub += 't';
+        pub += 'e';
+        pub += 's';
+        pub += 't';
+        pub += 0x00; // No properties
+        pub += 0x01; // Payload
+        pub += 0x02;
+        pub += 0x03;
+        pub += 0x04;
+        pub += 0x05;
+
+        pub += 0x30; // PUBLISH QOS 1
+        pub += 0x0C; // Remaining length
+        pub += 0x00; // Topic length MSB
+        pub += 0x04; // Topic length LSB
+        pub += 't';
+        pub += 'e';
+        pub += 's';
+        pub += 't';
+        pub += 0x00; // No properties
+        pub += 0x01; // Payload
+        pub += 0x02;
+        pub += 0x03;
+        pub += 0x04;
+        pub += 0x05;
+
+        std::vector<ByteBuffer> packets;
+        std::size_t leftOver;
+        CHECK(separateMqttPacketByteBuffers(pub, packets, leftOver) == true);
+        REQUIRE(leftOver == 0);
+        REQUIRE(packets.size() == 3);
+
+        testContext.receiveResponse(pub);
+        CHECK(testContext.client->tick().noError());
+
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+    }
+
+    TEST_CASE("Receive Maximum - Client side - QOS 2 flow with PUBCOMP")
+    {
+        Config config;
+        config.pingAlways = false;
+
+        TestClientContext testContext{ config };
+        
+        ConnectArgs args{ "Id" };
+        args.receiveMaximum = 1;
+        args.keepAliveInSec = 60;
+
+        ConnectAddress address{ Address::createURL("", "localhost", "1883", "") };
+        testContext.client->connect(std::move(args), std::move(address));
+        CHECK(testContext.client->tick().noError());
+
+        ByteBuffer connAckBuffer(5);
+        connAckBuffer += 0x20;
+        connAckBuffer += 0x03;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x00;
+
+        testContext.receiveResponse(connAckBuffer);
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+
+        ByteBuffer pub(17);
+        pub += 0x34; // PUBLISH QOS 2
+        pub += 0x0F;
+        pub += 0x00;
+        pub += 0x04;
+        pub += 't';
+        pub += 'e';
+        pub += 's';
+        pub += 't';
+        pub += 0x00; // Packet ID MSB
+        pub += 0x01; // Packet ID LSB
+        pub += 0x00;
+        pub += 0x01;
+        pub += 0x02;
+        pub += 0x03;
+        pub += 0x04;
+        pub += 0x05;
+        pub += 0x06;
+
+        testContext.receiveResponse(pub);
+        testContext.socketPtr->sentPackets.clear();
+
+        // PUBREC should be sent automatically
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 1);
+
+        // Send PUBREL
+        ByteBuffer pubRel(4);
+        pubRel += 0x62; // PUBREL
+        pubRel += 0x02;
+        pubRel += 0x00;
+        pubRel += 0x01;
+
+        testContext.receiveResponse(pubRel);
+        testContext.socketPtr->sentPackets.clear();
+
+        // PUBCOMP should be sent automatically and allowance restored
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 1);
+
+        // Verify allowance restored - receive another QOS 2
+        ByteBuffer pub2(17);
+        pub2 += 0x34; // PUBLISH QOS 2
+        pub2 += 0x0F;
+        pub2 += 0x00;
+        pub2 += 0x04;
+        pub2 += 't';
+        pub2 += 'e';
+        pub2 += 's';
+        pub2 += 't';
+        pub2 += 0x00;
+        pub2 += 0x02;
+        pub2 += 0x00;
+        pub2 += 0x01;
+        pub2 += 0x02;
+        pub2 += 0x03;
+        pub2 += 0x04;
+        pub2 += 0x05;
+        pub2 += 0x06;
+
+        testContext.receiveResponse(pub2);
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+    }
+
+    TEST_CASE("Receive Maximum - Server side - QOS 2 flow with PUBCOMP")
+    {
+        Config config;
+        config.pingAlways = false;
+
+        TestClientContext testContext{ config };
+        
+        ConnectArgs args{ "Id" };
+        args.keepAliveInSec = 60;
+
+        ConnectAddress address{ Address::createURL("", "localhost", "1883", "") };
+        testContext.client->connect(std::move(args), std::move(address));
+        CHECK(testContext.client->tick().noError());
+
+        // Broker receive maximum = 1
+        ByteBuffer connAckBuffer(8);
+        connAckBuffer += 0x20;
+        connAckBuffer += 0x06;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x03;
+        connAckBuffer += 0x21;
+        connAckBuffer += 0x00;
+        connAckBuffer += 0x01;
+
+        testContext.receiveResponse(connAckBuffer);
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+
+        // Publish QOS 2 message
+        std::string topic = "test";
+        ByteBuffer payload(2);
+        payload += 0x01; payload += 0x02;
+        PublishOptions options;
+        options.qos = Qos::QOS_2;
+
+        auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
+        CHECK(err.noError());
+
+        testContext.socketPtr->sentPackets.clear();
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 1);
+
+        // Publish second QOS 2 message - should be queued
+        ByteBuffer payload2(2);
+        payload2 += 0x03; payload2 += 0x04;
+        PublishOptions options2;
+        options2.qos = Qos::QOS_2;
+
+        auto err2 = testContext.client->publish(topic.c_str(), std::move(payload2), std::move(options2));
+        CHECK(err2.noError());
+
+        testContext.socketPtr->sentPackets.clear();
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 0);
+
+        // Receive PUBREC
+        ByteBuffer pubRec(4);
+        pubRec += 0x50;
+        pubRec += 0x02;
+        pubRec += 0x00;
+        pubRec += 0x01;
+
+        testContext.receiveResponse(pubRec);
+        testContext.socketPtr->sentPackets.clear();
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 1); // PUBREL sent
+
+        // Receive PUBCOMP - should restore allowance
+        ByteBuffer pubComp(4);
+        pubComp += 0x70;
+        pubComp += 0x02;
+        pubComp += 0x00;
+        pubComp += 0x01;
+
+        testContext.receiveResponse(pubComp);
+        testContext.socketPtr->sentPackets.clear();
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 1); // Second PUBLISH now sent
+    }
+
+    TEST_CASE("Receive Maximum - Server side - QOS 0 does not affect send allowance")
+    {
+        Config config;
+        config.pingAlways = false;
+
+        TestClientContext testContext{ config };
+        
+        ConnectArgs args{ "Id" };
+        args.keepAliveInSec = 60;
+
+        ConnectAddress address{ Address::createURL("", "localhost", "1883", "") };
+        testContext.client->connect(std::move(args), std::move(address));
+        CHECK(testContext.client->tick().noError());
+
+        // Broker receive maximum = 1
+        ByteBuffer connAckBuffer(8);
+		connAckBuffer += 0x20; // CONNACK type
+		connAckBuffer += 0x06; // Remaining length
+		connAckBuffer += 0x00; // Session present = false
+		connAckBuffer += 0x00; // Reason code = success
+		connAckBuffer += 0x03; // Properties length
+		connAckBuffer += 0x21; // Receive Maximum property ID
+		connAckBuffer += 0x00; // Value MSB
+        connAckBuffer += 0x01; // Value LSB (receive maximum = 1)
+
+        testContext.receiveResponse(connAckBuffer);
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+		CHECK(testContext.client->tick().noError()); //Get rid of any ping packets if sent
+
+        //Publish multiple QOS 0 messages - all should be sent
+        for (int i = 0; i < 3; i++)
+        {
+            std::string topic = "test";
+            ByteBuffer payload(2);
+            payload += static_cast<std::uint8_t>(i);
+            payload += static_cast<std::uint8_t>(i + 1);
+            PublishOptions options;
+            options.qos = Qos::QOS_0;
+
+            auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
+            CHECK(err.noError());
+        }
+
+        testContext.socketPtr->sentPackets.clear();
+        CHECK(testContext.client->tick().noError());
+        CHECK(testContext.socketPtr->sentPackets.size() == 1);
+		CHECK(testContext.socketPtr->sentPackets[0].size() == 39); //All three 13 byte PUBLISH packets sent together
+		CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
     }
 }
