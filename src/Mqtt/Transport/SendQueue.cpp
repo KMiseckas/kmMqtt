@@ -114,6 +114,7 @@ namespace cleanMqtt
         {
 			if (graceful)
 			{
+				//Wait for next send batch to process and clear the queue.
 				m_startGracefulClear = true;
 			}
 			else
@@ -162,6 +163,8 @@ namespace cleanMqtt
 				return true;
 			}
 
+			//Check if we are in the process of gracefully clearing the send queue.
+			// If so, cancel all pending packet composers and exit without sending anything.
 			if (m_startGracefulClear)
 			{
 				LogInfo("SendQueue", "Gracefully clearing send queue.");
@@ -175,23 +178,35 @@ namespace cleanMqtt
 
 			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_nextPacketComposersBatch.size());
 
-			std::vector<ByteBuffer> encodedDataQueue;
-			std::size_t fullOutgoingDataSize{ m_sendBuffer.size() };
-			bool hasPingPacket{ false };
-			std::size_t pingPacketLastByte{ 0 };
+			std::vector<ByteBuffer> encodedDataQueue; //Encoded data ready to send through socket.
+			std::size_t fullOutgoingDataSize{ m_sendBuffer.size() }; //Data size to send, init with any left over data in send buffer.
+			bool hasPingPacket{ false }; //Track if there is a ping packet in the batch.
+			std::size_t pingPacketLastByte{ 0 }; //Byte index in buffer where ping packet ends.
 
-			std::vector<PacketSendJobPtr> delayedPublishPckts;
+			std::vector<PacketSendJobPtr> delayedPackets; //Packets delayed due to no being allowed to send yet.
 
+			/**
+			 * First step: Compose all packets in batch into encoded data.
+			 * Perform some prelimenery checks:
+			 * - if packet cannot be sent now, delay it for next batch.
+			 * - if packet fails to encode, return error.
+			 * - track some packets for callback to listeners later.
+			 * - accumulate total size of encoded data to send.
+			 * - move encoded data into send queue.
+			 */
 			for (auto& c : m_nextPacketComposersBatch)
 			{
+				//Check if packet can be sent now. If not, delay it for next batch.
 				if (!c->canSend())
 				{
-					delayedPublishPckts.push_back(std::move(c));
+					delayedPackets.push_back(std::move(c));
 					continue;
 				}
 
+				//Compose packet into encoded data.
 				auto result{ c->compose() };
 
+				//Check for encode errors.
 				if (!result.encodeResult.isSuccess())
 				{
 					outLastSendResult = {};
@@ -210,12 +225,15 @@ namespace cleanMqtt
 				{
 					if (!hasPingPacket)
 					{
+						//Track byte index in buffer where ping packet ends so we can notify listener when it is fully sent through socket.
 						pingPacketLastByte = fullOutgoingDataSize + result.encodedData.size();
 						hasPingPacket = true;
 					}
 				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH_ACKNOWLEDGE)
 				{
+					assert(m_receiveMaximumTrackerPtr != nullptr);
+
 					m_receiveMaximumTrackerPtr->incrementReceiveAllowance(result.encodeResult.packetId);
 				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE ||
@@ -225,26 +243,32 @@ namespace cleanMqtt
 				{
 					if (result.encodeResult.packetType == PacketType::PUBLISH_COMPLETE)
 					{
+						assert(m_receiveMaximumTrackerPtr != nullptr);
+
 						m_receiveMaximumTrackerPtr->incrementReceiveAllowance(result.encodeResult.packetId);
 					}
 
-					//Track specific packets in buffer for notifying listeners when sent.
+					//Track some packets by adding to buffer so we can notify listeners when they are sent successfully.
 					m_packetsMetadataInBuffer.push_back({ fullOutgoingDataSize + result.encodedData.size(), result.encodeResult.packetType,  result.encodeResult.packetId });
 				}
 				else if (result.encodeResult.packetType == PacketType::PUBLISH)
 				{
 					if (c->getQos() != Qos::QOS_0)
 					{
+						assert(m_receiveMaximumTrackerPtr != nullptr);
+
 						m_receiveMaximumTrackerPtr->decrementSendAllowance(result.encodeResult.packetId);
 					}
 				}
 
 				fullOutgoingDataSize += result.encodedData.size();
-				encodedDataQueue.push_back(std::move(result.encodedData));
+				encodedDataQueue.push_back(std::move(result.encodedData)); //Move encoded data to send queue.
 			}
 
-			m_nextPacketComposersBatch = std::move(delayedPublishPckts);
+			//Move delayed packets back to main batch for next send attempt.
+			m_nextPacketComposersBatch = std::move(delayedPackets);
 
+			//Ensure send buffer has enough capacity to hold all data.
 			if (fullOutgoingDataSize > m_sendBuffer.capacity())
 			{
 				auto tempBuffer = ByteBuffer{ fullOutgoingDataSize };
@@ -252,6 +276,7 @@ namespace cleanMqtt
 				m_sendBuffer = std::move(tempBuffer);
 			}
 
+			//Append all encoded data to send buffer for sending all at once rather than packet by packet.
 			for(const auto& data : encodedDataQueue)
 			{
 				m_sendBuffer.append(data);
@@ -262,12 +287,23 @@ namespace cleanMqtt
 
 			int sendResult{ 0 };
 
+			/**
+			 * Second step: Try sending all data in send buffer.
+			 * - Loop to handle partial sends up to a max number of loops.
+			 * - On successful send of all data, clear buffer and return.
+			 * - On partial send, remove sent data from buffer and loop to try send remaining data.
+			 * - On socket send error, return error.
+			 * - Notify relevant listeners of sent packets.
+			 * - If max partial send loops reached, return success with bytes sent. Remained will try send next batch/tick.
+			 */
 			while (partialSendLoopCount <= kMax_Partial_Send_Loops)
 			{
 				partialSendLoopCount++;
 
+				//Try sending data in buffer through socket.
 				sendResult = sendData(m_sendBuffer);
 
+				//If send was successful (full or partial), process result.
 				if (sendResult >= 0)
 				{
 					outResult.controlPacketSent = true;
@@ -286,6 +322,7 @@ namespace cleanMqtt
 							m_onPingSentCallback();
 						}
 
+						//Since all data was sent, notify all tracked packets as sent.
 						for each(auto& metadata in m_packetsMetadataInBuffer)
 						{
 							switch (metadata.packetType)
@@ -309,7 +346,7 @@ namespace cleanMqtt
 
 						m_packetsMetadataInBuffer.clear();
 
-						//Reset buffer to free up memory if over max allowed persistent size.
+						//Reset buffer to free up memory if over max allowed persistent size so we don't hold onto too much memory unnecessarily.
 						if (m_sendBuffer.capacity() > MAX_ALLOWED_PERSISTENT_SEND_BUFFER_SIZE)
 						{
 							m_sendBuffer = ByteBuffer{};
@@ -331,6 +368,7 @@ namespace cleanMqtt
 								m_onPingSentCallback();
 							}
 
+							//Notify other tracked packets as sent if their end byte index is within the sent data range.
 							for each(auto& metadata in m_packetsMetadataInBuffer)
 							{
 								if (sendResult >= static_cast<int>(metadata.endByteInBuffer))
