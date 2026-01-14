@@ -152,7 +152,3 @@ See [API_REFERENCE.md](API_REFERENCE.md) for complete API documentation.
 
 - [MQTT 3.1.1 Specification](https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html)
 - [MQTT 5.0 Specification](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
-
-## License
-
-See LICENSE file for licensing information.
