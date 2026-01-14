@@ -208,9 +208,9 @@ Options for publishing messages.
 
 **Fields**:
 ```cpp
-Qos qos{ Qos::AT_MOST_ONCE };
+Qos qos{ Qos::QOS_0 };
 bool retain{ false };
-PayloadFormatIndicator payloadFormatIndicator{ PayloadFormatIndicator::UNSPECIFIED };
+PayloadFormatIndicator payloadFormatIndicator{ PayloadFormatIndicator::BINARY };
 std::uint32_t messageExpiryInterval{ 0 };
 bool addMessageExpiryInterval{ false };
 std::uint16_t topicAlias{ 0 };
@@ -288,7 +288,7 @@ Last will and testament message configuration.
 ```cpp
 Will(const std::string& topic);
 
-Qos willQos{ Qos::AT_MOST_ONCE };
+Qos willQos{ Qos::QOS_0 };
 bool retainWillMessage{ false };
 std::uint32_t willDelayInterval{ 0 };
 std::uint32_t messageExpiryInterval{ 0 };
@@ -296,7 +296,7 @@ std::string contentType;
 std::string responseTopic;
 std::unique_ptr<BinaryData> correlationData;
 std::string willTopic;
-PayloadFormatIndicator payloadFormat{ PayloadFormatIndicator::UNSPECIFIED };
+PayloadFormatIndicator payloadFormat{ PayloadFormatIndicator::BINARY };
 std::unique_ptr<BinaryData> payload;
 std::map<std::string, std::string> userProperties;
 ```
@@ -363,10 +363,12 @@ Indicates the type of network address (IPv4, IPv6, or hostname).
 
 ```cpp
 enum class PayloadFormatIndicator : std::uint8_t {
-    UNSPECIFIED = 0,
+    BINARY = 0,
     UTF8 = 1
 };
 ```
+
+Indicates whether message payload is binary data or UTF-8 encoded text.
 
 ---
 
