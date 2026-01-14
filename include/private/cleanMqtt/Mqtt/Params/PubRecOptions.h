@@ -10,6 +10,9 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		/**
+		 * @brief Options for PUBREC packet creation.
+		 */
 		struct PubRecOptions
 		{
 			PubRecOptions() noexcept

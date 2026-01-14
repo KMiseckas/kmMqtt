@@ -10,6 +10,9 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		/**
+		 * @brief Options for PUBACK packet creation.
+		 */
 		struct PubAckOptions
 		{
 			PubAckOptions() noexcept

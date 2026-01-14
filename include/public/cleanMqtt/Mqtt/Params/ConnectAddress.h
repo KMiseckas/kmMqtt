@@ -16,21 +16,54 @@ namespace cleanMqtt
 		{
 			Address() = default;
 
+			/**
+			 * @brief Constructs an Address object from IP4.
+			 * @param scheme The scheme of the address (e.g., "mqtt", "ws").
+			 * @param ip The IP address.
+			 * @param port The port number.
+			 * @param path The path component of the address.
+			 * 
+			 * @return Address object.
+			 */
 			static Address createIp4(const char* scheme, const char* ip, const char* port, const char* path) noexcept
 			{
 				return Address(scheme, ip, port, path, LocatorType::IP4);
 			}
 
+			/**
+			 * @brief Constructs an Address object from IP6.
+			 * @param scheme The scheme of the address (e.g., "mqtt", "ws").
+			 * @param ip The IP address.
+			 * @param port The port number.
+			 * @param path The path component of the address.
+			 * 
+			 * @return Address object.
+			 */
 			static Address createIp6(const char* scheme, const char* ip, const char* port, const char* path) noexcept
 			{
 				return Address(scheme, ip, port, path, LocatorType::IP6);
 			}
 
+			/**
+			 * @brief Constructs an Address object from hostname.
+			 * @param scheme The scheme of the address (e.g., "mqtt", "ws").
+			 * @param hostname The hostname.
+			 * @param port The port number.
+			 * @param path The path component of the address.
+			 * 
+			 * @return Address object.
+			 */
 			static Address createURL(const char* scheme, const char* hostname, const char* port, const char* path) noexcept
 			{
 				return Address(scheme, hostname, port, path, LocatorType::HOSTNAME);
 			}
 
+			/**
+			 * @brief Parses a space-separated list of URLs into a vector of Address objects. Supports IP4, IP6, and hostname formats.
+			 * @param urls A space-separated string of URLs.
+			 * 
+			 * @return vector of address objects.
+			 */
 			static std::vector<Address> toAddress(const char* urls)
 			{
 				if (urls == nullptr || urls[0] == '\0')
@@ -107,6 +140,14 @@ namespace cleanMqtt
 				return addresses;
 			}
 
+			/**
+			 * @brief Tries to parse a hostname address from a URL string.
+			 * @param url The URL string to parse.
+			 * @param hostname Output parameter for the parsed hostname.
+			 * @param port Output parameter for the parsed port.
+			 * 
+			 * @return true if parsing was successful, false otherwise.
+			 */
 			static bool tryParseHostnameAddress(const std::string& url, std::string& hostname, std::string& port)
 			{
 				static constexpr const char* schemeSeperator{ "://" };
@@ -217,6 +258,10 @@ namespace cleanMqtt
 			LocatorType m_locatorType{ LocatorType::UNKNOWN };
 		};
 
+		/**
+		 * @brief Structure representing a connect address with a primary address and optional other addresses.
+		 * - Other addresses will be used for reconnection attempts when primary address fails.
+		 */
 		struct ConnectAddress
 		{
 			ConnectAddress() noexcept
@@ -238,6 +283,10 @@ namespace cleanMqtt
 			std::vector<Address> otherAddresses;
 		};
 
+		/**
+		 * @brief Structure representing a reconnect address that extends ConnectAddress.
+		 * - Keeps track of used addresses and allows cycling through primary and other addresses.
+		 */
 		struct ReconnectAddress : public ConnectAddress
 		{
 		public:

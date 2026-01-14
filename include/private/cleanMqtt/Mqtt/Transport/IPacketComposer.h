@@ -13,6 +13,10 @@ namespace cleanMqtt
 {
 	namespace mqtt
 	{
+		/**
+		 * @brief Result of a packet composition job.
+		 * Used internally in SendQueue to check the outcome of the packet composition.
+		 */
 		struct ComposeResult
 		{
 			DELETE_COPY_ASSIGNMENT_AND_CONSTRUCTOR(ComposeResult)
@@ -44,6 +48,10 @@ namespace cleanMqtt
 			ByteBuffer encodedData;
 		};
 
+		/**
+		 * @brief Interface for packet composer jobs.
+		 * Used internally in SendQueue to create packets to be sent over the network.
+		 */
 		class IPacketComposer
 		{
 		public:
@@ -56,9 +64,31 @@ namespace cleanMqtt
 			};
 			virtual ~IPacketComposer() {};
 
+			/**
+			 * @brief Can this packet be sent, or should it be skipped for now.
+			 * Does not remove the job from the send queue, just skips it for now.
+			 * 
+			 * @return true if the packet can be sent, false otherwise.
+			 */
 			virtual bool canSend() const noexcept {return true;};
+
+			/**
+			 * @brief Get the QOS of the packet if it has one. Default to QOS_0.
+			 * 
+			 * @return Qos. Defaults to Qos::QOS_0 if packet doesnt have QOS feature.
+			 */
 			virtual Qos getQos() const noexcept { return Qos::QOS_0; };
+
+			/**
+			 * @brief Compose the packet ready for sending across the network.
+			 * 
+			 * @return The result of the composition job.
+			 */
 			virtual ComposeResult compose() noexcept = 0;
+
+			/**
+			 * @brief Cancel job, run any exit logic.
+			 */
 			virtual void cancel() noexcept = 0;
 
 		protected:

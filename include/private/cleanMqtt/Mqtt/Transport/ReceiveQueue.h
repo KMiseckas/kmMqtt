@@ -38,6 +38,14 @@ namespace cleanMqtt
 
 		struct ReceiveMaximumTracker;
 
+		/**
+		 * @brief Queue for receiving MQTT packets into the internal system.
+		 * Handles logic for processing the queue of packets received from the network, i.e. decoding.
+		 * This class only takes packets as seperate buffers that have already been seperated by length from the initial network byte buffer
+		 * received through socket.
+		 * 
+		 * Does not listen to socket for packets directly, relies on `addToQueue` calls to queue up packets received through socket.
+		 */
 		class ReceiveQueue
 		{
 		public:

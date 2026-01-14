@@ -24,7 +24,7 @@ namespace cleanMqtt
 			}
 
 			/**
-			 * @brief Increments the receive allowance when a PUBLISH packet with the given packet ID has been acknowledged.
+			 * @brief Increments the receive allowance. Used when a PUBLISH packet with the given packet ID has been acknowledged.
 			 * This is called when a PUBLISH_ACKNOWLEDGE, PUBLISH_COMPLETE, or PUBLISH_RECEIVED(w/ error code) packet is received for the given packet ID.
 			 * Receive Allowance is the amount of publish packets that can be received before hitting the Receive Maximum limit for this client.
 			 */
@@ -46,7 +46,7 @@ namespace cleanMqtt
 			}
 
 			/**
-			 * @brief Decrements the receive allowance when a PUBLISH packet with the given packet ID is received.
+			 * @brief Decrements the receive allowance. Used when a PUBLISH packet with the given packet ID is received.
 			 * Returns false if the allowance is already at zero and the packet cannot be accepted.
 			 * Receive Allowance is the amount of publish packets that can be received before hitting the Receive Maximum limit for this client.
 			 */
@@ -68,7 +68,7 @@ namespace cleanMqtt
 			}
 
 			/**
-			 * @brief Increments the send allowance when a PUBLISH packet with the given packet ID has been acknowledged.
+			 * @brief Increments the send allowance. Used when a PUBLISH packet with the given packet ID has been acknowledged.
 			 * This is called when a PUBLISH_ACKNOWLEDGE, PUBLISH_COMPLETE, or PUBLISH_RECEIVED(w/ error code) packet is sent for the given packet ID.
 			 * Send Allowance is the amount of publish packets that can be sent before hitting the brokers Receive Maximum limit.
 			 */
@@ -90,7 +90,7 @@ namespace cleanMqtt
 			}
 
 			/**
-			 * @brief Decrements the send allowance when a PUBLISH packet with the given packet ID is sent.
+			 * @brief Decrements the send allowance. Used when a PUBLISH packet with the given packet ID is sent.
 			 * Returns false if the allowance is already at zero and the packet cannot be sent.
 			 * Send Allowance is the amount of publish packets that can be sent before hitting the brokers Receive Maximum limit.
 			 */
@@ -137,13 +137,13 @@ namespace cleanMqtt
 			}
 
 		private:
-			std::uint32_t m_receiveAllowance{ RECEIVE_MAXIMUM_DEFAULT };
-			std::uint32_t m_sendAllowance{ RECEIVE_MAXIMUM_DEFAULT };
-			std::uint32_t m_maxReceiveAllowance{ RECEIVE_MAXIMUM_DEFAULT };
-			std::uint32_t m_maxSendAllowance{ RECEIVE_MAXIMUM_DEFAULT };
+			std::uint32_t m_receiveAllowance{ RECEIVE_MAXIMUM_DEFAULT }; //Current allowance of PUBLISH packets that can be received. 
+			std::uint32_t m_sendAllowance{ RECEIVE_MAXIMUM_DEFAULT }; //Current allowance of PUBLISH packets that can be sent.
+			std::uint32_t m_maxReceiveAllowance{ RECEIVE_MAXIMUM_DEFAULT }; //Maximum allowance of PUBLISH packets that can be received.
+			std::uint32_t m_maxSendAllowance{ RECEIVE_MAXIMUM_DEFAULT }; //Maximum allowance of PUBLISH packets that can be sent.
 
-			std::unordered_set<std::uint16_t> m_sentPublishIDs;
-			std::unordered_set<std::uint16_t> m_receivedPublishIDs;
+			std::unordered_set<std::uint16_t> m_sentPublishIDs; //Track sent publish packet IDs to avoid double decrementing send allowance.
+			std::unordered_set<std::uint16_t> m_receivedPublishIDs; //Track received publish packet IDs to avoid double decrementing receive allowance.
 		};
 	}
 }

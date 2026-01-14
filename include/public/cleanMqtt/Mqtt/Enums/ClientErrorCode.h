@@ -18,7 +18,7 @@ namespace cleanMqtt
 			Socket_Error = 5U,
 			MQTT_Not_Active = 6U,
 			Failed_Sending_Packet = 7U,
-			Failed_Writing_To_Persistent_Storage = 8U, //Not used
+			Failed_Writing_To_Persistent_Storage = 8U, //Not used yet
 			Failed_Decoding_Packet = 9U,
 			TimeOut = 8U,
 			Using_Tick_Async = 9U, //Client is using async tick mode, cannot call tick functions explicitly.

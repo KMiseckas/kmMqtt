@@ -29,6 +29,14 @@ namespace cleanMqtt
 
 		struct ReceiveMaximumTracker;
 
+		/**
+		 * @brief Handles the processing and sending of queued up MQTT packets.
+		 * - Stores a queue of packet composers, these are run to construct the encoded packet ready for transport across the network.
+		 * - Encoded packets are first merged into a single byte buffer to minimise send calls.
+		 * - Tries to send the whole buffer across, but if unsuccesfull will proccess the remaining bytes next tick.
+		 * 
+		 * //TODO possible overflow if sending doesnt catch up to data queued up?
+		 */
 		class SendQueue
 		{
 			struct PacketSectionMetadata

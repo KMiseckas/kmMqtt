@@ -3,6 +3,7 @@
 
 #include <cleanMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <cleanMqtt/mqtt/Params/DisconnectArgs.h>
+#include <utility>
 
 namespace cleanMqtt
 {

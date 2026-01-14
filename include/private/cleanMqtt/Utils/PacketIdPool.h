@@ -63,8 +63,8 @@ namespace cleanMqtt
 
 	private:
 		std::uint16_t m_nextId{ 1U };//0 is not a valid MQTT packet ID.
-		std::stack<std::uint16_t> m_availableIds{};
-		std::bitset<PACKET_POOL_ID_SIZE> m_usedIds;
+		std::stack<std::uint16_t> m_availableIds{}; //Pool of available Ids for reuse.
+		std::bitset<PACKET_POOL_ID_SIZE> m_usedIds; //Tracks used Ids to prevent duplicates.
 		std::mutex m_mutex;
 	};
 }
