@@ -271,13 +271,28 @@ void resetSize();
 
 ### Topic
 
-Represents a subscription topic with QoS.
+Represents a subscription topic with QoS and subscription options.
 
 **Header**: `<cleanMqtt/Mqtt/Params/Topic.h>`
 
 ```cpp
-Topic(const std::string& topic, Qos qos);
+Topic(std::string filter, TopicSubscriptionOptions opts = {});
 ```
+
+**TopicSubscriptionOptions**:
+```cpp
+struct TopicSubscriptionOptions {
+    Qos qos{ Qos::QOS_0 };
+    bool noLocal{ false };
+    bool retainAsPublished{ false };
+    RetainHandling retainHandling{ RetainHandling::SendAtSubscribe };
+};
+```
+
+**RetainHandling enum** (MQTT 5.0):
+- `SendAtSubscribe`: Send retained messages at subscription time
+- `SendAtSubscribeIfNew`: Send retained messages only for new subscriptions
+- `DoNotSend`: Do not send retained messages
 
 ### Will
 

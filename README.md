@@ -113,8 +113,8 @@ client.onPublishEvent().subscribe([](const Publish& message) {
 
 // Subscribe to topics
 std::vector<Topic> topics = {
-    Topic("sensor/temperature", Qos::QOS_1),
-    Topic("sensor/humidity", Qos::QOS_1)
+    Topic("sensor/temperature", TopicSubscriptionOptions(Qos::QOS_1)),
+    Topic("sensor/humidity", TopicSubscriptionOptions(Qos::QOS_1))
 };
 
 SubscribeOptions subOpts;
