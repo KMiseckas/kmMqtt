@@ -1,0 +1,30 @@
+TODO:
+- Maybe IsDup for publish messages?
+- Remove need to create variable and payload headers on heap.
+
+SAMPLES
+- Add configs view.
+- Improve connection url (URL & Port separation).
+
+MEMORY & OPTIMIZATIONS
+- Memory profiling.
+
+Other
+- Documentation
+- Github actions: CI/CD (Builds, Tests, Code Analysis, etc).
+- API Integration tests (with a test MQTT broker, maybe use docker).
+- Authorization interface? (Reason code `Not authorized` can be sent by client in PUBACK, PUBREC)
+
+
+***FUTURE TASKS**********************************************
+
+1.Persistant Storage For Session State (Disk Write, WAL(Write Ahead Log))
+	Delay Reason: Not added by default, requires some design work, but SDK can function without this feature. Work required involves Async operations
+	for file system and making sure SDK reacts correctly to persistant storage operations completing. This would change the way publish acknowledgements
+	are handled compared to the current implementation.
+
+	Comments:
+		- Filesystem wrappers for supported platforms.
+		- Update interface for persistant storage, allow asynchronous operations.
+		- Amend client to send publish acknowledgements after persistant storage operations complete rather than when application layer receives the message.
+		- Add concept of client side acknowledging publish messages to allow SDK 
