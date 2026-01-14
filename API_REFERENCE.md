@@ -178,15 +178,27 @@ Broker address and transport configuration.
 **Header**: `<cleanMqtt/Mqtt/Params/ConnectAddress.h>`
 
 ```cpp
-ConnectAddress& setHost(const std::string& host);
-ConnectAddress& setPort(std::uint16_t port);
-ConnectAddress& setLocatorType(LocatorType type);
-ConnectAddress& setWebSocket(const std::shared_ptr<IWebSocket>& webSocket);
+struct ConnectAddress {
+    Address primaryAddress;
+    std::vector<Address> otherAddresses;
+};
+
+// Address factory methods
+Address Address::createIp4(const char* scheme, const char* ip, const char* port, const char* path);
+Address Address::createIp6(const char* scheme, const char* ip, const char* port, const char* path);
+Address Address::createURL(const char* scheme, const char* hostname, const char* port, const char* path);
 ```
 
 **LocatorType values**:
-- `TCP`: Standard TCP connection
-- `WEBSOCKET`: WebSocket connection (requires `BUILD_IXWEBSOCKET=ON`)
+- `UNKNOWN`: Unspecified type
+- `IP4`: IPv4 address
+- `IP6`: IPv6 address
+- `HOSTNAME`: Hostname/domain
+
+**Scheme examples**:
+- `"mqtt"`: MQTT over TCP
+- `"ws"`: MQTT over WebSocket (requires `BUILD_IXWEBSOCKET=ON`)
+- `"wss"`: MQTT over secure WebSocket (requires `BUILD_IXWEBSOCKET=ON` with OpenSSL)
 
 ### PublishOptions
 
@@ -298,11 +310,11 @@ std::map<std::string, std::string> userProperties;
 **Header**: `<cleanMqtt/Mqtt/Enums/ConnectionStatus.h>`
 
 ```cpp
-enum class ConnectionStatus {
+enum class ConnectionStatus : std::uint8_t {
     DISCONNECTED,
-    CONNECTING,
     CONNECTED,
-    DISCONNECTING,
+    CONNECTING,
+    RECONNECT,
     RECONNECTING
 };
 ```
@@ -313,9 +325,9 @@ enum class ConnectionStatus {
 
 ```cpp
 enum class Qos : std::uint8_t {
-    AT_MOST_ONCE = 0,   // QoS 0
-    AT_LEAST_ONCE = 1,  // QoS 1
-    EXACTLY_ONCE = 2    // QoS 2
+    QOS_0 = 0U,  // At most once
+    QOS_1 = 1U,  // At least once
+    QOS_2 = 2U   // Exactly once
 };
 ```
 
@@ -335,11 +347,15 @@ enum class MqttVersion : std::uint8_t {
 **Header**: `<cleanMqtt/Mqtt/Enums/LocatorType.h>`
 
 ```cpp
-enum class LocatorType {
-    TCP,
-    WEBSOCKET
+enum class LocatorType : std::uint8_t {
+    UNKNOWN = 0U,
+    IP4,
+    IP6,
+    HOSTNAME
 };
 ```
+
+Indicates the type of network address (IPv4, IPv6, or hostname).
 
 ### PayloadFormatIndicator
 

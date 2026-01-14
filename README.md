@@ -81,11 +81,9 @@ ConnectArgs connectArgs;
 connectArgs.setClientId("my-client");
 connectArgs.setCleanStart(true);
 
-// Connect to broker
-ConnectAddress address;
-address.setHost("broker.example.com");
-address.setPort(1883);
-address.setLocatorType(LocatorType::TCP);
+// Create broker address
+Address brokerAddr = Address::createURL("mqtt", "broker.example.com", "1883", "");
+ConnectAddress address(brokerAddr);
 
 ReqResult result = client.connect(std::move(connectArgs), std::move(address));
 if (result.isError()) {
@@ -97,7 +95,7 @@ ByteBuffer payload(256);
 payload.append("Hello MQTT");
 
 PublishOptions pubOpts;
-pubOpts.qos = Qos::AT_LEAST_ONCE;
+pubOpts.qos = Qos::QOS_1;
 
 client.publish("test/topic", std::move(payload), std::move(pubOpts));
 ```
@@ -115,8 +113,8 @@ client.onPublishEvent().subscribe([](const Publish& message) {
 
 // Subscribe to topics
 std::vector<Topic> topics = {
-    Topic("sensor/temperature", Qos::AT_LEAST_ONCE),
-    Topic("sensor/humidity", Qos::AT_LEAST_ONCE)
+    Topic("sensor/temperature", Qos::QOS_1),
+    Topic("sensor/humidity", Qos::QOS_1)
 };
 
 SubscribeOptions subOpts;
