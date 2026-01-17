@@ -1,3 +1,5 @@
+Licensed under Apache 2.0. See LICENSE and NOTICE.
+
 # kmMqtt
 
 A C++14 MQTT 5.0 client library designed for game development and cross-platform applications.
