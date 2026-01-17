@@ -40,9 +40,9 @@ This document describes the public API of kmMqtt.
 
 The main client interface for MQTT operations.
 
-**Header**: `<cleanMqtt/MqttClient.h>`
+**Header**: `<kmMqtt/MqttClient.h>`
 
-**Namespace**: `cleanMqtt::mqtt`
+**Namespace**: `kmMqtt::mqtt`
 
 #### Construction
 
@@ -141,7 +141,7 @@ bool getIsTickAsync() const noexcept;
 
 Configuration for client behavior.
 
-**Header**: `<cleanMqtt/MqttClientOptions.h>`
+**Header**: `<kmMqtt/MqttClientOptions.h>`
 
 ```cpp
 MqttClientOptions(TickMode mode = TickMode::ASYNC);
@@ -162,7 +162,7 @@ MqttClientOptions& callbackDispatcher(const std::shared_ptr<ICallbackDispatcher>
 
 Global configuration parameters.
 
-**Header**: `<cleanMqtt/Config.h>`
+**Header**: `<kmMqtt/Config.h>`
 
 ```cpp
 struct Config {
@@ -186,7 +186,7 @@ struct Config {
 
 Connection parameters for CONNECT packet.
 
-**Header**: `<cleanMqtt/Mqtt/Params/ConnectArgs.h>`
+**Header**: `<kmMqtt/Mqtt/Params/ConnectArgs.h>`
 
 **Key methods**:
 ```cpp
@@ -207,7 +207,7 @@ Supports MQTT 5.0 features including will messages, authentication, and session 
 
 Broker address and transport configuration.
 
-**Header**: `<cleanMqtt/Mqtt/Params/ConnectAddress.h>`
+**Header**: `<kmMqtt/Mqtt/Params/ConnectAddress.h>`
 
 ```cpp
 struct ConnectAddress {
@@ -236,7 +236,7 @@ Address Address::createURL(const char* scheme, const char* hostname, const char*
 
 Options for publishing messages.
 
-**Header**: `<cleanMqtt/Mqtt/Params/PublishOptions.h>`
+**Header**: `<kmMqtt/Mqtt/Params/PublishOptions.h>`
 
 **Fields**:
 ```cpp
@@ -258,8 +258,8 @@ All MQTT 5.0 properties are supported.
 Options for subscription operations.
 
 **Headers**:
-- `<cleanMqtt/Mqtt/Params/SubscribeOptions.h>`
-- `<cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>`
+- `<kmMqtt/Mqtt/Params/SubscribeOptions.h>`
+- `<kmMqtt/Mqtt/Params/UnSubscribeOptions.h>`
 
 Both support MQTT 5.0 user properties.
 
@@ -271,7 +271,7 @@ Both support MQTT 5.0 user properties.
 
 Fixed-capacity byte buffer with optional small buffer optimization.
 
-**Header**: `<cleanMqtt/ByteBuffer.h>`
+**Header**: `<kmMqtt/ByteBuffer.h>`
 
 ```cpp
 ByteBuffer(std::size_t capacity);
@@ -305,7 +305,7 @@ void resetSize();
 
 Represents a subscription topic with QoS and subscription options.
 
-**Header**: `<cleanMqtt/Mqtt/Params/Topic.h>`
+**Header**: `<kmMqtt/Mqtt/Params/Topic.h>`
 
 ```cpp
 Topic(std::string filter, TopicSubscriptionOptions opts = {});
@@ -330,7 +330,7 @@ struct TopicSubscriptionOptions {
 
 Last will and testament message configuration.
 
-**Header**: `<cleanMqtt/Mqtt/Params/ConnectArgs.h>`
+**Header**: `<kmMqtt/Mqtt/Params/ConnectArgs.h>`
 
 ```cpp
 Will(const std::string& topic);
@@ -354,7 +354,7 @@ std::map<std::string, std::string> userProperties;
 
 ### ConnectionStatus
 
-**Header**: `<cleanMqtt/Mqtt/Enums/ConnectionStatus.h>`
+**Header**: `<kmMqtt/Mqtt/Enums/ConnectionStatus.h>`
 
 ```cpp
 enum class ConnectionStatus : std::uint8_t {
@@ -368,7 +368,7 @@ enum class ConnectionStatus : std::uint8_t {
 
 ### Qos
 
-**Header**: `<cleanMqtt/Mqtt/Enums/Qos.h>`
+**Header**: `<kmMqtt/Mqtt/Enums/Qos.h>`
 
 ```cpp
 enum class Qos : std::uint8_t {
@@ -380,7 +380,7 @@ enum class Qos : std::uint8_t {
 
 ### MqttVersion
 
-**Header**: `<cleanMqtt/Mqtt/Enums/MqttVersion.h>`
+**Header**: `<kmMqtt/Mqtt/Enums/MqttVersion.h>`
 
 ```cpp
 enum class MqttVersion : std::uint8_t {
@@ -393,7 +393,7 @@ The library only supports connecting to MQTT 5.0 brokers. Use `MqttVersion::MQTT
 
 ### LocatorType
 
-**Header**: `<cleanMqtt/Mqtt/Enums/LocatorType.h>`
+**Header**: `<kmMqtt/Mqtt/Enums/LocatorType.h>`
 
 ```cpp
 enum class LocatorType : std::uint8_t {
@@ -408,7 +408,7 @@ Indicates the type of network address (IPv4, IPv6, or hostname).
 
 ### PayloadFormatIndicator
 
-**Header**: `<cleanMqtt/Mqtt/Enums/PayloadFormatIndicator.h>`
+**Header**: `<kmMqtt/Mqtt/Enums/PayloadFormatIndicator.h>`
 
 ```cpp
 enum class PayloadFormatIndicator : std::uint8_t {
@@ -427,7 +427,7 @@ Indicates whether message payload is binary data or UTF-8 encoded text.
 
 Result type for client operation requests.
 
-**Header**: `<cleanMqtt/Mqtt/ReqResult.h>`
+**Header**: `<kmMqtt/Mqtt/ReqResult.h>`
 
 ```cpp
 bool isError() const;
@@ -439,7 +439,7 @@ ClientError getError() const;
 
 Error information from client operations.
 
-**Header**: `<cleanMqtt/Mqtt/ClientError.h>`
+**Header**: `<kmMqtt/Mqtt/ClientError.h>`
 
 Contains error code and descriptive message. Check `ClientErrorCode` enum for specific error types.
 
@@ -447,7 +447,7 @@ Contains error code and descriptive message. Check `ClientErrorCode` enum for sp
 
 Connection details received in CONNACK.
 
-**Header**: `<cleanMqtt/Mqtt/MqttConnectionInfo.h>`
+**Header**: `<kmMqtt/Mqtt/MqttConnectionInfo.h>`
 
 Provides broker-assigned session information and connection properties for MQTT 5.0.
 
@@ -474,7 +474,7 @@ The library uses the adapter pattern to enable cross-platform support. By implem
 
 Interface for platform-specific functionality.
 
-**Header**: `<cleanMqtt/Interfaces/IMqttEnvironment.h>`
+**Header**: `<kmMqtt/Interfaces/IMqttEnvironment.h>`
 
 Implement this interface to provide custom socket, threading, and timing implementations for your target platform. Default implementations are provided via `DefaultEnvironmentFactory` for Windows and Linux.
 
@@ -487,7 +487,7 @@ Implement this interface to provide custom socket, threading, and timing impleme
 
 Interface for synchronizing callback execution with your application's event loop.
 
-**Header**: `<cleanMqtt/Interfaces/ICallbackDispatcher.h>`
+**Header**: `<kmMqtt/Interfaces/ICallbackDispatcher.h>`
 
 Allows integration with game engine event systems or custom threading models. Built-in implementations:
 - `ImmediateDispatcher`: Invokes callbacks immediately from internal thread (used in ASYNC mode)
@@ -502,7 +502,7 @@ Allows integration with game engine event systems or custom threading models. Bu
 
 Interface for socket transport implementations.
 
-**Header**: `<cleanMqtt/Interfaces/IWebSocket.h>`
+**Header**: `<kmMqtt/Interfaces/IWebSocket.h>`
 
 The adapter pattern allows any socket implementation to be used. The library includes `DefaultWebsocket` (IXWebSocket-based) which works on:
 - **Tested**: Windows, Linux, Android
