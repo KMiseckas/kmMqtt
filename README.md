@@ -208,6 +208,7 @@ while (running) {
 
 ## Documentation
 
+- **[Coverage](https://kmiseckas.github.io/kmMqtt/)** - Click Coverage top right corner.
 - **[API Documentation](https://kmiseckas.github.io/kmMqtt/)** - Complete API reference (generated with Doxygen - see build instructions)
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
 
