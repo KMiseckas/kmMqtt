@@ -520,7 +520,7 @@ Implement this interface to support:
 ## Notes
 
 - All operations returning `ReqResult` or `ClientError` are marked `noexcept`
-- The library supports **MQTT 5.0 only** (MQTT 3.1.1 support has been removed)
+- The library is designed for **MQTT 5.0 only**
 - Session persistence to disk is not implemented; session state exists in memory only
 - Topic aliases are tracked per connection and reset on reconnection
 - Connection operations are non-blocking; use event callbacks to determine completion
