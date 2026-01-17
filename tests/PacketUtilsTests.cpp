@@ -1,9 +1,9 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
+#include <kmMqtt/Mqtt/Packets/PacketUtils.h>
 
 TEST_SUITE("Packet Utils Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	TEST_CASE("Are Bits Contiguous")
 	{

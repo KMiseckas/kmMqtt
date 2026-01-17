@@ -1,6 +1,6 @@
-#include "cleanMqtt/Dispatchers/DefaultDispatcher.h"
+#include "kmMqtt/Dispatchers/DefaultDispatcher.h"
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	void DefaultDispatcher::dispatch(UniqueFunction /*callback*/) noexcept
 	{

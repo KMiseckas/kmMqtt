@@ -2,15 +2,15 @@
 #define INCLUDE_MQTTCLIENT_MODEL_PUBLISHMODEL_H
 
 #include "mqttClient/Model/ViewModel.h"
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
-#include <cleanMqtt/ByteBuffer.h>
-#include <cleanMqtt/Mqtt/MqttClientEvents.h>
+#include <kmMqtt/Mqtt/Params/PublishOptions.h>
+#include <kmMqtt/ByteBuffer.h>
+#include <kmMqtt/Mqtt/MqttClientEvents.h>
 #include <string>
 #include <vector>
 #include <memory>
 #include <chrono>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
     namespace mqtt
     {
@@ -30,13 +30,13 @@ struct PublishedMessage
 {
     std::string topic;
     std::string payload;
-    cleanMqtt::mqtt::PublishOptions options;
+    kmMqtt::mqtt::PublishOptions options;
     PublishMessageStatus status{ PublishMessageStatus::PENDING };
     std::string lastError{ "" };
     std::chrono::system_clock::time_point timestamp;
     
     PublishedMessage() noexcept = default;
-    PublishedMessage(const std::string& topic_, const std::string& payload_, const cleanMqtt::mqtt::PublishOptions& opts = {}) noexcept
+    PublishedMessage(const std::string& topic_, const std::string& payload_, const kmMqtt::mqtt::PublishOptions& opts = {}) noexcept
         : topic(topic_), payload(payload_), options(opts), timestamp(std::chrono::system_clock::now()) {}
 };
 
@@ -46,7 +46,7 @@ public:
     PublishModel() noexcept;
     ~PublishModel() override;
 
-    void setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept;
+    void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
     
     void publish(const std::string& topic, const std::string& payload);
     void clearAllMessages();
@@ -85,11 +85,11 @@ public:
 
 private:
     void setupEventHandlers();
-    void onPublishCompleted(const cleanMqtt::mqtt::PublishCompleteEventDetails& details);
+    void onPublishCompleted(const kmMqtt::mqtt::PublishCompleteEventDetails& details);
     void updateMessageStatus(std::uint16_t packetId, PublishMessageStatus status, const std::string& error = "");
     
     std::vector<PublishedMessage> m_publishedMessages;
-    cleanMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
+    kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
     
     // Store event handler IDs to properly unregister them
     size_t m_publishAckHandlerId{ 0 };

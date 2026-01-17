@@ -1,10 +1,10 @@
 #include <doctest.h>
-#include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Utils/Utils.h>
+#include <kmMqtt/GlobalMacros.h>
+#include <kmMqtt/Utils/Utils.h>
 
 TEST_SUITE("Utils Tests")
 {
-	using namespace cleanMqtt;
+	using namespace kmMqtt;
 
 	namespace
 	{
@@ -63,7 +63,7 @@ TEST_SUITE("Utils Tests")
 
     TEST_CASE("Split Up MQTT packets - separateMqttPacketByteBuffers")
     {
-		using namespace cleanMqtt;
+		using namespace kmMqtt;
 
 		//Helper to create a simple MQTT packet: [fixed header][remaining length][payload]
 		auto makePacket = [](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer
@@ -127,7 +127,7 @@ TEST_SUITE("Utils Tests")
 
 	TEST_CASE("Split Up MQTT packets - large packets with 2-byte remaining length")
 	{
-		using namespace cleanMqtt;
+		using namespace kmMqtt;
 
 		//Helper to create MQTT packet with proper variable length encoding
 		auto makeLargePacket = [&](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer

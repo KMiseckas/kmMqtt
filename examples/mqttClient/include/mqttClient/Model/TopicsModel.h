@@ -2,15 +2,15 @@
 #define INCLUDE_MQTTCLIENT_MODEL_TOPICSMODEL_H
 
 #include "mqttClient/Model/ViewModel.h"
-#include <cleanMqtt/Mqtt/Params/Topic.h>
-#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
-#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
-#include <cleanMqtt/Mqtt/MqttClientEvents.h>
+#include <kmMqtt/Mqtt/Params/Topic.h>
+#include <kmMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <kmMqtt/Mqtt/MqttClientEvents.h>
 #include <string>
 #include <vector>
 #include <memory>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
     namespace mqtt
     {
@@ -21,12 +21,12 @@ namespace cleanMqtt
 struct SubscribedTopic
 {
     std::string topicFilter;
-    cleanMqtt::mqtt::TopicSubscriptionOptions options;
+    kmMqtt::mqtt::TopicSubscriptionOptions options;
     bool isSubscribed{ false };
     std::string lastError{ "" };
     
     SubscribedTopic() noexcept = default;
-    SubscribedTopic(const std::string& filter, const cleanMqtt::mqtt::TopicSubscriptionOptions& opts = {}) noexcept
+    SubscribedTopic(const std::string& filter, const kmMqtt::mqtt::TopicSubscriptionOptions& opts = {}) noexcept
         : topicFilter(filter), options(opts), isSubscribed(false) {}
 };
 
@@ -36,7 +36,7 @@ public:
     TopicsModel() noexcept;
     ~TopicsModel() override;
 
-    void setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept;
+    void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
     
     void subscribe(const std::string& topicFilter);
     void unsubscribe(const std::string& topicFilter);
@@ -68,11 +68,11 @@ public:
 
 private:
     void setupEventHandlers();
-    void onSubscribeAck(const cleanMqtt::mqtt::SubscribeAckEventDetails& details, const cleanMqtt::mqtt::SubscribeAck& ack);
-    void onUnSubscribeAck(const cleanMqtt::mqtt::UnSubscribeAckEventDetails& details, const cleanMqtt::mqtt::UnSubscribeAck& ack);
+    void onSubscribeAck(const kmMqtt::mqtt::SubscribeAckEventDetails& details, const kmMqtt::mqtt::SubscribeAck& ack);
+    void onUnSubscribeAck(const kmMqtt::mqtt::UnSubscribeAckEventDetails& details, const kmMqtt::mqtt::UnSubscribeAck& ack);
     
     std::vector<SubscribedTopic> m_subscribedTopics;
-    cleanMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
+    kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
     
     // Store event handler IDs to properly unregister them
     size_t m_subscribeAckHandlerId{ 0 };

@@ -1,7 +1,7 @@
 #include <mqttClient/Model/PublishModel.h>
 #include <mqttClient/Events/EventService.h>
-#include <cleanMqtt/MqttClient.h>
-#include <cleanMqtt/Mqtt/Packets/DataTypes.h>
+#include <kmMqtt/MqttClient.h>
+#include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <algorithm>
 #include <mqttClient/Events/ApplicationEvents.h>
 
@@ -14,7 +14,7 @@ PublishModel::~PublishModel()
     // Event handlers are automatically cleaned up when the MqttClient is destroyed
 }
 
-void PublishModel::setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept
+void PublishModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
 {
     m_mqttClient = client;
     if (m_mqttClient != nullptr)
@@ -31,12 +31,12 @@ void PublishModel::publish(const std::string& topic, const std::string& payload)
     }
 
     // Create publish options from UI
-    cleanMqtt::mqtt::PublishOptions opts;
-    opts.qos = static_cast<cleanMqtt::mqtt::Qos>(uiData.selectedQos);
+    kmMqtt::mqtt::PublishOptions opts;
+    opts.qos = static_cast<kmMqtt::mqtt::Qos>(uiData.selectedQos);
     opts.retain = uiData.retain;
     opts.payloadFormatIndicator = uiData.payloadFormatIndicator == 0 ? 
-        cleanMqtt::mqtt::PayloadFormatIndicator::UTF8 : 
-        cleanMqtt::mqtt::PayloadFormatIndicator::BINARY;
+        kmMqtt::mqtt::PayloadFormatIndicator::UTF8 : 
+        kmMqtt::mqtt::PayloadFormatIndicator::BINARY;
     
     // Advanced options
     if (strlen(uiData.responseTopicBuffer) > 0)
@@ -50,7 +50,7 @@ void PublishModel::publish(const std::string& topic, const std::string& payload)
     
     if (strlen(uiData.correlationDataBuffer) > 0)
     {
-        opts.correlationData = std::make_unique<cleanMqtt::mqtt::BinaryData>(
+        opts.correlationData = std::make_unique<kmMqtt::mqtt::BinaryData>(
             static_cast<std::uint16_t>(strlen(uiData.correlationDataBuffer)),
             reinterpret_cast<const std::uint8_t*>(uiData.correlationDataBuffer));
     }
@@ -63,7 +63,7 @@ void PublishModel::publish(const std::string& topic, const std::string& payload)
     auto& addedMessage = m_publishedMessages.back();
 
     // Create ByteBuffer from payload
-    cleanMqtt::ByteBuffer payloadBuffer(payload.length());
+    kmMqtt::ByteBuffer payloadBuffer(payload.length());
     for (char c : payload)
     {
         payloadBuffer += static_cast<std::uint8_t>(c);
@@ -145,13 +145,13 @@ void PublishModel::setupEventHandlers()
     }
 
     // Register for publish acknowledgments
-    m_mqttClient->onPublishCompletedEvent().add([this](const cleanMqtt::mqtt::PublishCompleteEventDetails& details)
+    m_mqttClient->onPublishCompletedEvent().add([this](const kmMqtt::mqtt::PublishCompleteEventDetails& details)
     {
         onPublishCompleted(details);
     });
 }
 
-void PublishModel::onPublishCompleted(const cleanMqtt::mqtt::PublishCompleteEventDetails& details)
+void PublishModel::onPublishCompleted(const kmMqtt::mqtt::PublishCompleteEventDetails& details)
 {
     // Use FIFO approach - find the first SENT message and mark it as acknowledged
     for (auto& message : m_publishedMessages)
@@ -160,7 +160,7 @@ void PublishModel::onPublishCompleted(const cleanMqtt::mqtt::PublishCompleteEven
         {
             if (details.isSuccess())
             {
-                if (details.packetType == cleanMqtt::mqtt::PacketType::PUBLISH_ACKNOWLEDGE)
+                if (details.packetType == kmMqtt::mqtt::PacketType::PUBLISH_ACKNOWLEDGE)
                 {
                     message.status = PublishMessageStatus::ACKNOWLEDGED;
                 }

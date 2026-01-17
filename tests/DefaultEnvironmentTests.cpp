@@ -1,14 +1,14 @@
 #include <doctest.h>
-#include <cleanMqtt/Environments/DefaultEnvironmentFactory.h>
-#include <cleanMqtt/Environments/DefaultWinEnv.h>
-#include <cleanMqtt/Environments/DefaultLinuxEnv.h>
-#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
-#include <cleanMqtt/Config.h>
+#include <kmMqtt/Environments/DefaultEnvironmentFactory.h>
+#include <kmMqtt/Environments/DefaultWinEnv.h>
+#include <kmMqtt/Environments/DefaultLinuxEnv.h>
+#include <kmMqtt/Interfaces/IMqttEnvironment.h>
+#include <kmMqtt/Config.h>
 #include <memory>
 
 TEST_SUITE("Environment Tests")
 {
-	using namespace cleanMqtt;
+	using namespace kmMqtt;
 
 	TEST_CASE("DefaultEnvironmentFactory creates environment")
 	{

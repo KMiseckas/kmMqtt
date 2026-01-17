@@ -1,14 +1,14 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
-#include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
-#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
-#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/PubAckOptions.h>
+#include <kmMqtt/Mqtt/Params/ConnectArgs.h>
+#include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <kmMqtt/Mqtt/Params/PublishOptions.h>
+#include <kmMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/UnSubscribeOptions.h>
 
 TEST_SUITE("Packet Params Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	TEST_CASE("PubAckOptions - Default Constructor")
 	{

@@ -1,7 +1,7 @@
-#include <cleanMqtt/Mqtt/State/SessionState/SessionState.h>
-#include <cleanMqtt/Mqtt/Enums/ClientErrorCode.h>
+#include <kmMqtt/Mqtt/State/SessionState/SessionState.h>
+#include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

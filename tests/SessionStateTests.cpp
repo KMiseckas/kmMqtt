@@ -1,14 +1,14 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/State/SessionState/SessionState.h>
-#include <cleanMqtt/Mqtt/Enums/ClientErrorCode.h>
-#include <cleanMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h>
-#include <cleanMqtt/Mqtt/State/SessionState/MessageContainer.h>
-#include <cleanMqtt/Mqtt/State/SessionState/MessageContainerData.h>
+#include <kmMqtt/Mqtt/State/SessionState/SessionState.h>
+#include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
+#include <kmMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h>
+#include <kmMqtt/Mqtt/State/SessionState/MessageContainer.h>
+#include <kmMqtt/Mqtt/State/SessionState/MessageContainerData.h>
 #include <string>
 #include <vector>
 
-using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt;
+using namespace kmMqtt::mqtt;
 
 namespace 
 {

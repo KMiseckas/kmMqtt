@@ -1,7 +1,7 @@
-#include <cleanMqtt/Mqtt/Packets/PropertyType.h>
+#include <kmMqtt/Mqtt/Packets/PropertyType.h>
 #include <cassert>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

@@ -1,8 +1,8 @@
-#include <cleanMqtt/Logger/Log.h>
-#include <cleanMqtt/Logger/LoggerInstance.h>
+#include <kmMqtt/Logger/Log.h>
+#include <kmMqtt/Logger/LoggerInstance.h>
 #include <cstdarg>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 
 #define TRACE 0

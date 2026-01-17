@@ -11,7 +11,7 @@ endif()
 include(cmake/options.cmake)
 
 project (
-    "cleanMqtt" 
+    "kmMqtt" 
     VERSION 0.0.1 
     LANGUAGES CXX)
 
@@ -212,7 +212,7 @@ if(ENABLE_TSAN)
     endif()
 endif()
 
-set(CLEANMQTT_SANITIZER_FLAGS ${MSAN_FLAGS} ${ASAN_FLAGS} ${UBSAN_FLAGS} ${TSAN_FLAGS})
+set(KMMQTT_SANITIZER_FLAGS ${MSAN_FLAGS} ${ASAN_FLAGS} ${UBSAN_FLAGS} ${TSAN_FLAGS})
 
 if(BUILD_EXAMPLES)
     add_subdirectory(examples)
@@ -239,10 +239,10 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     endif()
 
     target_compile_options(${PROJECT_NAME} PRIVATE ${COVERAGE_COMPILE_FLAGS})
-    target_compile_options(cleanMqttTests PRIVATE ${COVERAGE_COMPILE_FLAGS})
+    target_compile_options(kmMqttTests PRIVATE ${COVERAGE_COMPILE_FLAGS})
 
     target_link_options(${PROJECT_NAME} PRIVATE ${COVERAGE_LINK_FLAGS})
-    target_link_options(cleanMqttTests PRIVATE ${COVERAGE_LINK_FLAGS})
+    target_link_options(kmMqttTests PRIVATE ${COVERAGE_LINK_FLAGS})
     target_link_options(mqttClient PRIVATE ${COVERAGE_LINK_FLAGS})
 
     set(COVERAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/coverage")
@@ -262,7 +262,7 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             COMMAND ${LCOV_PATH} --remove coverage.info '*/_deps/*' '/usr/*' '*/tests/*' '*/examples/*' '*/benchmarks/*' --output-file coverage_filtered.info --ignore-errors unused
             COMMAND ${GENHTML_PATH} coverage_filtered.info --output-directory coverage --ignore-errors source
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS cleanMqttTests
+            DEPENDS kmMqttTests
             COMMENT "Generating coverage report with lcov"
         )
                 
@@ -276,8 +276,8 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
                     
             enable_testing()
                 add_test(
-                    NAME cleanMqttTests 
-                    COMMAND $<TARGET_FILE:cleanMqttTests>
+                    NAME kmMqttTests 
+                    COMMAND $<TARGET_FILE:kmMqttTests>
                 )
 
             set(ENV{LLVM_PROFILE_FILE} "default.profraw")
@@ -288,10 +288,10 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
                 COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_OUTPUT_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=default.profraw ${CMAKE_CTEST_COMMAND} --output-on-failure
                 COMMAND ${LLVM_PROFDATA_PATH} merge -sparse default.profraw -o coverage.profdata
-                COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:cleanMqttTests> -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="tests|examples|benchmarks|/usr|_deps"
+                COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:kmMqttTests> -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="tests|examples|benchmarks|/usr|_deps"
                 COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated: ${COVERAGE_OUTPUT_DIR}/index.html"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                DEPENDS cleanMqttTests
+                DEPENDS kmMqttTests
                 COMMENT "Generating coverage report with llvm-cov"
             )
         else()
@@ -302,5 +302,34 @@ endif()
 
 if(BUILD_BENCHMARKING)
     add_subdirectory(benchmarks)
+endif()
+
+#Doxygen documentation generation
+if(BUILD_DOCS)
+    find_package(Doxygen OPTIONAL_COMPONENTS dot)
+    if(DOXYGEN_FOUND)
+        #Configure the Doxyfile
+        set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+        set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+        
+        configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+        
+        #Add a custom target to build documentation
+        add_custom_target(docs
+            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            COMMAND doxygen ${DOXYGEN_OUT}
+            COMMENT "Generating API documentation with Doxygen"
+            VERBATIM
+        )
+
+        install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/docs/html
+            DESTINATION share/doc/${PROJECT_NAME}
+            OPTIONAL)
+        
+        message(STATUS "Doxygen found. Use 'cmake --build . --target docs' to generate documentation.")
+    else()
+        message(WARNING "BUILD_DOCS enabled but Doxygen not found. Documentation will not be available.")
+    endif()
 endif()
 

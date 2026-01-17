@@ -22,7 +22,7 @@ protected:
 	void drawLogOutput();
 	void drawClearConfirmation();
 	void copyAllLogsToClipboard();
-	ImVec4 getLogLevelColor(cleanMqtt::LogLevel logLevel) const;
+	ImVec4 getLogLevelColor(kmMqtt::LogLevel logLevel) const;
 
 	void handleAppliedModel(ModelPtr oldModel, ModelPtr newModel) override;
 };

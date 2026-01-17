@@ -1,8 +1,8 @@
 #include <doctest.h>
-#include <cleanMqtt/Dispatchers/DefaultDispatcher.h>
-#include <cleanMqtt/Dispatchers/ImmediateDispatcher.h>
-#include <cleanMqtt/MqttClientOptions.h>
-#include <cleanMqtt/Interfaces/ICallbackDispatcher.h>
+#include <kmMqtt/Dispatchers/DefaultDispatcher.h>
+#include <kmMqtt/Dispatchers/ImmediateDispatcher.h>
+#include <kmMqtt/MqttClientOptions.h>
+#include <kmMqtt/Interfaces/ICallbackDispatcher.h>
 #include <atomic>
 #include <thread>
 #include <chrono>
@@ -10,11 +10,11 @@
 #include <cstring>
 #include <map>
 
-using namespace cleanMqtt;
+using namespace kmMqtt;
 
 TEST_SUITE("Dispatcher Tests")
 {
-	using namespace cleanMqtt;
+	using namespace kmMqtt;
 
 	TEST_CASE("DefaultDispatcher - Does Not Execute Callback")
 	{

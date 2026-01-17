@@ -1,22 +1,22 @@
-#include "cleanMqtt/Mqtt/MqttClientImpl.h"
+#include "kmMqtt/Mqtt/MqttClientImpl.h"
 
-#include "cleanMqtt/MqttClientOptions.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/ConnectComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/PingComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/PubAckComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h"
-#include "cleanMqtt/Mqtt/PacketHelper.h"
-#include "cleanMqtt/Logger/LoggerInstance.h"
-#include "cleanMqtt/Logger/DefaultLogger.h"
-#include "cleanMqtt/Mqtt/ReqResult.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/PubRecComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/PubRelComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/PubCompComposer.h"
-#include "cleanMqtt/Mqtt/Transport/Jobs/DisconnectComposer.h"
+#include "kmMqtt/MqttClientOptions.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/ConnectComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/PublishComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/PingComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/PubAckComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h"
+#include "kmMqtt/Mqtt/PacketHelper.h"
+#include "kmMqtt/Logger/LoggerInstance.h"
+#include "kmMqtt/Logger/DefaultLogger.h"
+#include "kmMqtt/Mqtt/ReqResult.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/PubRecComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/PubRelComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/PubCompComposer.h"
+#include "kmMqtt/Mqtt/Transport/Jobs/DisconnectComposer.h"
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{
@@ -173,7 +173,8 @@ namespace cleanMqtt
 				topic,
 				std::move(payload),
 				std::move(options),
-				&m_receiveMaximumTracker));
+				&m_receiveMaximumTracker,
+				false));
 
 			LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
 
@@ -1340,7 +1341,7 @@ namespace cleanMqtt
 
 		void MqttClientImpl::tickPendingPublishMessageRetries()
 		{
-			const auto& msgs = m_connectionInfo.sessionState.messages();
+			const auto& msgs{ m_connectionInfo.sessionState.messages() };
 
 			for(const auto& msg : msgs)
 			{
@@ -1365,7 +1366,8 @@ namespace cleanMqtt
 							msg.data.publishMsgData.topic,
 							std::move(payloadCopy),
 							std::move(options),
-							&m_receiveMaximumTracker));
+							&m_receiveMaximumTracker,
+							true));
 					}
 					else if (type == PacketType::PUBLISH_RECEIVED)
 					{
@@ -1378,7 +1380,7 @@ namespace cleanMqtt
 				}
 				else
 				{
-					break; //Messages are sorted in a way that next retry time will be higher anyway, so if we hit one that is not ready to be retried, we can stop checking the rest.
+					break; //Messages are sorted in a way that the next retry time in message list will be larger, so if we hit one that is not ready to be retried, we can stop checking the rest.
 				}
 			}
 		}

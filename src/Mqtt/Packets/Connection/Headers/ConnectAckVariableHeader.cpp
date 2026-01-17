@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Connection/Headers/ConnectAckVariableHeader.h>
+#include <kmMqtt/Mqtt/Packets/Connection/Headers/ConnectAckVariableHeader.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

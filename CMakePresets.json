@@ -85,6 +85,22 @@
       }
     },
     {
+      "name": "x64-docs",
+      "displayName": "x64 Documentation",
+      "inherits": "windows-vcpkg",
+      "architecture": {
+        "value": "x64",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_DOCS": true,
+        "BUILD_UNIT_TESTS": false,
+        "BUILD_EXAMPLES": false,
+        "BUILD_BENCHMARKING": false
+      }
+    },
+    {
       "name": "x86-debug",
       "displayName": "x86 Debug",
       "inherits": "windows-vcpkg",
@@ -142,6 +158,20 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "linux-docs",
+      "displayName": "Linux Documentation",
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "BUILD_DOCS": true,
+        "BUILD_UNIT_TESTS": false,
+        "BUILD_EXAMPLES": false,
+        "BUILD_BENCHMARKING": false
       }
     },
     {

@@ -299,7 +299,7 @@ void PublishView::drawMessageDetails(const PublishedMessage& message)
     ImGui::Text(text::publish_details_options_title);
     ImGui::BulletText(text::publish_details_qos, static_cast<int>(message.options.qos));
     ImGui::BulletText(message.options.retain ? text::publish_details_retain_yes : text::publish_details_retain_no);
-    ImGui::BulletText(message.options.payloadFormatIndicator == cleanMqtt::mqtt::PayloadFormatIndicator::UTF8 ? text::publish_details_format_utf8 : text::publish_details_format_binary);
+    ImGui::BulletText(message.options.payloadFormatIndicator == kmMqtt::mqtt::PayloadFormatIndicator::UTF8 ? text::publish_details_format_utf8 : text::publish_details_format_binary);
     
     if (!message.options.responseTopic.empty())
     {

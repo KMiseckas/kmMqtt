@@ -1,11 +1,11 @@
 #ifndef TESTS_ENVIRONMENTS_TESTENVIRONMENT_H
 #define TESTS_ENVIRONMENTS_TESTENVIRONMENT_H
 
-#include <cleanMqtt/Interfaces/IMqttEnvironment.h>
+#include <kmMqtt/Interfaces/IMqttEnvironment.h>
 #include "../../API Tests/MockWebSocket.h"
 #include <memory>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
     class TestEnvironment : public IMqttEnvironment
     {

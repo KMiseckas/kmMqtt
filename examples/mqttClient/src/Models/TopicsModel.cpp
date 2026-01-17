@@ -1,5 +1,5 @@
 #include <mqttClient/Model/TopicsModel.h>
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include <algorithm>
 
 TopicsModel::TopicsModel() noexcept
@@ -11,7 +11,7 @@ TopicsModel::~TopicsModel()
     //Event handlers are automatically cleaned up when the MqttClient is destroyed
 }
 
-void TopicsModel::setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept
+void TopicsModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
 {
     m_mqttClient = client;
     if (m_mqttClient != nullptr)
@@ -50,18 +50,18 @@ void TopicsModel::subscribe(const std::string& topicFilter)
     }
 
     // Create subscription options from UI
-    cleanMqtt::mqtt::TopicSubscriptionOptions opts;
-    opts.qos = static_cast<cleanMqtt::mqtt::Qos>(uiData.selectedTopicQos);
+    kmMqtt::mqtt::TopicSubscriptionOptions opts;
+    opts.qos = static_cast<kmMqtt::mqtt::Qos>(uiData.selectedTopicQos);
     opts.noLocal = uiData.noLocal;
     opts.retainAsPublished = uiData.retainAsPublished;
     opts.retainHandling = uiData.retainHandling ? 
-        cleanMqtt::mqtt::RetainHandling::SendAtSubscribeIfNew : 
-        cleanMqtt::mqtt::RetainHandling::SendAtSubscribe;
+        kmMqtt::mqtt::RetainHandling::SendAtSubscribeIfNew : 
+        kmMqtt::mqtt::RetainHandling::SendAtSubscribe;
 
     it->options = opts;
 
     // Create Topic and subscribe
-    std::vector<cleanMqtt::mqtt::Topic> topics;
+    std::vector<kmMqtt::mqtt::Topic> topics;
     topics.emplace_back(topicFilter, opts);
 
     auto result = m_mqttClient->subscribe(topics, {});
@@ -96,10 +96,10 @@ void TopicsModel::unsubscribe(const std::string& topicFilter)
         return;
     }
 
-    std::vector<cleanMqtt::mqtt::Topic> topics;
+    std::vector<kmMqtt::mqtt::Topic> topics;
     topics.emplace_back(topicFilter);
 
-    cleanMqtt::mqtt::UnSubscribeOptions unsubscribeOptions;
+    kmMqtt::mqtt::UnSubscribeOptions unsubscribeOptions;
     
     auto result{ m_mqttClient->unSubscribe(topics, std::move(unsubscribeOptions)) };
     if (!result.noError())
@@ -161,19 +161,19 @@ void TopicsModel::setupEventHandlers()
     }
 
     //Subscribe acknowledgments
-    m_mqttClient->onSubscribeAckEvent().add([this](const cleanMqtt::mqtt::SubscribeAckEventDetails& details, const cleanMqtt::mqtt::SubscribeAck& ack)
+    m_mqttClient->onSubscribeAckEvent().add([this](const kmMqtt::mqtt::SubscribeAckEventDetails& details, const kmMqtt::mqtt::SubscribeAck& ack)
     {
         onSubscribeAck(details, ack);
     });
 
     //Unsubscribe acknowledgments  
-    m_mqttClient->onUnSubscribeAckEvent().add([this](const cleanMqtt::mqtt::UnSubscribeAckEventDetails& details, const cleanMqtt::mqtt::UnSubscribeAck& ack)
+    m_mqttClient->onUnSubscribeAckEvent().add([this](const kmMqtt::mqtt::UnSubscribeAckEventDetails& details, const kmMqtt::mqtt::UnSubscribeAck& ack)
     {
         onUnSubscribeAck(details, ack);
     });
 }
 
-void TopicsModel::onSubscribeAck(const cleanMqtt::mqtt::SubscribeAckEventDetails& details, const cleanMqtt::mqtt::SubscribeAck& ack)
+void TopicsModel::onSubscribeAck(const kmMqtt::mqtt::SubscribeAckEventDetails& details, const kmMqtt::mqtt::SubscribeAck& ack)
 {
 	if (details.results.allSubscribedSuccesfully()) //This client only subsribes to one topic at a time so its ok to check allSubscribedSuccesfully
     {
@@ -207,7 +207,7 @@ void TopicsModel::onSubscribeAck(const cleanMqtt::mqtt::SubscribeAckEventDetails
     }
 }
 
-void TopicsModel::onUnSubscribeAck(const cleanMqtt::mqtt::UnSubscribeAckEventDetails& details, const cleanMqtt::mqtt::UnSubscribeAck& ack)
+void TopicsModel::onUnSubscribeAck(const kmMqtt::mqtt::UnSubscribeAckEventDetails& details, const kmMqtt::mqtt::UnSubscribeAck& ack)
 {
     if (details.results.allUnSubscribedSuccesfully())
     {
@@ -224,7 +224,7 @@ void TopicsModel::onUnSubscribeAck(const cleanMqtt::mqtt::UnSubscribeAckEventDet
         for (auto& topic : m_subscribedTopics)
         {
             const auto recvReason{ details.results.getTopicReasons()[0].reasonCode };
-            if (recvReason == cleanMqtt::mqtt::UnSubAckReasonCode::NOT_AUTHORIZED)
+            if (recvReason == kmMqtt::mqtt::UnSubAckReasonCode::NOT_AUTHORIZED)
             {
                 topic.lastError = "Unsubsscription failed: NOT_AUTHORIZED";
 				return; // Keep the topic in the list if not authorized

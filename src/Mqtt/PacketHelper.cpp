@@ -1,16 +1,16 @@
-#include <cleanMqtt/Mqtt/PacketHelper.h>
+#include <kmMqtt/Mqtt/PacketHelper.h>
 
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubCompOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubRecOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubRelOptions.h>
-#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
-#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
-#include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
+#include <kmMqtt/Mqtt/Params/PublishOptions.h>
+#include <kmMqtt/Mqtt/Params/PubAckOptions.h>
+#include <kmMqtt/Mqtt/Params/PubCompOptions.h>
+#include <kmMqtt/Mqtt/Params/PubRecOptions.h>
+#include <kmMqtt/Mqtt/Params/PubRelOptions.h>
+#include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <kmMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <kmMqtt/Mqtt/MqttConnectionInfo.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{
@@ -114,7 +114,7 @@ namespace cleanMqtt
 			return PingResp{};
 		}
 
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, std::uint16_t packetId) noexcept
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, bool isDup, const char* topic, const ByteBuffer& payload, const PublishOptions& options, std::uint16_t packetId) noexcept
 		{
 			(void)connectionInfo;
 
@@ -144,7 +144,7 @@ namespace cleanMqtt
 
 			payloadHeader.payload = payload;
 
-			EncodedPublishFlags flags{ false, options.qos, options.retain };
+			EncodedPublishFlags flags{ isDup, options.qos, options.retain };
 
 			return Publish{ std::move(payloadHeader), std::move(varHeader), flags };
 		}

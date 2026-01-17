@@ -1,14 +1,14 @@
-#include <cleanMqtt/Environments/DefaultEnvironmentFactory.h>
+#include <kmMqtt/Environments/DefaultEnvironmentFactory.h>
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <cleanMqtt/Environments/DefaultWinEnv.h>
-using ENV = cleanMqtt::DefaultWinEnv;
+#include <kmMqtt/Environments/DefaultWinEnv.h>
+using ENV = kmMqtt::DefaultWinEnv;
 #elif defined(__linux__)
-#include <cleanMqtt/Environments/DefaultLinuxEnv.h>
-using ENV = cleanMqtt::DefaultLinuxEnv;
+#include <kmMqtt/Environments/DefaultLinuxEnv.h>
+using ENV = kmMqtt::DefaultLinuxEnv;
 #endif
 
-namespace cleanMqtt
+namespace kmMqtt
 {
     IMqttEnvironment* DefaultEnvironmentFactory::createEnvironment()
     {

@@ -1,18 +1,18 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
-#include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
-#include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
-#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
-#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
-#include <cleanMqtt/Mqtt/Params/Topic.h>
-#include <cleanMqtt/ByteBuffer.h>
+#include <kmMqtt/Mqtt/PacketHelper.h>
+#include <kmMqtt/Mqtt/MqttConnectionInfo.h>
+#include <kmMqtt/Mqtt/Params/ConnectArgs.h>
+#include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <kmMqtt/Mqtt/Params/PublishOptions.h>
+#include <kmMqtt/Mqtt/Params/PubAckOptions.h>
+#include <kmMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/Topic.h>
+#include <kmMqtt/ByteBuffer.h>
 
 TEST_SUITE("PacketHelper Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	TEST_CASE("createConnectPacket basic connection")
 	{
@@ -139,12 +139,12 @@ TEST_SUITE("PacketHelper Tests")
 	TEST_CASE("createPublishPacket basic publish")
 	{
 		MqttConnectionInfo connectionInfo;
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.qos = Qos::QOS_0;
 		options.retain = false;
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().topicName.getString() == "test/topic");
 		CHECK(packet.getVariableHeader().qos == Qos::QOS_0);
@@ -154,12 +154,12 @@ TEST_SUITE("PacketHelper Tests")
 	TEST_CASE("createPublishPacket with QoS 1 and packet ID")
 	{
 		MqttConnectionInfo connectionInfo;
-		cleanMqtt::ByteBuffer payload(10);
+		kmMqtt::ByteBuffer payload(10);
 		PublishOptions options;
 		options.qos = Qos::QOS_1;
 		options.retain = true;
 
-		Publish packet = createPublishPacket(connectionInfo, "sensor/data", payload, options, 42);
+		Publish packet = createPublishPacket(connectionInfo, false, "sensor/data", payload, options, 42);
 
 		CHECK(packet.getVariableHeader().topicName.getString() == "sensor/data");
 		CHECK(packet.getVariableHeader().qos == Qos::QOS_1);
@@ -170,11 +170,11 @@ TEST_SUITE("PacketHelper Tests")
 	TEST_CASE("createPublishPacket with topic alias")
 	{
 		MqttConnectionInfo connectionInfo;
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.topicAlias = 5;
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}
@@ -182,13 +182,13 @@ TEST_SUITE("PacketHelper Tests")
 	TEST_CASE("createPublishPacket with response topic and correlation data")
 	{
 		MqttConnectionInfo connectionInfo;
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.responseTopic = "response/topic";
 		std::uint8_t corrData[] = {0xAA, 0xBB};
 		options.correlationData = std::make_unique<BinaryData>(2, corrData);
 
-		Publish packet = createPublishPacket(connectionInfo, "request/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "request/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}
@@ -196,11 +196,11 @@ TEST_SUITE("PacketHelper Tests")
 	TEST_CASE("createPublishPacket with user properties")
 	{
 		MqttConnectionInfo connectionInfo;
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.userProperties["custom"] = "value";
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}
@@ -208,12 +208,12 @@ TEST_SUITE("PacketHelper Tests")
 	TEST_CASE("createPublishPacket with message expiry interval")
 	{
 		MqttConnectionInfo connectionInfo;
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.messageExpiryInterval = 300;
 		options.addMessageExpiryInterval = true;
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}

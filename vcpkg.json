@@ -1,9 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "name": "cleanmqtt",
+  "name": "kmmqtt",
   "version": "0.0.1",
   "description": "C++14 MQTT client library with WebSocket, threading, and cross platform support",
-  "homepage": "https://github.com/KMiseckas/CleanMQTT",
+  "homepage": "https://github.com/KMiseckas/kmMqtt",
   "dependencies": [
     {
       "name": "openssl",

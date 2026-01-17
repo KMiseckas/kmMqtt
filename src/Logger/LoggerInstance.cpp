@@ -1,6 +1,6 @@
-#include <cleanMqtt/Logger/LoggerInstance.h>
+#include <kmMqtt/Logger/LoggerInstance.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	ILogger* m_logger{ nullptr };
 

@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Ping/PingResp.h>
+#include <kmMqtt/Mqtt/Packets/Ping/PingResp.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

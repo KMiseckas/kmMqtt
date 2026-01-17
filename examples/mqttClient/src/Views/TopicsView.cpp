@@ -242,7 +242,7 @@ void TopicsView::drawTopicItem(size_t index, const SubscribedTopic& topic)
 		ImGui::BulletText("No Local: %s", topic.options.noLocal ? "Yes" : "No");
 		ImGui::BulletText("Retain As Published: %s", topic.options.retainAsPublished ? "Yes" : "No");
 		ImGui::BulletText("Retain Handling: %s",
-			topic.options.retainHandling == cleanMqtt::mqtt::RetainHandling::SendAtSubscribe ?
+			topic.options.retainHandling == kmMqtt::mqtt::RetainHandling::SendAtSubscribe ?
 			"Send at Subscribe" : "Send at Subscribe If New");
 
 		//Resubscribe button for failed subscriptions

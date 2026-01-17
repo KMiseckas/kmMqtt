@@ -1,10 +1,10 @@
 #if defined(_WIN32) || defined(_WIN64)
-#include "cleanMqtt/Sockets/WindowsTCPSocket.h"
+#include "kmMqtt/Sockets/WindowsTCPSocket.h"
 
 #include <mutex>
 #include <ws2tcpip.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	WindowsTCPSocket::WindowsTCPSocket()
 		: m_socket(INVALID_SOCKET), m_event(WSA_INVALID_EVENT)

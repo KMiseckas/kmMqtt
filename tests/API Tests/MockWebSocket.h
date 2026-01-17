@@ -1,10 +1,10 @@
 #ifndef MOCKWEBSOCKET_H
 #define MOCKWEBSOCKET_H
 
-#include <cleanMqtt/Interfaces/IWebSocket.h>
+#include <kmMqtt/Interfaces/IWebSocket.h>
 #include <queue>
 
-using namespace cleanMqtt;
+using namespace kmMqtt;
 
 class MockWebSocket : public IWebSocket
 {

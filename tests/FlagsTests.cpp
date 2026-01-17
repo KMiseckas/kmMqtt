@@ -1,7 +1,7 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Packets/Flags.h>
-#include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Utils/TemplateUtils.h>
+#include <kmMqtt/Mqtt/Packets/Flags.h>
+#include <kmMqtt/GlobalMacros.h>
+#include <kmMqtt/Utils/TemplateUtils.h>
 
 TEST_SUITE("Flags Tests")
 {
@@ -15,7 +15,7 @@ TEST_SUITE("Flags Tests")
 		};
 		ENUM_FLAG_OPERATORS(TestFlagsEnum)
 
-		using cleanMqtt::mqtt::Flags;
+		using kmMqtt::mqtt::Flags;
 
 		struct TestFlags : public Flags<std::uint8_t, TestFlagsEnum, 15>
 		{
@@ -113,7 +113,7 @@ TEST_SUITE("Flags Tests")
 
 	TEST_CASE("templateUtils::hasFlag basic checks")
 	{
-		using cleanMqtt::templateUtils::hasFlag;
+		using kmMqtt::templateUtils::hasFlag;
 
 		// Single bit flag
 		static_assert(hasFlag<0b0001, 0b0001>() == true, "Flag present");

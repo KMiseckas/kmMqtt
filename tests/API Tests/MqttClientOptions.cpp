@@ -1,13 +1,13 @@
 #include <doctest.h>
-#include <cleanMqtt/Dispatchers/DefaultDispatcher.h>
-#include <cleanMqtt/Dispatchers/ImmediateDispatcher.h>
-#include <cleanMqtt/MqttClientOptions.h>
-#include <cleanMqtt/Interfaces/ICallbackDispatcher.h>
+#include <kmMqtt/Dispatchers/DefaultDispatcher.h>
+#include <kmMqtt/Dispatchers/ImmediateDispatcher.h>
+#include <kmMqtt/MqttClientOptions.h>
+#include <kmMqtt/Interfaces/ICallbackDispatcher.h>
 #include <atomic>
 #include <thread>
 #include <chrono>
 
-using namespace cleanMqtt;
+using namespace kmMqtt;
 
 TEST_SUITE("MqttClientOptions Tests")
 {

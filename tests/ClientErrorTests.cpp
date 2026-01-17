@@ -1,7 +1,7 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/ClientError.h>
+#include <kmMqtt/Mqtt/ClientError.h>
 
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt::mqtt;
 
 TEST_SUITE("ClientError Tests")
 {

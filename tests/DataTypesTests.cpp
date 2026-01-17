@@ -1,9 +1,9 @@
 ﻿#include <doctest.h>
-#include <cleanMqtt/Mqtt/Packets/DataTypes.h>
+#include <kmMqtt/Mqtt/Packets/DataTypes.h>
 
 TEST_SUITE("Data Type Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	TEST_CASE("Binary Data")
 	{
@@ -311,7 +311,7 @@ TEST_SUITE("Data Type Tests")
 		{
 			std::string text = "roundtrip";
 			UTF8String str(text);
-			cleanMqtt::ByteBuffer buf{ str.encodingSize()};
+			kmMqtt::ByteBuffer buf{ str.encodingSize()};
 			str.encode(buf);
 
 			str.decode(buf);
@@ -324,7 +324,7 @@ TEST_SUITE("Data Type Tests")
 			// "Héłłø 🌍" contains multi-byte UTF-8 characters.
 			std::string special = u8"Héłłø 🌍";
 			UTF8String str(special);
-			cleanMqtt::ByteBuffer buf{ str.encodingSize() };
+			kmMqtt::ByteBuffer buf{ str.encodingSize() };
 			str.encode(buf);
 
 			UTF8String decoded;

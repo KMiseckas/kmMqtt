@@ -1,26 +1,26 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Packets/FixedHeader.h>
-#include <cleanMqtt/Mqtt/Packets/Connection/Headers/ConnectVariableHeader.h>
-#include <cleanMqtt/Mqtt/Packets/Connection/Headers/ConnectPayloadHeader.h>
-#include <cleanMqtt/ByteBuffer.h>
-#include <cleanMqtt/Mqtt/Packets/PacketUtils.h>
-#include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishPayloadHeader.h>
-#include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishVariableHeader.h>
-#include <cleanMqtt/Mqtt/Packets/Subscribe/Headers/SubscribePayloadHeader.h>
-#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribePayloadHeader.h>
-#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeAckPayloadHeader.h>
-#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeAckVariableHeader.h>
-#include <cleanMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeVariableHeader.h>
+#include <kmMqtt/Mqtt/Packets/FixedHeader.h>
+#include <kmMqtt/Mqtt/Packets/Connection/Headers/ConnectVariableHeader.h>
+#include <kmMqtt/Mqtt/Packets/Connection/Headers/ConnectPayloadHeader.h>
+#include <kmMqtt/ByteBuffer.h>
+#include <kmMqtt/Mqtt/Packets/PacketUtils.h>
+#include <kmMqtt/Mqtt/Packets/Publish/Headers/PublishPayloadHeader.h>
+#include <kmMqtt/Mqtt/Packets/Publish/Headers/PublishVariableHeader.h>
+#include <kmMqtt/Mqtt/Packets/Subscribe/Headers/SubscribePayloadHeader.h>
+#include <kmMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribePayloadHeader.h>
+#include <kmMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeAckPayloadHeader.h>
+#include <kmMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeAckVariableHeader.h>
+#include <kmMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeVariableHeader.h>
 
 TEST_SUITE("Header Tests")
 {
-	using cleanMqtt::mqtt::FixedHeader;
-	using cleanMqtt::mqtt::FixedHeaderFlags;
-	using cleanMqtt::mqtt::PacketType;
-	using cleanMqtt::mqtt::VariableByteInteger;
-	using cleanMqtt::mqtt::ConnectVariableHeader;
-	using cleanMqtt::ByteBuffer;
-	using cleanMqtt::mqtt::MqttVersion;
+	using kmMqtt::mqtt::FixedHeader;
+	using kmMqtt::mqtt::FixedHeaderFlags;
+	using kmMqtt::mqtt::PacketType;
+	using kmMqtt::mqtt::VariableByteInteger;
+	using kmMqtt::mqtt::ConnectVariableHeader;
+	using kmMqtt::ByteBuffer;
+	using kmMqtt::mqtt::MqttVersion;
 
 	TEST_CASE("Fixed Header")
 	{
@@ -44,7 +44,7 @@ TEST_SUITE("Header Tests")
 			FixedHeaderFlags flags{ 0 };
 			VariableByteInteger varByte;
 
-			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
+			CHECK(kmMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
 			CHECK(buffer[0] == 0b00011101);
 			varByte.decode(&buffer[1]);
 			CHECK(varByte.uint32Value() == 3123);
@@ -83,7 +83,7 @@ TEST_SUITE("Header Tests")
 
 			SUBCASE("Params 1")
 			{
-				using namespace cleanMqtt::mqtt;
+				using namespace kmMqtt::mqtt;
 
 				EncodedConnectFlags flags;
 				flags.setFlagValue(ConnectFlags::CLEAN_START, true);
@@ -137,7 +137,7 @@ TEST_SUITE("Header Tests")
 
 			SUBCASE("Params - Properties")
 			{
-				using namespace cleanMqtt::mqtt;
+				using namespace kmMqtt::mqtt;
 
 				EncodedConnectFlags flags;
 				flags.setFlagValue(ConnectFlags::CLEAN_START, true);
@@ -272,7 +272,7 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("Connect Payload Header")
 	{
-		using namespace cleanMqtt::mqtt;
+		using namespace kmMqtt::mqtt;
 
 		SUBCASE("Encoding")
 		{
@@ -402,8 +402,8 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("Publish Payload Header")
 	{
-		using cleanMqtt::mqtt::PublishPayloadHeader;
-		using cleanMqtt::mqtt::BinaryData;
+		using kmMqtt::mqtt::PublishPayloadHeader;
+		using kmMqtt::mqtt::BinaryData;
 
 		SUBCASE("Encoding Default")
 		{
@@ -450,8 +450,8 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("Publish Variable Header")
 	{
-		using namespace cleanMqtt::mqtt;
-		using cleanMqtt::mqtt::PublishVariableHeader;
+		using namespace kmMqtt::mqtt;
+		using kmMqtt::mqtt::PublishVariableHeader;
 
 		SUBCASE("Encoding")
 		{
@@ -688,7 +688,7 @@ TEST_SUITE("Header Tests")
 			ByteBuffer buffer{ 2 };
 			buffer += 0b00010000; //CONNECT packet type
 			buffer += 0; //Remaining length
-			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
+			CHECK(kmMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::CONNECT);
 		}
 
 		SUBCASE("Check Packet Type RESERVED")
@@ -696,7 +696,7 @@ TEST_SUITE("Header Tests")
 			ByteBuffer buffer{ 2 };
 			buffer += 0b00000000; //Invalid packet type
 			buffer += 0; //Remaining length
-			CHECK(cleanMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
+			CHECK(kmMqtt::mqtt::checkPacketType(buffer.bytes(), buffer.size()) == PacketType::RESERVED);
 		}
 	}
 
@@ -704,49 +704,49 @@ TEST_SUITE("Header Tests")
 	{
 		SUBCASE("Subscribe Payload")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::SubscribePayloadHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::SubscribePayloadHeader header);
 		}
 
 		SUBCASE("Publish Variable")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::PublishVariableHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::PublishVariableHeader header);
 		}
 
 		SUBCASE("Publish Payload")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::PublishPayloadHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::PublishPayloadHeader header);
 		}
 
 		SUBCASE("Unsubscribe Payload")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::UnSubscribePayloadHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::UnSubscribePayloadHeader header);
 		}
 
 		SUBCASE("UnSubscribe Ack Payload")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::UnSubscribeAckPayloadHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::UnSubscribeAckPayloadHeader header);
 		}
 
 		SUBCASE("UnSubscribe Ack Var")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::UnSubscribeAckVariableHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::UnSubscribeAckVariableHeader header);
 		}
 
 		SUBCASE("Connect Payload")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::ConnectPayloadHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::ConnectPayloadHeader header);
 		}
 
 		SUBCASE("Connect Variable")
 		{
-			CHECK_NOTHROW(cleanMqtt::mqtt::ConnectVariableHeader header);
+			CHECK_NOTHROW(kmMqtt::mqtt::ConnectVariableHeader header);
 		}
 	}
 
 
 	TEST_CASE("UnSubscribe Variable Header")
 	{
-		using namespace cleanMqtt::mqtt;
+		using namespace kmMqtt::mqtt;
 
 		SUBCASE("Constructor with Parameters")
 		{
@@ -790,7 +790,7 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("UnSubscribe Payload Header")
 	{
-		using namespace cleanMqtt::mqtt;
+		using namespace kmMqtt::mqtt;
 
 		SUBCASE("Constructor with Topics")
 		{
@@ -850,7 +850,7 @@ TEST_SUITE("Header Tests")
 
 	TEST_CASE("UnSubscribe Ack Variable Header")
 	{
-		using namespace cleanMqtt::mqtt;
+		using namespace kmMqtt::mqtt;
 
 		SUBCASE("Default Constructor")
 		{

@@ -2,13 +2,13 @@
 #define INCLUDE_MQTTCLIENT_MODEL_SESSIONMODEL_H
 
 #include "mqttClient/Model/ViewModel.h"
-#include <cleanMqtt/Config.h>
-#include <cleanMqtt/Mqtt/Params/ConnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
-#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <kmMqtt/Config.h>
+#include <kmMqtt/Mqtt/Params/ConnectArgs.h>
+#include <kmMqtt/Mqtt/Params/ConnectAddress.h>
+#include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
 #include <string>
-#include <cleanMqtt/MqttClient.h>
-#include <cleanMqtt/Mqtt/Enums/ConnectionStatus.h>
+#include <kmMqtt/MqttClient.h>
+#include <kmMqtt/Mqtt/Enums/ConnectionStatus.h>
 #include "TopicsModel.h"
 #include "PublishModel.h"
 #include "OutputModel.h"
@@ -31,20 +31,20 @@ public:
 	void cancel();
 	void tickMqtt();
 
-	inline cleanMqtt::mqtt::ConnectionStatus getConnectionStatus() const
+	inline kmMqtt::mqtt::ConnectionStatus getConnectionStatus() const
 	{
 		if (m_mqttClient == nullptr)
 		{
-			return cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED;
+			return kmMqtt::mqtt::ConnectionStatus::DISCONNECTED;
 		}
 
 		return m_mqttClient->getConnectionStatus();
 	}
 
-	cleanMqtt::Config mqttConfig;
-	cleanMqtt::mqtt::ConnectAddress connectAddress;
-	cleanMqtt::mqtt::ConnectArgs connectArgs{ "Client ID" };
-	cleanMqtt::mqtt::DisconnectArgs disconnectArgs{ false, true };
+	kmMqtt::Config mqttConfig;
+	kmMqtt::mqtt::ConnectAddress connectAddress;
+	kmMqtt::mqtt::ConnectArgs connectArgs{ "Client ID" };
+	kmMqtt::mqtt::DisconnectArgs disconnectArgs{ false, true };
 
 	bool useTickAsync{ false };
 
@@ -90,7 +90,7 @@ private:
 	std::uint8_t m_index{ 0 };
 	std::string m_name{ "New Session" };
 
-	cleanMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
+	kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
 };
 
 #endif //INCLUDE_MQTTCLIENT_MODEL_SESSIONMODEL_H

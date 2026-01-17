@@ -1,7 +1,7 @@
 #include "TestEnvironment.h"
-#include <cleanMqtt/Logger/DefaultLogger.h>
+#include <kmMqtt/Logger/DefaultLogger.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
     Config TestEnvironment::createConfig() const noexcept
     {

@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h>
+#include <kmMqtt/Mqtt/Packets/Subscribe/SubscribeAck.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

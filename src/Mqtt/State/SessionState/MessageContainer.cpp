@@ -1,8 +1,8 @@
-#include <cleanMqtt/Mqtt/State/SessionState/MessageContainer.h>
+#include <kmMqtt/Mqtt/State/SessionState/MessageContainer.h>
 #include <assert.h>
 
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

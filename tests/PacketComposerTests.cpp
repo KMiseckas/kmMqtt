@@ -1,17 +1,17 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/ConnectComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PingComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PubAckComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/PublishComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h>
-#include <cleanMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h>
-#include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
-#include <cleanMqtt/Utils/PacketIdPool.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/ConnectComposer.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/PingComposer.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/PubAckComposer.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/PublishComposer.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/SubscribeComposer.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/UnSubscribeComposer.h>
+#include <kmMqtt/Mqtt/MqttConnectionInfo.h>
+#include <kmMqtt/Utils/PacketIdPool.h>
 
 TEST_SUITE("PacketComposer Tests")
 {
-	using namespace cleanMqtt::mqtt;
-	using cleanMqtt::PacketIdPool;
+	using namespace kmMqtt::mqtt;
+	using kmMqtt::PacketIdPool;
 
 	TEST_CASE("ConnectComposer compose creates valid packet")
 	{
@@ -116,12 +116,12 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		cleanMqtt::ByteBuffer payload(10);
+		kmMqtt::ByteBuffer payload(10);
 		PublishOptions options;
 		options.qos = Qos::QOS_1;
 		ReceiveMaximumTracker tracker{ 65535 , 65535};
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker, false);
 		ComposeResult result = composer.compose();
 
 		CHECK(result.encodeResult.isSuccess());
@@ -133,12 +133,12 @@ TEST_SUITE("PacketComposer Tests")
 	{
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.qos = Qos::QOS_0;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, 0, "sensor/data", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, 0, "sensor/data", std::move(payload), std::move(options), &tracker, false);
 		ComposeResult result = composer.compose();
 
 		CHECK(result.encodeResult.isSuccess());
@@ -150,13 +150,13 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		cleanMqtt::ByteBuffer payload(10);
+		kmMqtt::ByteBuffer payload(10);
 		PublishOptions options;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
 
 		CHECK(packetId == 1);
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker, false);
 		composer.cancel();
 
 		std::uint16_t reusedId = packetIdPool.getId();
@@ -168,13 +168,13 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		cleanMqtt::ByteBuffer payload(5);
+		kmMqtt::ByteBuffer payload(5);
 		PublishOptions options;
 		options.qos = Qos::QOS_1;
 		options.retain = true;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "status/topic", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "status/topic", std::move(payload), std::move(options), &tracker, false);
 		ComposeResult result = composer.compose();
 
 		CHECK(result.encodeResult.isSuccess());
@@ -332,11 +332,11 @@ TEST_SUITE("PacketComposer Tests")
 		ComposeResult pingResult = pingComposer.compose();
 
 		std::uint16_t pubId = packetIdPool.getId();
-		cleanMqtt::ByteBuffer payload(10);
+		kmMqtt::ByteBuffer payload(10);
 		PublishOptions pubOptions;
 		pubOptions.qos = Qos::QOS_1;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
-		PublishComposer publishComposer(&connectionInfo, &packetIdPool, pubId, "test/topic", std::move(payload), std::move(pubOptions), &tracker);
+		PublishComposer publishComposer(&connectionInfo, &packetIdPool, pubId, "test/topic", std::move(payload), std::move(pubOptions), &tracker, false);
 		ComposeResult publishResult = publishComposer.compose();
 
 		CHECK(connectResult.encodeResult.isSuccess());

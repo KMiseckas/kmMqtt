@@ -1,11 +1,11 @@
 #ifdef BUILD_IXWEBSOCKET
 
-#include "cleanMqtt/Sockets/DefaultWebsocket.h"
-#include "cleanMqtt/Logger/Log.h"
+#include "kmMqtt/Sockets/DefaultWebsocket.h"
+#include "kmMqtt/Logger/Log.h"
 
 #include <ixwebsocket/IXNetSystem.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	DefaultWebsocket::DefaultWebsocket()
 		: m_websocket(std::make_unique<ix::WebSocket>())
@@ -217,7 +217,7 @@ namespace cleanMqtt
 }
 
 #else
-namespace cleanMqtt
+namespace kmMqtt
 {
 	DefaultWebsocket::DefaultWebsocket()
 		: m_connected(false)
