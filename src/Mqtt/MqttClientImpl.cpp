@@ -800,7 +800,7 @@ namespace kmMqtt
 				}
 				else
 				{
-					DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(ConnectAck{})]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
+					DISPATCH_EVENT_TO_CONSUMER([&, p = ConnectAck{}]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
 				}
 			}
 		}
@@ -1239,7 +1239,7 @@ namespace kmMqtt
 			}
 			else if (qos == Qos::QOS_2)
 			{
-				PublishMessageData data{ topicName, {} };
+				PublishMessageData data{ topicName, {}, {} };
 				m_connectionInfo.sessionState.addMessage(id, std::move(data));
 
 				pubRec(id, PubRecReasonCode::SUCCESS, PubRecOptions{});

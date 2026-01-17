@@ -64,7 +64,7 @@ namespace kmMqtt
 				}
 			}
 
-			return { ClientErrorCode::No_Error };
+			return ClientErrorCode{ ClientErrorCode::No_Error };
 		}
 
 		ClientErrorCode SessionState::addMessage(const std::uint16_t packetId, PublishMessageData publishMsgData) noexcept

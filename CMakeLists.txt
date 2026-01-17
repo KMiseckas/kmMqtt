@@ -130,6 +130,15 @@ if(BUILD_IXWEBSOCKET)
     )
     FetchContent_MakeAvailable(ixwebsocket)
     
+    # Disable warnings as errors for ixwebsocket to prevent third-party warnings from breaking the build
+    if(TARGET ixwebsocket)
+        if(MSVC)
+            target_compile_options(ixwebsocket PRIVATE /WX-)
+        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            target_compile_options(ixwebsocket PRIVATE -Wno-error)
+        endif()
+    endif()
+
     # Link using standard CMake targets (works with vcpkg, system, and custom OpenSSL)
     target_link_libraries(${PROJECT_NAME} PUBLIC ixwebsocket)
     target_compile_definitions(${PROJECT_NAME} PUBLIC BUILD_IXWEBSOCKET)

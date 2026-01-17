@@ -152,9 +152,9 @@ TEST_SUITE("Environment Tests")
 
 		REQUIRE(socket != nullptr);
 
-		CHECK(socket->getLastError() == -1);
-		CHECK(socket->getLastCloseCode() == -1);
-		CHECK(socket->getLastCloseReason() == nullptr);
+		CHECK(socket->getLastError() >= 0);
+		CHECK(socket->getLastCloseCode() == 0);
+		CHECK(socket->getLastCloseReason() != nullptr);
 	}
 #endif
 

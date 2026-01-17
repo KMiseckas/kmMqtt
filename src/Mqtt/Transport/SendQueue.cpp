@@ -328,7 +328,7 @@ namespace kmMqtt
 						}
 
 						//Since all data was sent, notify all tracked packets as sent.
-						for each(auto& metadata in m_packetsMetadataInBuffer)
+						for (auto& metadata : m_packetsMetadataInBuffer)
 						{
 							switch (metadata.packetType)
 							{
@@ -342,6 +342,18 @@ namespace kmMqtt
 								m_onPubRecSentCallback(metadata.packetId);
 								break;
 							case PacketType::PUBLISH:
+							case PacketType::AUTH:
+							case PacketType::CONNECT:
+							case PacketType::CONNECT_ACKNOWLEDGE:
+							case PacketType::PING_REQUQEST:
+							case PacketType::PING_RESPONSE:
+							case PacketType::RESERVED:
+							case PacketType::SUBSCRIBE:
+							case PacketType::SUBSCRIBE_ACKNOWLEDGE:
+							case PacketType::UNSUBSCRIBE:
+							case PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
+							case PacketType::PUBLISH_ACKNOWLEDGE:
+							case PacketType::_COUNT:
 								break;
 							case PacketType::DISCONNECT:
 								m_onDisconnectSentCallback();
@@ -374,7 +386,7 @@ namespace kmMqtt
 							}
 
 							//Notify other tracked packets as sent if their end byte index is within the sent data range.
-							for each(auto& metadata in m_packetsMetadataInBuffer)
+							for (auto& metadata : m_packetsMetadataInBuffer)
 							{
 								if (sendResult >= static_cast<int>(metadata.endByteInBuffer))
 								{
@@ -390,6 +402,18 @@ namespace kmMqtt
 										m_onPubRecSentCallback(metadata.packetId);
 										break;
 									case PacketType::PUBLISH:
+									case PacketType::AUTH:
+									case PacketType::CONNECT:
+									case PacketType::CONNECT_ACKNOWLEDGE:
+									case PacketType::PING_REQUQEST:
+									case PacketType::PING_RESPONSE:
+									case PacketType::RESERVED:
+									case PacketType::SUBSCRIBE:
+									case PacketType::SUBSCRIBE_ACKNOWLEDGE:
+									case PacketType::UNSUBSCRIBE:
+									case PacketType::UNSUBSCRIBE_ACKNOWLEDGE:
+									case PacketType::PUBLISH_ACKNOWLEDGE:
+									case PacketType::_COUNT:
 										break;
 									case PacketType::DISCONNECT:
 										m_onDisconnectSentCallback();

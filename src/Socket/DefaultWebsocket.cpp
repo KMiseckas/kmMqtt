@@ -113,7 +113,7 @@ namespace kmMqtt
 		}
 		catch (const std::exception& e)
 		{
-			LogError("DefaultWebsocket", ("Exception during connect: " + std::string(e.what())).c_str());
+			LogError("DefaultWebsocket", "Exception during connect: %s", e.what());
 #if defined(_WIN32) || defined(_WIN64)
 			ix::uninitNetSystem();
 #endif
@@ -148,14 +148,14 @@ namespace kmMqtt
 			}
 			else
 			{
-				LogError("DefaultWebsocket", std::string("Send failed: " + info.compressionError).c_str());
+				LogError("DefaultWebsocket", "Send failed");
 				m_lastError = -1;
 				return -1;
 			}
 		}
 		catch (const std::exception& e)
 		{
-			LogError("DefaultWebsocket", ("Exception during send: " + std::string(e.what())).c_str());
+			LogError("DefaultWebsocket", "Exception during send: %s", e.what());
 			return -1;
 		}
 		catch (...)
@@ -183,7 +183,7 @@ namespace kmMqtt
 		}
 		catch (const std::exception& e)
 		{
-			LogError("DefaultWebsocket", ("Exception during close: " + std::string(e.what())).c_str());
+			LogError("DefaultWebsocket", "Exception during close: %s", e.what());
 			return false;
 		}
 		catch (...)

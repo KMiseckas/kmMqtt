@@ -7,7 +7,7 @@
 #define INCLUDE_KMMQTT_MQTT_INTERFACES_SENDQUEUEJOBS_DISCONNECTCOMPOSER_H
 
 #include <kmMqtt/Mqtt/Transport/IPacketComposer.h>
-#include <kmMqtt/mqtt/Params/DisconnectArgs.h>
+#include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
 #include <utility>
 
 namespace kmMqtt

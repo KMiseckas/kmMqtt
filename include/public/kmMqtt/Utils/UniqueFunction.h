@@ -3,8 +3,8 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file in the project root for full license information.
 
-﻿#ifndef INCLUDE_CLEAMQTT_UTILS_UNIQUEFUNCTION_H
-#define INCLUDE_CLEAMQTT_UTILS_UNIQUEFUNCTION_H
+#ifndef INCLUDE_KMMQTT_UTILS_UNIQUEFUNCTION_H
+#define INCLUDE_KMMQTT_UTILS_UNIQUEFUNCTION_H
 
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Utils/TemplateUtils.h>
@@ -227,4 +227,4 @@ namespace kmMqtt
 	};
 }
 
-#endif //INCLUDE_CLEAMQTT_UTILS_UNIQUEFUNCTION_H
+#endif //INCLUDE_KMMQTT_UTILS_UNIQUEFUNCTION_H

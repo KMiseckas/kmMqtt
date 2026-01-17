@@ -91,8 +91,6 @@ namespace kmMqtt
 			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
 
 			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
-			std::uint32_t m_receiveMaximumClient{ RECEIVE_MAXIMUM_DEFAULT };
-			std::uint32_t m_receiveMaximumBroker{ RECEIVE_MAXIMUM_DEFAULT };
 
 			std::mutex m_mutex;
 			bool m_startGracefulClear{ false };

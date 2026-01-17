@@ -3,7 +3,7 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file in the project root for full license information.
 
-﻿#include <mqttClient/Views/PublishView.h>
+#include <mqttClient/Views/PublishView.h>
 #include <mqttClient/Model/PublishModel.h>
 #include <mqttClient/Text.h>
 #include <imgui.h>
