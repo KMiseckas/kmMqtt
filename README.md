@@ -1,6 +1,7 @@
 # kmMqtt
 
 A C++14 MQTT 5.0 client library designed for game development and cross-platform applications.
+kmMqtt started as a hobby project to deepen my understanding of MQTT 5.0 and to practice designing and implementing a clean, cross-platform C++ core SDK while learning modern build and tooling workflows.
 
 ## Table of Contents
 
