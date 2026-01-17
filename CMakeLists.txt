@@ -12,7 +12,7 @@ include(cmake/options.cmake)
 
 project (
     "kmMqtt" 
-    VERSION 0.0.1 
+    VERSION 1.0.0 
     LANGUAGES CXX)
 
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
