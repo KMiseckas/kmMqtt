@@ -16,7 +16,7 @@ A C++14 MQTT 5.0 client library designed for game development and cross-platform
 
 ## Overview
 
-kmMqtt provides an MQTT 5.0 client implementation developed by a game development engineer with game engines in mind, but works across any C++14 application. The library handles connection management, message publishing, topic subscriptions, and event-driven message handling with a focus on cross-platform compatibility.
+kmMqtt provides an MQTT 5.0 client implementation with game development and game engines in mind, but works across any C++14 application. The library handles connection management, message publishing, topic subscriptions, and event-driven message handling with a focus on cross-platform compatibility.
 
 ## Features
 
@@ -28,9 +28,11 @@ kmMqtt provides an MQTT 5.0 client implementation developed by a game developmen
 - **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
 - **Automatic reconnection handling** - Built-in reconnection logic
 - **Full QoS support** - QoS 0, 1, and 2 message delivery
-- **MQTT 5.0 features** - Topic aliases, user properties, and more
-- **Session state management** - In-memory session state tracking
-- **Performance optimizations** - Small buffer optimization for reduced heap allocations
+- **Session state management** - In-memory session state tracking*
+- **SBO** - Small buffer optimization for reduced heap allocations in critical paths.
+- **CMake** - Uses cmake for build file generation.
+
+*Disk saved session states currently not-included and WIP.
 
 ## Supported Platforms
 
@@ -40,7 +42,7 @@ The library targets C++14 and is designed for cross-platform use. Platform-speci
 - **Expected to work**: Android, macOS
 - **Extendable**: Any platform by implementing `IMqttEnvironment` and `IWebSocket` interfaces
 
-The included IXWebSocket-based implementation (`DefaultWebsocket`) works on Windows, Linux, and Android.
+Default IXWebSocket-based socket implementation (`DefaultWebsocket`) works on Windows & Linux (and should on Mac, iOS, and Android).
 
 ## Dependencies
 
@@ -54,27 +56,9 @@ The included IXWebSocket-based implementation (`DefaultWebsocket`) works on Wind
 - **OpenSSL**: Required when `BUILD_IXWEBSOCKET=ON` for WebSocket Secure (WSS) support
   - Automatically installed by vcpkg on Windows and Linux when using CMake with vcpkg integration
   - Manual installation: `libssl-dev` package on Linux, `brew install openssl` on macOS
+- **Doxygen**: Required when building documentation.
 
 ## Building
-
-### Basic build
-
-```bash
-cmake -B build
-cmake --build build
-```
-
-### Common build options
-
-```bash
-cmake -B build \
-  -DBUILD_SHARED_LIBS=OFF \
-  -DBUILD_UNIT_TESTS=ON \
-  -DBUILD_EXAMPLES=ON \
-  -DBUILD_IXWEBSOCKET=ON \
-  -DENABLE_BYTEBUFFER_SBO=ON
-cmake --build build
-```
 
 See [BUILDING.md](BUILDING.md) for detailed build instructions and configuration options.
 
@@ -83,19 +67,20 @@ See [BUILDING.md](BUILDING.md) for detailed build instructions and configuration
 ### Non-blocking connection and publish (recommended for game engines)
 
 ```cpp
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt::mqtt;
 
 // Create client with default environment
 MqttClient client;
 
 // Register connection callback (required for non-blocking)
-client.onConnectEvent().subscribe([&client](const ConnectEventDetails& details) {
+client.onConnectEvent().add([&client](const ConnectEventDetails& details) {
     if (details.isSuccessful) {
         // Connection successful, now we can publish
-        ByteBuffer payload(256);
-        payload.append("Hello MQTT");
+        std::string payloadStr{"Hello MQTT"};
+        ByteBuffer payload(payloadStr.length());
+        payload.append(payloadStr.data(), payloadStr.length());
         
         PublishOptions pubOpts;
         pubOpts.qos = Qos::QOS_1;
@@ -108,16 +93,16 @@ client.onConnectEvent().subscribe([&client](const ConnectEventDetails& details) 
 
 // Set up connection arguments
 ConnectArgs connectArgs;
-connectArgs.setClientId("my-client");
-connectArgs.setCleanStart(true);
+connectArgs.clientId = "my-client";
+connectArgs.cleanStart = true;
 
 // Create broker address
-Address brokerAddr = Address::createURL("mqtt", "broker.example.com", "1883", "");
-ConnectAddress address(brokerAddr);
+ConnectAddress address(Address::createURL("mqtt", "broker.example.com", "1883", ""));
 
 // Initiate connection (non-blocking)
 ReqResult result = client.connect(std::move(connectArgs), std::move(address));
-if (result.isError()) {
+if (result.isError())
+{
     // Handle immediate errors (e.g., invalid parameters)
 }
 // Connection result will arrive via onConnectEvent callback
@@ -126,12 +111,12 @@ if (result.isError()) {
 ### Blocking connection (for non-game environments)
 
 ```cpp
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include <atomic>
 #include <chrono>
 #include <thread>
 
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt::mqtt;
 
 // Create client
 MqttClient client;
@@ -149,13 +134,13 @@ client.onConnectEvent().subscribe([&](const ConnectEventDetails& details) {
     }
 });
 
-// Set up connection
+// Set up connection arguments
 ConnectArgs connectArgs;
-connectArgs.setClientId("my-client");
-connectArgs.setCleanStart(true);
+connectArgs.clientId = "my-client";
+connectArgs.cleanStart = true;
 
-Address brokerAddr = Address::createURL("mqtt", "broker.example.com", "1883", "");
-ConnectAddress address(brokerAddr);
+// Create broker address
+ConnectAddress address(Address::createURL("mqtt", "broker.example.com", "1883", ""));
 
 // Initiate connection
 ReqResult result = client.connect(std::move(connectArgs), std::move(address));
@@ -170,8 +155,9 @@ while (!connected && !connectionFailed) {
 
 if (connected) {
     // Now we can publish
-    ByteBuffer payload(256);
-    payload.append("Hello MQTT");
+    std::string payloadStr{"Hello MQTT"};
+    ByteBuffer payload(payloadStr.length());
+    payload.append(payloadStr.data(), payloadStr.length());
     
     PublishOptions pubOpts;
     pubOpts.qos = Qos::QOS_1;
@@ -184,7 +170,7 @@ if (connected) {
 
 ```cpp
 // Register callback for received messages
-client.onPublishEvent().subscribe([](const Publish& message) {
+client.onPublishEvent().add([](const Publish& message) {
     // Process received message
     const char* topic = message.getVariableHeader().getTopicName();
     const ByteBuffer& payload = message.getPayloadHeader().getPayload();
