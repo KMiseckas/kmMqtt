@@ -384,11 +384,12 @@ enum class Qos : std::uint8_t {
 
 ```cpp
 enum class MqttVersion : std::uint8_t {
+    MQTT_3_1_1 = 4U,
     MQTT_5_0 = 5U
 };
 ```
 
-Note: The enum also contains `MQTT_3_1_1 = 4U` for internal use, but only MQTT 5.0 is supported for connections.
+The library only supports connecting to MQTT 5.0 brokers. Use `MqttVersion::MQTT_5_0`.
 
 ### LocatorType
 
