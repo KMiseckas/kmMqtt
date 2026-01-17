@@ -1,5 +1,4 @@
 TODO:
-- Maybe IsDup for publish messages?
 - Remove need to create variable and payload headers on heap.
 
 SAMPLES
