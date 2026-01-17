@@ -219,7 +219,7 @@ while (running) {
 
 ## Documentation
 
-- **[API_REFERENCE.md](API_REFERENCE.md)** - Complete API reference with detailed interface documentation
+- **[API Documentation](docs/API/index.html)** - Complete API reference generated with Doxygen
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
 
 ## Notes
