@@ -201,7 +201,7 @@ ConnectArgs& setSessionExpiryInterval(std::uint32_t seconds);  // MQTT 5.0
 ConnectArgs& setReceiveMaximum(std::uint16_t max);             // MQTT 5.0
 ```
 
-Supports MQTT 3.1.1 and 5.0 features including will messages, authentication, and session properties.
+Supports MQTT 5.0 features including will messages, authentication, and session properties.
 
 ### ConnectAddress
 
@@ -251,7 +251,7 @@ std::unique_ptr<BinaryData> correlationData;
 std::map<std::string, std::string> userProperties;
 ```
 
-MQTT 5.0 properties (topic alias, correlation data, etc.) are ignored when using MQTT 3.1.1.
+All MQTT 5.0 properties are supported.
 
 ### SubscribeOptions / UnSubscribeOptions
 
@@ -384,10 +384,11 @@ enum class Qos : std::uint8_t {
 
 ```cpp
 enum class MqttVersion : std::uint8_t {
-    MQTT_3_1_1 = 4U,
     MQTT_5_0 = 5U
 };
 ```
+
+Note: The enum also contains `MQTT_3_1_1 = 4U` for internal use, but only MQTT 5.0 is supported for connections.
 
 ### LocatorType
 
