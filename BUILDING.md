@@ -8,10 +8,6 @@ This document describes how to build kmMqtt from source.
 - [Basic Build](#basic-build)
 - [CMake Options](#cmake-options)
 - [Platform-Specific Instructions](#platform-specific-instructions)
-- [Build Examples](#build-examples)
-- [Testing](#testing)
-- [Code Coverage](#code-coverage)
-- [Installing](#installing)
 - [Troubleshooting](#troubleshooting)
 - [Cross-Compilation](#cross-compilation)
 - [Integration with Other Build Systems](#integration-with-other-build-systems)
@@ -82,188 +78,84 @@ When `BUILD_IXWEBSOCKET=ON`, OpenSSL is required for secure WebSocket (WSS) conn
 
 ## Platform-Specific Instructions
 
+Project makes use of [CMakePresets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html) for various configurations for solutuion generation and building. Default ones are defined in `CMakePresets.json`.
+```powershell
+#Show all presets
+cmake --list-presets
+```
+
+Add your own cross-platform presets into a new local file named `CMakeUserPresets.json` with any options and toolchains required. See [CMakePresets Docs](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html).
+Use `CMakePresets.json` as an example for how to structure your local presets file.
+```powershell
+#Build using local presets same way as default presets
+cmake --preset <local-preset-name>
+cmake --build --preset <local-preset-name>
+```
+
 ### Windows
 
-#### Using vcpkg (Recommended)
+#### Set up OpenSSL
+If using IXWebsocket implementation for socket, download OpenSSL either through Vcpkg or manually.
+1. Clone from Vcpkg git repo.
+2. Run .bat inside vcpkg folder.
+3. Set ENV variable `VCPKG_ROOT` to vcpkg folder.
 
 ```powershell
 # Set up vcpkg
 git clone https://github.com/microsoft/vcpkg.git
 .\vcpkg\bootstrap-vcpkg.bat
 $env:VCPKG_ROOT = "path\to\vcpkg"
-
-# vcpkg will automatically install OpenSSL when building with BUILD_IXWEBSOCKET=ON
-cmake -B build
-cmake --build build
 ```
 
-#### Manual OpenSSL Installation
-
+OpenSSL can be defined manually by setting the `CMAKE_PREFIX_PATH` to the openssl folder. Ideal for custom or closed-source toolchains.
 ```powershell
 # Point CMake to OpenSSL installation
-cmake -B build -DCMAKE_PREFIX_PATH="C:\path\to\openssl"
-cmake --build build
+cmake --preset <configure-preset-name> -DCMAKE_PREFIX_PATH="C:\path\to\openssl"
 ```
 
-#### Visual Studio
+#### Building MQTT Lib
 
 ```powershell
-cmake -B build -G "Visual Studio 17 2022" -A x64
-cmake --build build --config Release
+cmake --preset <configure-preset-name> #Optionally: -DCMAKE_PREFIX_PATH="C:\path\to\openssl"
+cmake --build --preset <build-preset-name>
 ```
+Or using open VS IDE to generate solutions from selected configurations based on `CMakePresets.json` file.
 
 ### Linux
 
 #### Ubuntu/Debian
 
+#### OpenSSL
+
 ```bash
 # Install dependencies
 sudo apt-get update
 sudo apt-get install build-essential cmake libssl-dev
-
-# Build
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)
 ```
 
-#### RHEL/CentOS/Fedora
+#### Mqtt Lib
 
 ```bash
-# Install dependencies
-sudo yum install gcc-c++ cmake openssl-devel
-
 # Build
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j$(nproc)
+cmake --preset <configure-preset-name> #Optionally: -DCMAKE_PREFIX_PATH="C:\path\to\openssl"
+cmake --build --preset <build-preset-name>
 ```
 
 ### macOS
 
+#### OpenSSL
+
 ```bash
 # Install dependencies
 brew install cmake openssl
+```
 
+#### Mqtt Lib
+
+```bash
 # Build with OpenSSL from Homebrew
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_PREFIX_PATH="$(brew --prefix openssl)"
-cmake --build build -j$(sysctl -n hw.ncpu)
-```
-
-## Build Examples
-
-### Release Build
-
-```bash
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DBUILD_SHARED_LIBS=OFF
-cmake --build build --config Release
-```
-
-### Development Build with Tests
-
-```bash
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DBUILD_UNIT_TESTS=ON \
-  -DBUILD_EXAMPLES=ON \
-  -DENABLE_ASAN=ON \
-  -DENABLE_UBSAN=ON
-cmake --build build
-```
-
-### Minimal Build (No WebSocket, No Tests)
-
-```bash
-cmake -B build \
-  -DBUILD_UNIT_TESTS=OFF \
-  -DBUILD_EXAMPLES=OFF \
-  -DBUILD_BENCHMARKING=OFF \
-  -DBUILD_IXWEBSOCKET=OFF
-cmake --build build
-```
-
-### Optimized for Size
-
-```bash
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=MinSizeRel \
-  -DENABLE_BYTEBUFFER_SBO=OFF \
-  -DENABLE_UNIQUEFUNCTION_SBO=OFF \
-  -DENABLE_LOGS=OFF \
-  -DBUILD_SHARED_LIBS=ON
-cmake --build build
-```
-
-## Testing
-
-### Run Specific Test
-
-```bash
-cd build
-./cleanMqttTests
-```
-
-## Code Coverage
-
-Coverage is supported on GCC and Clang.
-
-### GCC (lcov)
-
-```bash
-# Install lcov
-sudo apt-get install lcov
-
-# Build with coverage
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DBUILD_COVERAGE=ON \
-  -DBUILD_UNIT_TESTS=ON
-cmake --build build
-
-# Run tests manually
-cd build
-./cleanMqttTests
-
-# Generate report
-cmake --build . --target coverage_report
-
-# View report
-xdg-open coverage/index.html
-```
-
-### Clang (llvm-cov)
-
-```bash
-# Build with coverage
-cmake -B build \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_CXX_COMPILER=clang++ \
-  -DBUILD_COVERAGE=ON \
-  -DBUILD_UNIT_TESTS=ON
-cmake --build build
-
-# Run tests and generate report
-cd build
-cmake --build . --target coverage_report
-
-# View report
-open coverage/index.html
-```
-
-## Installing
-
-After building, install the library:
-
-```bash
-cmake --install build --prefix /usr/local
-```
-
-Or with custom prefix:
-
-```bash
-cmake --install build --prefix /path/to/install
+cmake --preset <configure-preset-name> #Optionally: -DCMAKE_PREFIX_PATH="C:\path\to\openssl"
+cmake --build --preset <build-preset-name>
 ```
 
 ## Troubleshooting
@@ -296,34 +188,23 @@ Use only one sanitizer at a time.
 
 ## Cross-Compilation
 
-Provide a toolchain file to CMake:
+To cross compile build the project either directly from command line or (recommended) create a `CMakeUserPresets.json` file for your custom preset for target platform. See [CMakePresets Docs](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html).
 
+For direct command line build, provide a toolchain file to CMake:
 ```bash
 cmake -B build \
   -DCMAKE_TOOLCHAIN_FILE=/path/to/toolchain.cmake \
-  -DBUILD_IXWEBSOCKET=OFF
+  -DBUILD_IXWEBSOCKET=OFF #Use custom sockets for closed source OS platforms.
 cmake --build build
 ```
 
-For console platforms, provide OpenSSL via your toolchain file by setting `OPENSSL_ROOT_DIR`.
-
 ## Integration with Other Build Systems
-
-### vcpkg
-
-Add to `vcpkg.json`:
-
-```json
-{
-  "dependencies": [
-    "kmmqtt"
-  ]
-}
-```
 
 ### CMake FetchContent
 
 ```cmake
+#Set any kmMQtt options or cache variables here before fetching library. These will be inherited by kmMqtt.
+
 include(FetchContent)
 FetchContent_Declare(
   kmmqtt
@@ -332,23 +213,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(kmmqtt)
 
-target_link_libraries(your_target PRIVATE cleanMqtt)
-```
-
-### CMake find_package
-
-After installing:
-
-```cmake
-find_package(cleanMqtt REQUIRED)
-target_link_libraries(your_target PRIVATE cleanMqtt)
+target_link_libraries(your_target PRIVATE kmMqtt)
 ```
 
 ## Build Artifacts
 
 After a successful build, find:
 
-- **Library**: `build/libcleanMqtt.a` (or `.lib`, `.so`, `.dll` depending on options)
-- **Tests**: `build/tests/cleanMqttTests`
+- **Library**: `build/libkmMqtt.a` (or `.lib`, `.so`, `.dll` depending on options)
+- **Tests**: `build/tests/kmMqttTests`
 - **Examples**: `build/examples/mqttClient/mqttClient`
-- **Headers**: Already in source tree under `include/public/cleanMqtt/`
+- **Headers**: Already in source tree under `include/public/kmMqtt/`
