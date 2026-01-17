@@ -144,7 +144,7 @@ TEST_SUITE("PacketHelper Tests")
 		options.qos = Qos::QOS_0;
 		options.retain = false;
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().topicName.getString() == "test/topic");
 		CHECK(packet.getVariableHeader().qos == Qos::QOS_0);
@@ -159,7 +159,7 @@ TEST_SUITE("PacketHelper Tests")
 		options.qos = Qos::QOS_1;
 		options.retain = true;
 
-		Publish packet = createPublishPacket(connectionInfo, "sensor/data", payload, options, 42);
+		Publish packet = createPublishPacket(connectionInfo, false, "sensor/data", payload, options, 42);
 
 		CHECK(packet.getVariableHeader().topicName.getString() == "sensor/data");
 		CHECK(packet.getVariableHeader().qos == Qos::QOS_1);
@@ -174,7 +174,7 @@ TEST_SUITE("PacketHelper Tests")
 		PublishOptions options;
 		options.topicAlias = 5;
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}
@@ -188,7 +188,7 @@ TEST_SUITE("PacketHelper Tests")
 		std::uint8_t corrData[] = {0xAA, 0xBB};
 		options.correlationData = std::make_unique<BinaryData>(2, corrData);
 
-		Publish packet = createPublishPacket(connectionInfo, "request/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "request/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}
@@ -200,7 +200,7 @@ TEST_SUITE("PacketHelper Tests")
 		PublishOptions options;
 		options.userProperties["custom"] = "value";
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}
@@ -213,7 +213,7 @@ TEST_SUITE("PacketHelper Tests")
 		options.messageExpiryInterval = 300;
 		options.addMessageExpiryInterval = true;
 
-		Publish packet = createPublishPacket(connectionInfo, "test/topic", payload, options, 0);
+		Publish packet = createPublishPacket(connectionInfo, false, "test/topic", payload, options, 0);
 
 		CHECK(packet.getVariableHeader().properties.count() != 0);
 	}

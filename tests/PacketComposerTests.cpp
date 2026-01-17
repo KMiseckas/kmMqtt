@@ -121,7 +121,7 @@ TEST_SUITE("PacketComposer Tests")
 		options.qos = Qos::QOS_1;
 		ReceiveMaximumTracker tracker{ 65535 , 65535};
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker, false);
 		ComposeResult result = composer.compose();
 
 		CHECK(result.encodeResult.isSuccess());
@@ -138,7 +138,7 @@ TEST_SUITE("PacketComposer Tests")
 		options.qos = Qos::QOS_0;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, 0, "sensor/data", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, 0, "sensor/data", std::move(payload), std::move(options), &tracker, false);
 		ComposeResult result = composer.compose();
 
 		CHECK(result.encodeResult.isSuccess());
@@ -156,7 +156,7 @@ TEST_SUITE("PacketComposer Tests")
 
 		CHECK(packetId == 1);
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "test/topic", std::move(payload), std::move(options), &tracker, false);
 		composer.cancel();
 
 		std::uint16_t reusedId = packetIdPool.getId();
@@ -174,7 +174,7 @@ TEST_SUITE("PacketComposer Tests")
 		options.retain = true;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
 
-		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "status/topic", std::move(payload), std::move(options), &tracker);
+		PublishComposer composer(&connectionInfo, &packetIdPool, packetId, "status/topic", std::move(payload), std::move(options), &tracker, false);
 		ComposeResult result = composer.compose();
 
 		CHECK(result.encodeResult.isSuccess());
@@ -336,7 +336,7 @@ TEST_SUITE("PacketComposer Tests")
 		PublishOptions pubOptions;
 		pubOptions.qos = Qos::QOS_1;
 		ReceiveMaximumTracker tracker{ 65535 , 65535 };
-		PublishComposer publishComposer(&connectionInfo, &packetIdPool, pubId, "test/topic", std::move(payload), std::move(pubOptions), &tracker);
+		PublishComposer publishComposer(&connectionInfo, &packetIdPool, pubId, "test/topic", std::move(payload), std::move(pubOptions), &tracker, false);
 		ComposeResult publishResult = publishComposer.compose();
 
 		CHECK(connectResult.encodeResult.isSuccess());

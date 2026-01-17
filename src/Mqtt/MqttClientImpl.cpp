@@ -173,7 +173,8 @@ namespace cleanMqtt
 				topic,
 				std::move(payload),
 				std::move(options),
-				&m_receiveMaximumTracker));
+				&m_receiveMaximumTracker,
+				false));
 
 			LogInfo("MqttClient", "Queued publish message for sending, Topic: %s, Packet ID: %d, QOS: %d", topic, packetId, static_cast<std::uint8_t>(options.qos));
 
@@ -1340,7 +1341,7 @@ namespace cleanMqtt
 
 		void MqttClientImpl::tickPendingPublishMessageRetries()
 		{
-			const auto& msgs = m_connectionInfo.sessionState.messages();
+			const auto& msgs{ m_connectionInfo.sessionState.messages() };
 
 			for(const auto& msg : msgs)
 			{
@@ -1365,7 +1366,8 @@ namespace cleanMqtt
 							msg.data.publishMsgData.topic,
 							std::move(payloadCopy),
 							std::move(options),
-							&m_receiveMaximumTracker));
+							&m_receiveMaximumTracker,
+							true));
 					}
 					else if (type == PacketType::PUBLISH_RECEIVED)
 					{
@@ -1378,7 +1380,7 @@ namespace cleanMqtt
 				}
 				else
 				{
-					break; //Messages are sorted in a way that next retry time will be higher anyway, so if we hit one that is not ready to be retried, we can stop checking the rest.
+					break; //Messages are sorted in a way that the next retry time in message list will be larger, so if we hit one that is not ready to be retried, we can stop checking the rest.
 				}
 			}
 		}

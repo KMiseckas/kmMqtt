@@ -19,7 +19,8 @@ namespace cleanMqtt
 				std::string topic,
 				ByteBuffer&& payload,
 				PublishOptions&& pubOptions,
-				ReceiveMaximumTracker* recMaxTracker) noexcept;
+				ReceiveMaximumTracker* recMaxTracker,
+				bool isDup) noexcept;
 
 			bool canSend() const noexcept override;
 			ComposeResult compose() noexcept override;
@@ -33,6 +34,7 @@ namespace cleanMqtt
 			ByteBuffer m_payload;
 			PublishOptions m_publishOptions;
 			ReceiveMaximumTracker* m_recMaxTracker;
+			bool m_isDup{ false };
 		};
 	}
 }

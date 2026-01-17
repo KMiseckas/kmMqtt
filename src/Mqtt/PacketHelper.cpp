@@ -114,7 +114,7 @@ namespace cleanMqtt
 			return PingResp{};
 		}
 
-		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, const char* topic, const ByteBuffer& payload, const PublishOptions& options, std::uint16_t packetId) noexcept
+		Publish createPublishPacket(const MqttConnectionInfo& connectionInfo, bool isDup, const char* topic, const ByteBuffer& payload, const PublishOptions& options, std::uint16_t packetId) noexcept
 		{
 			(void)connectionInfo;
 
@@ -144,7 +144,7 @@ namespace cleanMqtt
 
 			payloadHeader.payload = payload;
 
-			EncodedPublishFlags flags{ false, options.qos, options.retain };
+			EncodedPublishFlags flags{ isDup, options.qos, options.retain };
 
 			return Publish{ std::move(payloadHeader), std::move(varHeader), flags };
 		}

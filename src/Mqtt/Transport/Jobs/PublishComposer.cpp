@@ -11,14 +11,16 @@ namespace cleanMqtt
 			std::string topic,
 			ByteBuffer&& payload,
 			PublishOptions&& pubOptions,
-			ReceiveMaximumTracker* recMaxTracker) noexcept :
+			ReceiveMaximumTracker* recMaxTracker,
+			bool isDup) noexcept :
 			IPacketComposer(connectionInfo),
 			m_packetIdPool{ packetIdPool },
 			m_packetId{ packetId },
 			m_topic{ std::move(topic) },
 			m_payload{ std::move(payload) },
 			m_publishOptions{ std::move(pubOptions) },
-			m_recMaxTracker{ recMaxTracker }
+			m_recMaxTracker{ recMaxTracker },
+			m_isDup{ isDup }
 		{
 		}
 
@@ -34,7 +36,7 @@ namespace cleanMqtt
 
 		ComposeResult PublishComposer::compose() noexcept
 		{
-			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_topic.c_str(), m_payload, m_publishOptions, m_packetId)};
+			Publish packet{ createPublishPacket(*m_mqttConnectionInfo, m_isDup, m_topic.c_str(), m_payload, m_publishOptions, m_packetId)};
 			EncodeResult result{ packet.encode() };
 			result.packetId = m_packetId;
 
