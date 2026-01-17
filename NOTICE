@@ -1,0 +1,5 @@
+This product includes code from kmMqtt (https://github.com/KMiseckas/kmMqtt)
+Copyright (c) 2026 Klaudijus Miseckas
+
+Includes third-party code:
+- IXWebSocket (BSD-3-Clause)
