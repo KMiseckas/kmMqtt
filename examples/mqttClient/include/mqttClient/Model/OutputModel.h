@@ -2,8 +2,8 @@
 #define MQTTCLIENT_MODEL_OUTPUTMODEL_H
 
 #include "mqttClient/Model/ViewModel.h"
-#include <cleanMqtt/MqttClient.h>
-#include <cleanMqtt/Interfaces/ILogger.h>
+#include <kmMqtt/MqttClient.h>
+#include <kmMqtt/Interfaces/ILogger.h>
 
 #include <string>
 #include <vector>
@@ -12,7 +12,7 @@
 
 struct OutputMsgMetadata
 {
-	cleanMqtt::LogLevel logLevel;
+	kmMqtt::LogLevel logLevel;
 	std::string logEntry{ "" };
 };
 
@@ -22,8 +22,8 @@ public:
 	OutputModel() noexcept;
 	~OutputModel() override;
 
-	void setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept;
-	void AddOutput(cleanMqtt::LogLevel logLevel, const std::string category, const std::string msg);
+	void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
+	void AddOutput(kmMqtt::LogLevel logLevel, const std::string category, const std::string msg);
 	const OutputMsgMetadata* const GetAllLogs() const noexcept;
 	void clearLogs() noexcept;
 	
@@ -49,7 +49,7 @@ private:
 	std::mutex m_logMutex;
 	bool m_fileLoggingEnabled = false;
 
-	cleanMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
+	kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
 };
 
 

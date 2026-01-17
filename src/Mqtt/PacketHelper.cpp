@@ -1,16 +1,16 @@
-#include <cleanMqtt/Mqtt/PacketHelper.h>
+#include <kmMqtt/Mqtt/PacketHelper.h>
 
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubAckOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubCompOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubRecOptions.h>
-#include <cleanMqtt/Mqtt/Params/PubRelOptions.h>
-#include <cleanMqtt/Mqtt/Params/DisconnectArgs.h>
-#include <cleanMqtt/Mqtt/Params/SubscribeOptions.h>
-#include <cleanMqtt/Mqtt/Params/UnSubscribeOptions.h>
-#include <cleanMqtt/Mqtt/MqttConnectionInfo.h>
+#include <kmMqtt/Mqtt/Params/PublishOptions.h>
+#include <kmMqtt/Mqtt/Params/PubAckOptions.h>
+#include <kmMqtt/Mqtt/Params/PubCompOptions.h>
+#include <kmMqtt/Mqtt/Params/PubRecOptions.h>
+#include <kmMqtt/Mqtt/Params/PubRelOptions.h>
+#include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
+#include <kmMqtt/Mqtt/Params/SubscribeOptions.h>
+#include <kmMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <kmMqtt/Mqtt/MqttConnectionInfo.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

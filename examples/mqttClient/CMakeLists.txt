@@ -10,4 +10,4 @@ target_include_directories(${PROJECT_NAME} PRIVATE include)
 target_link_libraries(${PROJECT_NAME} PRIVATE examples_shared_lib)
 
 #Sanitizer link options added.
-target_link_options(${PROJECT_NAME} PRIVATE ${CLEANMQTT_SANITIZER_FLAGS})
+target_link_options(${PROJECT_NAME} PRIVATE ${KMMQTT_SANITIZER_FLAGS})

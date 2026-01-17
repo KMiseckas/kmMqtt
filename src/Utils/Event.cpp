@@ -1,6 +1,6 @@
-#include <cleanMqtt/Utils/Event.h>
+#include <kmMqtt/Utils/Event.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace events
 	{

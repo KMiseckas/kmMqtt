@@ -1,8 +1,8 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/ReqResult.h>
-#include <cleanMqtt/Mqtt/ClientError.h>
+#include <kmMqtt/Mqtt/ReqResult.h>
+#include <kmMqtt/Mqtt/ClientError.h>
 
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt::mqtt;
 
 TEST_SUITE("ReqResult Tests")
 {

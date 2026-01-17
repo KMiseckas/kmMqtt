@@ -1,10 +1,10 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Packets/Connection/Connect.h>
-#include <cleanMqtt/Mqtt/Packets/FixedHeader.h>
+#include <kmMqtt/Mqtt/Packets/Connection/Connect.h>
+#include <kmMqtt/Mqtt/Packets/FixedHeader.h>
 
 TEST_SUITE("Connect Packet Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	TEST_CASE("Packet")
 	{

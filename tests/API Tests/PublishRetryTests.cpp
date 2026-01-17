@@ -1,13 +1,13 @@
 #include "Helpers.h"
 #include "MockWebSocket.h"
 #include <chrono>
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include <doctest.h>
 #include <string>
 #include <thread>
 
-using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt;
+using namespace kmMqtt::mqtt;
 
 TEST_SUITE("MqttClient Publish Retry and Session State")
 {

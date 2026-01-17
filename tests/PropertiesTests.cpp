@@ -1,14 +1,14 @@
 #include <doctest.h>
-#include <cleanMqtt/ByteBuffer.h>
-#include <cleanMqtt/Mqtt/Packets/DataTypes.h>
-#include <cleanMqtt/Mqtt/Packets/PropertyType.h>
-#include <cleanMqtt/Mqtt/Packets/Properties.h>
-#include <cleanMqtt/GlobalMacros.h>
+#include <kmMqtt/ByteBuffer.h>
+#include <kmMqtt/Mqtt/Packets/DataTypes.h>
+#include <kmMqtt/Mqtt/Packets/PropertyType.h>
+#include <kmMqtt/Mqtt/Packets/Properties.h>
+#include <kmMqtt/GlobalMacros.h>
 #include <cstring>
 
 TEST_SUITE("Properties Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	TEST_CASE("Adding/Getting property")
 	{
@@ -109,7 +109,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - UInt8")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode PAYLOAD_FORMAT_INDICATOR")
 		{
@@ -154,7 +154,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - UInt16")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode SERVER_KEEP_ALIVE")
 		{
@@ -192,7 +192,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - UInt32")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode MESSAGE_EXPIRY_INTERVAL")
 		{
@@ -232,7 +232,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - UTF8String")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode CONTENT_TYPE")
 		{
@@ -264,7 +264,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - BinaryData")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode CORRELATION_DATA")
 		{
@@ -289,7 +289,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - UTF8StringPair")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode USER_PROPERTY")
 		{
@@ -303,7 +303,7 @@ TEST_SUITE("Properties Tests")
 
 	TEST_CASE("Property Encoders - VariableByteInteger")
 	{
-		cleanMqtt::ByteBuffer buffer(100);
+		kmMqtt::ByteBuffer buffer(100);
 
 		SUBCASE("Encode SUBSCRIPTION_IDENTIFIER - small value")
 		{
@@ -332,7 +332,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode PAYLOAD_FORMAT_INDICATOR")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer += static_cast<std::uint8_t>(1);
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::PAYLOAD_FORMAT_INDICATOR);
@@ -346,7 +346,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode REQUEST_PROBLEM_INFORMATION")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer += static_cast<std::uint8_t>(0);
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::REQUEST_PROBLEM_INFORMATION);
@@ -360,7 +360,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode WILDCARD_SUBSCRIPTION_AVAILABLE")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer += static_cast<std::uint8_t>(1);
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::WILDCARD_SUBSCRIPTION_AVAILABLE);
@@ -377,7 +377,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode SERVER_KEEP_ALIVE")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer.append(static_cast<std::uint16_t>(60));
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::SERVER_KEEP_ALIVE);
@@ -391,7 +391,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode RECEIVE_MAXIMUM")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer.append(static_cast<std::uint16_t>(0x1234));
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::RECEIVE_MAXIMUM);
@@ -405,7 +405,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode TOPIC_ALIAS_MAXIMUM")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer.append(static_cast<std::uint16_t>(100));
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::TOPIC_ALIAS_MAXIMUM);
@@ -422,7 +422,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode MESSAGE_EXPIRY_INTERVAL")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer.append(static_cast<std::uint32_t>(3600));
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::MESSAGE_EXPIRY_INTERVAL);
@@ -436,7 +436,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode SESSION_EXPIRY_INTERVAL")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer.append(static_cast<std::uint32_t>(0x12345678));
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::SESSION_EXPIRY_INTERVAL);
@@ -450,7 +450,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode MAXIMUM_PACKET_SIZE")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			buffer.append(static_cast<std::uint32_t>(268435455));
 			
 			void* result = propertyDecodings::decode(buffer, PropertyType::MAXIMUM_PACKET_SIZE);
@@ -467,7 +467,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode CONTENT_TYPE")
 		{
-			cleanMqtt::ByteBuffer buffer(20);
+			kmMqtt::ByteBuffer buffer(20);
 			UTF8String original("json");
 			original.encode(buffer);
 			
@@ -482,7 +482,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode RESPONSE_TOPIC")
 		{
-			cleanMqtt::ByteBuffer buffer(30);
+			kmMqtt::ByteBuffer buffer(30);
 			UTF8String original("test/topic");
 			original.encode(buffer);
 			
@@ -497,7 +497,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode ASSIGNED_CLIENT_IDENTIFIER")
 		{
-			cleanMqtt::ByteBuffer buffer(30);
+			kmMqtt::ByteBuffer buffer(30);
 			UTF8String original("client123");
 			original.encode(buffer);
 			
@@ -512,7 +512,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode REASON_STRING")
 		{
-			cleanMqtt::ByteBuffer buffer(50);
+			kmMqtt::ByteBuffer buffer(50);
 			UTF8String original("Connection refused");
 			original.encode(buffer);
 			
@@ -530,7 +530,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode CORRELATION_DATA")
 		{
-			cleanMqtt::ByteBuffer buffer(20);
+			kmMqtt::ByteBuffer buffer(20);
 			const std::uint8_t data[] = {0xDE, 0xAD, 0xBE, 0xEF};
 			BinaryData original(4, data);
 			original.encode(buffer);
@@ -550,7 +550,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode AUTHENTICATION_DATA")
 		{
-			cleanMqtt::ByteBuffer buffer(20);
+			kmMqtt::ByteBuffer buffer(20);
 			const std::uint8_t data[] = {0x01, 0x02, 0x03};
 			BinaryData original(3, data);
 			original.encode(buffer);
@@ -569,7 +569,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode USER_PROPERTY")
 		{
-			cleanMqtt::ByteBuffer buffer(50);
+			kmMqtt::ByteBuffer buffer(50);
 			UTF8StringPair original("key", "value");
 			original.encode(buffer);
 			
@@ -588,7 +588,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Decode SUBSCRIPTION_IDENTIFIER - small value")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			bool success;
 			VariableByteInteger original = VariableByteInteger::tryCreateFromValue(127, &success);
 			CHECK(success);
@@ -605,7 +605,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Decode SUBSCRIPTION_IDENTIFIER - large value")
 		{
-			cleanMqtt::ByteBuffer buffer(10);
+			kmMqtt::ByteBuffer buffer(10);
 			bool success;
 			VariableByteInteger original = VariableByteInteger::tryCreateFromValue(16383, &success);
 			CHECK(success);
@@ -625,7 +625,7 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Round trip UInt8 properties")
 		{
-			cleanMqtt::ByteBuffer buffer(100);
+			kmMqtt::ByteBuffer buffer(100);
 			std::uint8_t originalValue = 42;
 			
 			propertyEncodings::encode(buffer, PropertyType::MAXIMUM_QOS, &originalValue);
@@ -641,7 +641,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Round trip UInt16 properties")
 		{
-			cleanMqtt::ByteBuffer buffer(100);
+			kmMqtt::ByteBuffer buffer(100);
 			std::uint16_t originalValue = 0xABCD;
 			
 			propertyEncodings::encode(buffer, PropertyType::TOPIC_ALIAS, &originalValue);
@@ -657,7 +657,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Round trip UInt32 properties")
 		{
-			cleanMqtt::ByteBuffer buffer(100);
+			kmMqtt::ByteBuffer buffer(100);
 			std::uint32_t originalValue = 0x12345678;
 			
 			propertyEncodings::encode(buffer, PropertyType::WILL_DELAY_INTERVAL, &originalValue);
@@ -673,7 +673,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Round trip UTF8String properties")
 		{
-			cleanMqtt::ByteBuffer buffer(100);
+			kmMqtt::ByteBuffer buffer(100);
 			UTF8String originalValue("test_string");
 			
 			propertyEncodings::encode(buffer, PropertyType::AUTHENTICATION_METHOD, &originalValue);
@@ -689,7 +689,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Round trip BinaryData properties")
 		{
-			cleanMqtt::ByteBuffer buffer(100);
+			kmMqtt::ByteBuffer buffer(100);
 			const std::uint8_t data[] = {0x11, 0x22, 0x33, 0x44};
 			BinaryData originalValue(4, data);
 			
@@ -707,7 +707,7 @@ TEST_SUITE("Properties Tests")
 
 		SUBCASE("Round trip UTF8StringPair properties")
 		{
-			cleanMqtt::ByteBuffer buffer(100);
+			kmMqtt::ByteBuffer buffer(100);
 			UTF8StringPair originalValue("mykey", "myvalue");
 			
 			propertyEncodings::encode(buffer, PropertyType::USER_PROPERTY, &originalValue);

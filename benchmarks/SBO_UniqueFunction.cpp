@@ -1,9 +1,9 @@
 #include <benchmark/benchmark.h>
 #include "Functor.h"
-#include <cleanMqtt/Utils/UniqueFunction.h>
+#include <kmMqtt/Utils/UniqueFunction.h>
 #include <queue>
 
-using namespace cleanMqtt;
+using namespace kmMqtt;
 
 static constexpr std::size_t testOne{ 1 };
 static constexpr std::size_t testTwo{ 24 };

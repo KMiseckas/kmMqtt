@@ -1,12 +1,12 @@
 #include <benchmark/benchmark.h>
-#include <cleanMqtt/Mqtt/Packets/Properties.h>
-#include <cleanMqtt/Mqtt/Packets/PropertyType.h>
-#include <cleanMqtt/ByteBuffer.h>
+#include <kmMqtt/Mqtt/Packets/Properties.h>
+#include <kmMqtt/Mqtt/Packets/PropertyType.h>
+#include <kmMqtt/ByteBuffer.h>
 #include <vector>
 #include <memory>
 
-using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt;
+using namespace kmMqtt::mqtt;
 
 static void BM_EncodeProperties_WithSmallData(benchmark::State& state)
 {

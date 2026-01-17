@@ -1,6 +1,6 @@
-#include "cleanMqtt/Dispatchers/ImmediateDispatcher.h"
+#include "kmMqtt/Dispatchers/ImmediateDispatcher.h"
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	void ImmediateDispatcher::dispatch(UniqueFunction callback) noexcept
 	{

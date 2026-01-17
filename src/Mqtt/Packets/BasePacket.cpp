@@ -1,8 +1,8 @@
-#include <cleanMqtt/Mqtt/Packets/BasePacket.h>
-#include <cleanMqtt/Interfaces/ILogger.h>
+#include <kmMqtt/Mqtt/Packets/BasePacket.h>
+#include <kmMqtt/Interfaces/ILogger.h>
 #include <stdexcept>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

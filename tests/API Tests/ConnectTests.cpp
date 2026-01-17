@@ -1,13 +1,13 @@
 #include <doctest.h>
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include <memory>
 #include <string>
 #include "MockWebSocket.h"
 #include "Helpers.h"
-#include <cleanMqtt/Mqtt/Transport/SendResultData.h>
+#include <kmMqtt/Mqtt/Transport/SendResultData.h>
 
-using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt;
+using namespace kmMqtt::mqtt;
 
 TEST_SUITE("MqttClient Connect")
 {
@@ -302,10 +302,10 @@ TEST_SUITE("MqttClient Connect")
         auto args = TestClientContext::getDefaultConnectArgs();
         args.keepAliveInSec = 120;
         args.cleanStart = false;
-        args.version = cleanMqtt::mqtt::MqttVersion::MQTT_3_1_1;
+        args.version = kmMqtt::mqtt::MqttVersion::MQTT_3_1_1;
         args.protocolName = "MQTT";
         args.clientId = "CustomClientId";
-        testContext.tryConnect(cleanMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
+        testContext.tryConnect(kmMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
         CHECK(testContext.socketPtr->connectCalled);
     }
 
@@ -315,7 +315,7 @@ TEST_SUITE("MqttClient Connect")
         auto args = TestClientContext::getDefaultConnectArgs();
         args.username = "user";
         args.password = "pass";
-        testContext.tryConnect(cleanMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
+        testContext.tryConnect(kmMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
         CHECK(testContext.socketPtr->connectCalled);
     }
 
@@ -323,12 +323,12 @@ TEST_SUITE("MqttClient Connect")
     {
         TestClientContext testContext;
         auto args = TestClientContext::getDefaultConnectArgs();
-        args.will = std::make_unique<cleanMqtt::mqtt::Will>("will/topic");
+        args.will = std::make_unique<kmMqtt::mqtt::Will>("will/topic");
         static constexpr uint8_t data[] = { 1,2,3 };
-        args.will->payload = std::make_unique<cleanMqtt::mqtt::BinaryData>(sizeof(data), data);
-        args.will->willQos = cleanMqtt::mqtt::Qos::QOS_1;
+        args.will->payload = std::make_unique<kmMqtt::mqtt::BinaryData>(sizeof(data), data);
+        args.will->willQos = kmMqtt::mqtt::Qos::QOS_1;
         args.will->retainWillMessage = true;
-        testContext.tryConnect(cleanMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
+        testContext.tryConnect(kmMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
         CHECK(testContext.socketPtr->connectCalled);
     }
 
@@ -338,7 +338,7 @@ TEST_SUITE("MqttClient Connect")
         auto args = TestClientContext::getDefaultConnectArgs();
         args.userProperties["key1"] = "value1";
         args.userProperties["key2"] = "value2";
-        testContext.tryConnect(cleanMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
+        testContext.tryConnect(kmMqtt::mqtt::ClientErrorCode::No_Error, std::move(args));
         CHECK(testContext.socketPtr->connectCalled);
     }
 

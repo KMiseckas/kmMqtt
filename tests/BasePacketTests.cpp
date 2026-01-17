@@ -1,25 +1,25 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Packets/BasePacket.h>
+#include <kmMqtt/Mqtt/Packets/BasePacket.h>
 
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt::mqtt;
 
-struct MockEncodeHeader : public cleanMqtt::IEncodeHeader {
+struct MockEncodeHeader : public kmMqtt::IEncodeHeader {
     mutable int encodeCalled = 0;
     mutable int sizeCalled = 0;
-    void encode(cleanMqtt::ByteBuffer&) const override { ++encodeCalled; }
+    void encode(kmMqtt::ByteBuffer&) const override { ++encodeCalled; }
     std::size_t getEncodedBytesSize() const noexcept override { ++sizeCalled; return 1; }
 };
 
-struct MockDecodeHeader : public cleanMqtt::IDecodeHeader {
+struct MockDecodeHeader : public kmMqtt::IDecodeHeader {
     mutable int decodeCalled = 0;
-    cleanMqtt::mqtt::DecodeResult decode(const cleanMqtt::ByteBuffer&) override { ++decodeCalled; return {}; }
+    kmMqtt::mqtt::DecodeResult decode(const kmMqtt::ByteBuffer&) override { ++decodeCalled; return {}; }
 };
 
 class TestPacket : public BasePacket 
 {
 public:
     TestPacket(const FixedHeaderFlags& flags) : BasePacket(flags) {}
-    TestPacket(cleanMqtt::ByteBuffer&& buffer) : BasePacket(std::move(buffer)) {}
+    TestPacket(kmMqtt::ByteBuffer&& buffer) : BasePacket(std::move(buffer)) {}
     PacketType getPacketType() const noexcept override { return PacketType::CONNECT; }
 
     // Expose protected methods for testing
@@ -51,7 +51,7 @@ TEST_SUITE("Base Packet Tests")
 
     TEST_CASE("Construct with ByteBuffer")
     {
-        cleanMqtt::ByteBuffer buf(10);
+        kmMqtt::ByteBuffer buf(10);
         TestPacket packet(std::move(buf));
         CHECK(packet.getDataBuffer().capacity() == 10);
     }
@@ -72,7 +72,7 @@ TEST_SUITE("Base Packet Tests")
         TestPacket packet(flags);
 
         // Set a too-small buffer
-        cleanMqtt::ByteBuffer buf(1);
+        kmMqtt::ByteBuffer buf(1);
         TestPacket packet2(std::move(buf));
         auto result2 = packet2.decode();
         CHECK(result2.code == DecodeErrorCode::MALFORMED_PACKET);
@@ -93,7 +93,7 @@ TEST_SUITE("Base Packet Tests")
     TEST_CASE("Add decode header and check decode is called")
     {
         // Fill buffer with dummy data to avoid MALFORMED_PACKET error
-        cleanMqtt::ByteBuffer buf(2);
+        kmMqtt::ByteBuffer buf(2);
         for (std::size_t i = 0; i < buf.capacity(); ++i) 
         {
             buf += 0x00;

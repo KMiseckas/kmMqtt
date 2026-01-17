@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Publish/Headers/PublishVariableHeader.h>
+#include <kmMqtt/Mqtt/Packets/Publish/Headers/PublishVariableHeader.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

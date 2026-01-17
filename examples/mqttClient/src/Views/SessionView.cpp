@@ -121,22 +121,22 @@ void SessionView::drawStatus()
 	const char* statusTxt{ nullptr };
 	ImVec4 color;
 
-	if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
+	if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::CONNECTED)
 	{
 		color = ui::colors::k_green;
 		statusTxt = text::session_connection_status_connected;
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	else if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::CONNECTING)
 	{
 		color = ui::colors::k_green;
 		statusTxt = text::session_connection_status_connecting;
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
+	else if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::DISCONNECTED)
 	{
 		color = ui::colors::k_red;
 		statusTxt = text::session_connection_status_disconnected;
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
+	else if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::RECONNECTING)
 	{
 		color = ui::colors::k_yellow;
 		statusTxt = text::session_connection_status_reconnecting;
@@ -158,28 +158,28 @@ void SessionView::drawStatus()
 
 void SessionView::drawConnect()
 {
-	if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTED)
+	if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::CONNECTED)
 	{
 		if (ImGui::Button(text::session_connection_disconnect_button_label))
 		{
 			m_model->disconnect();
 		}
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::CONNECTING)
+	else if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::CONNECTING)
 	{
 		if (ImGui::Button(text::session_connection_cancel_button_label))
 		{
 			m_model->cancel();
 		}
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::DISCONNECTED)
+	else if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::DISCONNECTED)
 	{
 		if (ImGui::Button(text::session_connection_connect_button_label))
 		{
 			m_model->connect();
 		}
 	}
-	else if (m_model->getConnectionStatus() == cleanMqtt::mqtt::ConnectionStatus::RECONNECTING)
+	else if (m_model->getConnectionStatus() == kmMqtt::mqtt::ConnectionStatus::RECONNECTING)
 	{
 		if (ImGui::Button(text::session_connection_cancel_button_label))
 		{
@@ -224,7 +224,7 @@ void SessionView::drawConnectBasicArgs()
 	ImGui::SetNextItemWidth(ratioWidth);
 	if (ImGui::InputTextWithHint("##AddressInput", text::session_connect_address_input_hint, UIData.addressBuffer, sizeof(UIData.addressBuffer)))
 	{
-		auto address = cleanMqtt::mqtt::Address::toAddress(UIData.addressBuffer);
+		auto address = kmMqtt::mqtt::Address::toAddress(UIData.addressBuffer);
 
 		if (address.size() > 0)
 		{
@@ -389,8 +389,8 @@ void SessionView::drawConnectAdvancedArgs()
 	if (ImGui::InputText("##ExtendedAuthData", UIData.extendedAuthData, sizeof(UIData.extendedAuthData)))
 	{
 		m_model->connectArgs.extendedAuthenticationData = std::move(
-			std::make_unique<cleanMqtt::mqtt::BinaryData>(
-				cleanMqtt::mqtt::BinaryData(
+			std::make_unique<kmMqtt::mqtt::BinaryData>(
+				kmMqtt::mqtt::BinaryData(
 					static_cast<std::uint16_t>(std::strlen(UIData.extendedAuthData)),
 					(const uint8_t*)UIData.extendedAuthData)));
 	}
@@ -407,7 +407,7 @@ void SessionView::drawConnectAdvancedArgs()
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Yes##will", m_model->connectArgs.will != nullptr))
 	{
-		m_model->connectArgs.will = std::make_unique<cleanMqtt::mqtt::Will>("");
+		m_model->connectArgs.will = std::make_unique<kmMqtt::mqtt::Will>("");
 		UIData.showingWillOptions = true;
 	}
 }
@@ -430,21 +430,21 @@ void SessionView::drawWillArgs()
 	ImGui::SameLine(ratioWidth * 3, spacingX * 3);
 	ImGui::Text(text::session_connect_will_msg_expiry_interval);
 
-	if (ImGui::RadioButton("0##WillQos", m_model->connectArgs.will->willQos == cleanMqtt::mqtt::Qos::QOS_0))
+	if (ImGui::RadioButton("0##WillQos", m_model->connectArgs.will->willQos == kmMqtt::mqtt::Qos::QOS_0))
 	{
-		m_model->connectArgs.will->willQos = cleanMqtt::mqtt::Qos::QOS_0;
+		m_model->connectArgs.will->willQos = kmMqtt::mqtt::Qos::QOS_0;
 	}
 
 	ImGui::SameLine();
-	if (ImGui::RadioButton("1##WillQos", m_model->connectArgs.will->willQos == cleanMqtt::mqtt::Qos::QOS_1))
+	if (ImGui::RadioButton("1##WillQos", m_model->connectArgs.will->willQos == kmMqtt::mqtt::Qos::QOS_1))
 	{
-		m_model->connectArgs.will->willQos = cleanMqtt::mqtt::Qos::QOS_1;
+		m_model->connectArgs.will->willQos = kmMqtt::mqtt::Qos::QOS_1;
 	}
 
 	ImGui::SameLine();
-	if (ImGui::RadioButton("2##WillQos", m_model->connectArgs.will->willQos == cleanMqtt::mqtt::Qos::QOS_2))
+	if (ImGui::RadioButton("2##WillQos", m_model->connectArgs.will->willQos == kmMqtt::mqtt::Qos::QOS_2))
 	{
-		m_model->connectArgs.will->willQos = cleanMqtt::mqtt::Qos::QOS_2;
+		m_model->connectArgs.will->willQos = kmMqtt::mqtt::Qos::QOS_2;
 	}
 
 	ImGui::SameLine(ratioWidth, spacingX);
@@ -507,15 +507,15 @@ void SessionView::drawWillArgs()
 	}
 
 	ImGui::SameLine(ratioWidth, spacingX);
-	if (ImGui::RadioButton("UTF8##WillPldFormatType", m_model->connectArgs.will->payloadFormat == cleanMqtt::mqtt::PayloadFormatIndicator::UTF8))
+	if (ImGui::RadioButton("UTF8##WillPldFormatType", m_model->connectArgs.will->payloadFormat == kmMqtt::mqtt::PayloadFormatIndicator::UTF8))
 	{
-		m_model->connectArgs.will->payloadFormat = cleanMqtt::mqtt::PayloadFormatIndicator::UTF8;
+		m_model->connectArgs.will->payloadFormat = kmMqtt::mqtt::PayloadFormatIndicator::UTF8;
 	}
 
 	ImGui::SameLine();
-	if (ImGui::RadioButton("Binary##WillPldFormatType", m_model->connectArgs.will->payloadFormat == cleanMqtt::mqtt::PayloadFormatIndicator::BINARY))
+	if (ImGui::RadioButton("Binary##WillPldFormatType", m_model->connectArgs.will->payloadFormat == kmMqtt::mqtt::PayloadFormatIndicator::BINARY))
 	{
-		m_model->connectArgs.will->payloadFormat = cleanMqtt::mqtt::PayloadFormatIndicator::BINARY;
+		m_model->connectArgs.will->payloadFormat = kmMqtt::mqtt::PayloadFormatIndicator::BINARY;
 	}
 
 	ImGui::SameLine(ratioWidth * 2, spacingX * 2);
@@ -544,7 +544,7 @@ void SessionView::drawWillArgs()
 
 		if (!showPayloadEditor)
 		{
-			m_model->connectArgs.will->payload = std::make_unique<cleanMqtt::mqtt::BinaryData>(cleanMqtt::mqtt::BinaryData(std::strlen(UIData.willPayload), reinterpret_cast<const uint8_t*>(UIData.willPayload)));
+			m_model->connectArgs.will->payload = std::make_unique<kmMqtt::mqtt::BinaryData>(kmMqtt::mqtt::BinaryData(std::strlen(UIData.willPayload), reinterpret_cast<const uint8_t*>(UIData.willPayload)));
 		}
 	}
 

@@ -135,13 +135,13 @@ void OutputView::copyAllLogsToClipboard()
 	ImGui::SetClipboardText(ss.str().c_str());
 }
 
-ImVec4 OutputView::getLogLevelColor(cleanMqtt::LogLevel logLevel) const
+ImVec4 OutputView::getLogLevelColor(kmMqtt::LogLevel logLevel) const
 {
-	if (logLevel == cleanMqtt::LogLevel::Error || logLevel == cleanMqtt::LogLevel::Fatal)
+	if (logLevel == kmMqtt::LogLevel::Error || logLevel == kmMqtt::LogLevel::Fatal)
 	{
 		return ui::colors::k_red;
 	}
-	else if (logLevel == cleanMqtt::LogLevel::Warning)
+	else if (logLevel == kmMqtt::LogLevel::Warning)
 	{
 		return ui::colors::k_yellow;
 	}

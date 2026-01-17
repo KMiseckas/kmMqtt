@@ -1,9 +1,9 @@
 #include <doctest.h>
-#include <cleanMqtt/Utils/Deferrer.h>
+#include <kmMqtt/Utils/Deferrer.h>
 
 TEST_SUITE("Deferrer Tests")
 {
-	using cleanMqtt::events::Deferrer;
+	using kmMqtt::events::Deferrer;
 
 	TEST_CASE("Deferrer defer and invokeEvents")
 	{

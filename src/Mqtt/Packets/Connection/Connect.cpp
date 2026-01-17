@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Connection/Connect.h>
+#include <kmMqtt/Mqtt/Packets/Connection/Connect.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

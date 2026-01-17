@@ -1,8 +1,8 @@
 #include <benchmark/benchmark.h>
-#include <cleanMqtt/ByteBuffer.h>
+#include <kmMqtt/ByteBuffer.h>
 #include <queue>
 
-using namespace cleanMqtt;
+using namespace kmMqtt;
 
 static void BM_SBO_ByteBuffer(benchmark::State& state) 
 {

@@ -1,8 +1,8 @@
-#include "cleanMqtt/Mqtt/Transport/SendQueue.h"
-#include "cleanMqtt/Logger/Log.h"
-#include "cleanMqtt/Mqtt/ReceiveMaximumTracker.h"
+#include "kmMqtt/Mqtt/Transport/SendQueue.h"
+#include "kmMqtt/Logger/Log.h"
+#include "kmMqtt/Mqtt/ReceiveMaximumTracker.h"
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

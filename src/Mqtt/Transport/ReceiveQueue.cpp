@@ -1,10 +1,10 @@
-#include "cleanMqtt/Mqtt/Transport/ReceiveQueue.h"
-#include "cleanMqtt/Mqtt/Packets/PacketType.h"
-#include "cleanMqtt/Mqtt/Packets/PacketUtils.h"
-#include "cleanMqtt/Mqtt/Packets/ErrorCodes.h"
-#include "cleanMqtt/Mqtt/ReceiveMaximumTracker.h"
+#include "kmMqtt/Mqtt/Transport/ReceiveQueue.h"
+#include "kmMqtt/Mqtt/Packets/PacketType.h"
+#include "kmMqtt/Mqtt/Packets/PacketUtils.h"
+#include "kmMqtt/Mqtt/Packets/ErrorCodes.h"
+#include "kmMqtt/Mqtt/ReceiveMaximumTracker.h"
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

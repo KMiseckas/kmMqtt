@@ -1,9 +1,9 @@
 #include <doctest.h>
-#include <cleanMqtt/Utils/PacketIdPool.h>
+#include <kmMqtt/Utils/PacketIdPool.h>
 
 TEST_SUITE("Packet Utils Tests")
 {
-	using cleanMqtt::PacketIdPool;
+	using kmMqtt::PacketIdPool;
 
 	TEST_CASE("Basic allocation")
 	{

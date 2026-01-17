@@ -1,7 +1,7 @@
 #include "mqttClient/Model/OutputModel.h"
 
-#include <cleanMqtt/Interfaces/ILogger.h>
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/Interfaces/ILogger.h>
+#include <kmMqtt/MqttClient.h>
 
 #include <chrono>
 #include <ctime>
@@ -20,12 +20,12 @@ OutputModel::~OutputModel()
 	disableFileLogging();
 }
 
-void OutputModel::setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept
+void OutputModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
 {
 	m_mqttClient = client;
 }
 
-void OutputModel::AddOutput(cleanMqtt::LogLevel logLevel, const std::string category, const std::string msg)
+void OutputModel::AddOutput(kmMqtt::LogLevel logLevel, const std::string category, const std::string msg)
 {
 	std::lock_guard<std::mutex> lock(m_logMutex);
 
@@ -48,22 +48,22 @@ void OutputModel::AddOutput(cleanMqtt::LogLevel logLevel, const std::string cate
 
 	switch (logLevel)
 	{
-	case cleanMqtt::LogLevel::Trace:
+	case kmMqtt::LogLevel::Trace:
 		logEntry.append("[Trace]");
 		break;
-	case cleanMqtt::LogLevel::Debug:
+	case kmMqtt::LogLevel::Debug:
 		logEntry.append("[Debug]");
 		break;
-	case cleanMqtt::LogLevel::Info:
+	case kmMqtt::LogLevel::Info:
 		logEntry.append("[Info]");
 		break;
-	case cleanMqtt::LogLevel::Warning:
+	case kmMqtt::LogLevel::Warning:
 		logEntry.append("[Warning]");
 		break;
-	case cleanMqtt::LogLevel::Error:
+	case kmMqtt::LogLevel::Error:
 		logEntry.append("[Error]");
 		break;
-	case cleanMqtt::LogLevel::Fatal:
+	case kmMqtt::LogLevel::Fatal:
 		logEntry.append("[Fatal]");
 		break;
 	}

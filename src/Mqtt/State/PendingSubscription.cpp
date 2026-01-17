@@ -1,7 +1,7 @@
-#include <cleanMqtt/Mqtt/State/PendingSubscription.h>
-#include <cleanMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h>
+#include <kmMqtt/Mqtt/State/PendingSubscription.h>
+#include <kmMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

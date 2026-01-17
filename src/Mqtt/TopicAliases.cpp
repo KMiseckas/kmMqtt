@@ -1,7 +1,7 @@
-#include <cleanMqtt/Mqtt/TopicAliases.h>
-#include <cleanMqtt/Logger/Log.h>
+#include <kmMqtt/Mqtt/TopicAliases.h>
+#include <kmMqtt/Logger/Log.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

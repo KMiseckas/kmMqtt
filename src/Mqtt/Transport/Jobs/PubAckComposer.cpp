@@ -1,7 +1,7 @@
-#include <cleanMqtt/Mqtt/Transport/Jobs/PubAckComposer.h>
-#include <cleanMqtt/Mqtt/PacketHelper.h>
+#include <kmMqtt/Mqtt/Transport/Jobs/PubAckComposer.h>
+#include <kmMqtt/Mqtt/PacketHelper.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

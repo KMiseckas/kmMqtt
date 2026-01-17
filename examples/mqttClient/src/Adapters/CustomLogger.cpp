@@ -15,33 +15,33 @@ CustomLogger::~CustomLogger()
 {
 }
 
-void CustomLogger::Log(const cleanMqtt::LogLevel logLvl, const char* const msg) const noexcept
+void CustomLogger::Log(const kmMqtt::LogLevel logLvl, const char* const msg) const noexcept
 {
 	Log(logLvl, nullptr, msg);
 }
 
-void CustomLogger::Log(const cleanMqtt::LogLevel logLvl, const char* const category, const char* const msg) const noexcept
+void CustomLogger::Log(const kmMqtt::LogLevel logLvl, const char* const category, const char* const msg) const noexcept
 {
-	std::string logOutput{ "[CleanMqtt]" };
+	std::string logOutput{ "[kmMqtt]" };
 
 	switch (logLvl)
 	{
-	case cleanMqtt::LogLevel::Trace:
+	case kmMqtt::LogLevel::Trace:
 		logOutput.append("[Trace]");
 		break;
-	case cleanMqtt::LogLevel::Debug:
+	case kmMqtt::LogLevel::Debug:
 		logOutput.append("[Debug]");
 		break;
-	case cleanMqtt::LogLevel::Info:
+	case kmMqtt::LogLevel::Info:
 		logOutput.append("[Info]");
 		break;
-	case cleanMqtt::LogLevel::Warning:
+	case kmMqtt::LogLevel::Warning:
 		logOutput.append("[Warning]");
 		break;
-	case cleanMqtt::LogLevel::Error:
+	case kmMqtt::LogLevel::Error:
 		logOutput.append("[Error]");
 		break;
-	case cleanMqtt::LogLevel::Fatal:
+	case kmMqtt::LogLevel::Fatal:
 		logOutput.append("[Fatal]");
 		break;
 	}

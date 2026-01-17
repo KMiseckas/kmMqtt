@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Connection/Disconnect.h>
+#include <kmMqtt/Mqtt/Packets/Connection/Disconnect.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

@@ -1,9 +1,9 @@
 #include <doctest.h>
-#include <cleanMqtt/ByteBuffer.h>
+#include <kmMqtt/ByteBuffer.h>
 
 TEST_SUITE("Byte Buffer Tests")
 {
-	using namespace cleanMqtt;
+	using namespace kmMqtt;
 
 	TEST_CASE("Constructors")
 	{

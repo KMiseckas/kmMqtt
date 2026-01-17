@@ -1,5 +1,5 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/Params/ConnectAddress.h>
+#include <kmMqtt/Mqtt/Params/ConnectAddress.h>
 
 #include <cstring>
 
@@ -20,7 +20,7 @@ static constexpr const char* varName##_port = port; \
 
 TEST_SUITE("ConnectAddress Tests")
 {
-	using namespace cleanMqtt::mqtt;
+	using namespace kmMqtt::mqtt;
 
 	namespace
 	{

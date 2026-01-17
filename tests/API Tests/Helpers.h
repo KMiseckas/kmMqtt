@@ -4,20 +4,20 @@
 #include <doctest.h>
 #include <memory>
 #include "MockWebSocket.h"
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include "Environments/TestEnvironment.h"
 
 // Helper to create a connected MqttClient with a mock socket
 struct TestClientContext 
 {
-    TestClientContext(const cleanMqtt::Config& config = {}, bool socketConnectResult = true)
+    TestClientContext(const kmMqtt::Config& config = {}, bool socketConnectResult = true)
     {
-        MqttClientOptions options{ cleanMqtt::TickMode::SYNC };
+        MqttClientOptions options{ kmMqtt::TickMode::SYNC };
 
         auto env{ TestEnvironment() };
         env.config = config;
 
-        client = new cleanMqtt::mqtt::MqttClient(&env, options);
+        client = new kmMqtt::mqtt::MqttClient(&env, options);
 
         socketPtr = env.socketPtr;
         socketPtr->connectResult = socketConnectResult;
@@ -31,28 +31,28 @@ struct TestClientContext
         }
 	}
 
-    void receiveResponse(const cleanMqtt::ByteBuffer& data)
+    void receiveResponse(const kmMqtt::ByteBuffer& data)
     {
 		socketPtr->queueMockResponse(data);
 		client->tick(); //Initial tick to process the response on socket layer and move mqtt layer
 		client->tick(); //Second tick to process queue of received messages in the mqtt layer
     }
 
-    static cleanMqtt::mqtt::ConnectArgs getDefaultConnectArgs()
+    static kmMqtt::mqtt::ConnectArgs getDefaultConnectArgs()
     {
-        cleanMqtt::mqtt::ConnectArgs args{ "Default_ID" };
+        kmMqtt::mqtt::ConnectArgs args{ "Default_ID" };
         args.protocolName = "MQTT";
-        args.version = cleanMqtt::mqtt::MqttVersion::MQTT_5_0;
+        args.version = kmMqtt::mqtt::MqttVersion::MQTT_5_0;
 		args.cleanStart = true;
         args.keepAliveInSec = 60;
 
         return args;
     }
 
-    static cleanMqtt::mqtt::ConnectAddress getDefaultConnectAddress()
+    static kmMqtt::mqtt::ConnectAddress getDefaultConnectAddress()
     {
-        cleanMqtt::mqtt::ConnectAddress address;
-        address.primaryAddress = cleanMqtt::mqtt::Address::createURL("", "localhost", "1883", "");
+        kmMqtt::mqtt::ConnectAddress address;
+        address.primaryAddress = kmMqtt::mqtt::Address::createURL("", "localhost", "1883", "");
         return address;
 	}
 
@@ -60,9 +60,9 @@ struct TestClientContext
      * Try connect client with different args and user expected outcome, does not automatically try to receive the response unless `includeSuccessResponse` is set to true and `No_Error`
      * is received from the `connect()` result.
      */
-    cleanMqtt::mqtt::ClientError tryConnect(cleanMqtt::mqtt::ClientErrorCode expectedErrorCode = cleanMqtt::mqtt::ClientErrorCode::No_Error,
-        cleanMqtt::mqtt::ConnectArgs&& args = getDefaultConnectArgs(),
-        cleanMqtt::mqtt::ConnectAddress&& address = getDefaultConnectAddress(),
+    kmMqtt::mqtt::ClientError tryConnect(kmMqtt::mqtt::ClientErrorCode expectedErrorCode = kmMqtt::mqtt::ClientErrorCode::No_Error,
+        kmMqtt::mqtt::ConnectArgs&& args = getDefaultConnectArgs(),
+        kmMqtt::mqtt::ConnectAddress&& address = getDefaultConnectAddress(),
         bool includeSuccessResponse = false)
     {
         auto result{ client->connect(std::move(args), std::move(address)) };
@@ -89,8 +89,8 @@ struct TestClientContext
     /**
      * Try connect the client and if no error then also try get a connect ack response to put client in a fully connected state.
      */
-    cleanMqtt::mqtt::ClientError tryConnectWithResponse(cleanMqtt::mqtt::ConnectArgs&& args = getDefaultConnectArgs(),
-        cleanMqtt::mqtt::ConnectAddress&& address = getDefaultConnectAddress())
+    kmMqtt::mqtt::ClientError tryConnectWithResponse(kmMqtt::mqtt::ConnectArgs&& args = getDefaultConnectArgs(),
+        kmMqtt::mqtt::ConnectAddress&& address = getDefaultConnectAddress())
     {
         auto result{ client->connect(std::move(args), std::move(address)) };
         CHECK(result.errorCode() == mqtt::ClientErrorCode::No_Error);
@@ -111,7 +111,7 @@ struct TestClientContext
     }
 
     MockWebSocket* socketPtr;
-    cleanMqtt::mqtt::MqttClient* client;
+    kmMqtt::mqtt::MqttClient* client;
 };
 
 #endif // APITESTS_HELPERS_H

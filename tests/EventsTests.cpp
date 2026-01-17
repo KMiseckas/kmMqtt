@@ -1,9 +1,9 @@
 #include <doctest.h>
-#include <cleanMqtt/Utils/Event.h>
+#include <kmMqtt/Utils/Event.h>
 
 TEST_SUITE("Events Tests")
 {
-	using cleanMqtt::events::Event;
+	using kmMqtt::events::Event;
 
 	TEST_CASE("Event add, invoke, and remove")
 	{

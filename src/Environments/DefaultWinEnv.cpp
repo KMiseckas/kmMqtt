@@ -1,8 +1,8 @@
 #if defined(_WIN32) || defined(_WIN64)
-#include <cleanMqtt/Environments/DefaultWinEnv.h>
-#include <cleanMqtt/Sockets/DefaultWebsocket.h>
+#include <kmMqtt/Environments/DefaultWinEnv.h>
+#include <kmMqtt/Sockets/DefaultWebsocket.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	Config DefaultWinEnv::createConfig() const noexcept
 	{
@@ -13,6 +13,6 @@ namespace cleanMqtt
 	{
 		return std::make_shared<DefaultWebsocket>();
 	}
-} // namespace cleanMqtt
+} // namespace kmMqtt
 
 #endif // defined(_WIN32) || defined(_WIN64)

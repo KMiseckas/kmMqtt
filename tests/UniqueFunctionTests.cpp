@@ -1,12 +1,12 @@
 #include <doctest.h>
-#include <cleanMqtt/GlobalMacros.h>
-#include <cleanMqtt/Utils/UniqueFunction.h>
+#include <kmMqtt/GlobalMacros.h>
+#include <kmMqtt/Utils/UniqueFunction.h>
 #include <iostream>
 #include <string>
 
 TEST_SUITE("UniqueFunction Tests")
 {
-    using namespace cleanMqtt;
+    using namespace kmMqtt;
 
     TEST_CASE("UniqueFunction can store and invoke a lambda")
     {

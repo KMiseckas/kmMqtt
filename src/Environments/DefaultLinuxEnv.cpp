@@ -1,8 +1,8 @@
 #if defined(__linux__)
-#include <cleanMqtt/Environments/DefaultLinuxEnv.h>
-#include <cleanMqtt/Sockets/DefaultWebsocket.h>
+#include <kmMqtt/Environments/DefaultLinuxEnv.h>
+#include <kmMqtt/Sockets/DefaultWebsocket.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	Config DefaultLinuxEnv::createConfig() const noexcept
 	{
@@ -13,6 +13,6 @@ namespace cleanMqtt
 	{
 		return std::make_shared<DefaultWebsocket>();
 	}
-} // namespace cleanMqtt
+} // namespace kmMqtt
 
 #endif // defined(__linux__)

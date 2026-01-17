@@ -1,6 +1,6 @@
 #include <mqttClient/Model/SessionModel.h>
 #include <mqttClient/Adapters/CustomLogger.h>
-#include <cleanMqtt/Logger/LoggerInstance.h>
+#include <kmMqtt/Logger/LoggerInstance.h>
 
 SessionModel::SessionModel()
 {
@@ -49,14 +49,14 @@ void SessionModel::connect()
 	/**
 	 * Create MQTT Client.
 	 */
-	cleanMqtt::DefaultEnvironmentFactory factory;
-	cleanMqtt::MqttClientOptions options{ useTickAsync ? cleanMqtt::TickMode::ASYNC : cleanMqtt::TickMode::SYNC };
+	kmMqtt::DefaultEnvironmentFactory factory;
+	kmMqtt::MqttClientOptions options{ useTickAsync ? kmMqtt::TickMode::ASYNC : kmMqtt::TickMode::SYNC };
 
 	//Set up customer logger
 	std::weak_ptr<OutputModel> weakOutputMdl{ outputModel };
-	cleanMqtt::setLogger(new CustomLogger(weakOutputMdl));
+	kmMqtt::setLogger(new CustomLogger(weakOutputMdl));
 
-	m_mqttClient = new cleanMqtt::mqtt::MqttClient{ factory.createEnvironment(), options };
+	m_mqttClient = new kmMqtt::mqtt::MqttClient{ factory.createEnvironment(), options };
 
 	/**
 	 * Try to connect.
@@ -79,13 +79,13 @@ void SessionModel::connect()
 	/**
 	 * Register to connection events.
 	 */
-	m_mqttClient->onConnectEvent().add([this](const cleanMqtt::mqtt::ConnectEventDetails& details, const cleanMqtt::mqtt::ConnectAck& ack)
+	m_mqttClient->onConnectEvent().add([this](const kmMqtt::mqtt::ConnectEventDetails& details, const kmMqtt::mqtt::ConnectAck& ack)
 		{
 			isMqttConnected = details.isSuccessful;
 
 			if (details.isSuccessful)
 			{
-				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)) };
+				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<kmMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)) };
 				connectionFailureReason = details.hasReceivedAck ? reasonCode.c_str() : details.error.errorMsg;
 			}
 			else
@@ -97,13 +97,13 @@ void SessionModel::connect()
 	/**
 	 * Register to disconnection events.
 	 */
-	m_mqttClient->onDisconnectEvent().add([this](const cleanMqtt::mqtt::DisconnectEventDetails& details)
+	m_mqttClient->onDisconnectEvent().add([this](const kmMqtt::mqtt::DisconnectEventDetails& details)
 		{
 			isMqttConnected = false;
 
 			if(details.isBrokerInduced)
 			{
-				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<cleanMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)) };
+				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<kmMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)) };
 				disconnectioReason = reasonCode.c_str();
 			}
 			else

@@ -1,4 +1,4 @@
-#include <cleanMqtt/Logger/DefaultLogger.h>
+#include <kmMqtt/Logger/DefaultLogger.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -6,7 +6,7 @@
 #include <cstdio>
 #endif
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	DefaultLogger::DefaultLogger() noexcept
 	{
@@ -23,7 +23,7 @@ namespace cleanMqtt
 
 	void DefaultLogger::Log(const LogLevel logLvl, const char* const category, const char* const msg) const noexcept
 	{
-		std::string logOutput{ "[CleanMqtt]" };
+		std::string logOutput{ "[kmMqtt]" };
 
 		switch (logLvl)
 		{

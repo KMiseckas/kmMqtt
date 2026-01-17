@@ -1,12 +1,12 @@
 #include <doctest.h>
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include <memory>
 #include <string>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 
-using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt;
+using namespace kmMqtt::mqtt;
 
 TEST_SUITE("MqttClient Subscribe")
 {

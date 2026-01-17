@@ -1,7 +1,7 @@
-#include <cleanMqtt/MqttClient.h>
-#include <cleanMqtt/Mqtt/MqttClientImpl.h>
+#include <kmMqtt/MqttClient.h>
+#include <kmMqtt/Mqtt/MqttClientImpl.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

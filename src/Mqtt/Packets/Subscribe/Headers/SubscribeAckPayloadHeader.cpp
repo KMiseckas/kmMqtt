@@ -1,7 +1,7 @@
-#include <cleanMqtt/Mqtt/Packets/Subscribe/Headers/SubscribeAckPayloadHeader.h>
-#include <cleanMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h>
+#include <kmMqtt/Mqtt/Packets/Subscribe/Headers/SubscribeAckPayloadHeader.h>
+#include <kmMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

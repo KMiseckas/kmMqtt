@@ -1,6 +1,6 @@
 #include <mqttClient/Model/MessagesModel.h>
-#include <cleanMqtt/MqttClient.h>
-#include <cleanMqtt/Mqtt/Packets/Publish/Publish.h>
+#include <kmMqtt/MqttClient.h>
+#include <kmMqtt/Mqtt/Packets/Publish/Publish.h>
 #include <mqttClient/Events/EventService.h>
 #include <algorithm>
 #include <mqttClient/Events/ApplicationEvents.h>
@@ -17,7 +17,7 @@ MessagesModel::~MessagesModel()
 {
 }
 
-void MessagesModel::setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept
+void MessagesModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
 {
     m_mqttClient = client;
     if (m_mqttClient != nullptr)
@@ -28,7 +28,7 @@ void MessagesModel::setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept
 
 void MessagesModel::addReceivedMessage(const std::string& topic,
     const std::string& payload,
-    cleanMqtt::mqtt::Qos qos,
+    kmMqtt::mqtt::Qos qos,
     bool retain)
 {
     MqttMessage message(topic, payload, qos, retain);
@@ -42,13 +42,13 @@ void MessagesModel::addReceivedMessage(const std::string& topic,
 
 void MessagesModel::addSentMessage(const std::string& topic,
     const std::string& payload,
-    const cleanMqtt::mqtt::PublishOptions opts,
+    const kmMqtt::mqtt::PublishOptions opts,
     bool isSuccessRequest,
     const std::string& errMsg)
 {
     MqttMessage message(topic, payload, opts);
 
-    if (opts.qos == cleanMqtt::mqtt::Qos::QOS_0)
+    if (opts.qos == kmMqtt::mqtt::Qos::QOS_0)
     {
         message.sentStatus = isSuccessRequest ? SentMessageStatus::ACKNOWLEDGED : SentMessageStatus::FAILED;
     }
@@ -128,13 +128,13 @@ void MessagesModel::setupEventHandlers()
     }
 
     //Register for received publish messages
-    m_mqttClient->onPublishEvent().add([this](const cleanMqtt::mqtt::PublishEventDetails& details, const cleanMqtt::mqtt::Publish& publish)
+    m_mqttClient->onPublishEvent().add([this](const kmMqtt::mqtt::PublishEventDetails& details, const kmMqtt::mqtt::Publish& publish)
         {
             onPublishReceived(details, publish);
         });
 }
 
-void MessagesModel::onPublishReceived(const cleanMqtt::mqtt::PublishEventDetails& details, const cleanMqtt::mqtt::Publish& publish)
+void MessagesModel::onPublishReceived(const kmMqtt::mqtt::PublishEventDetails& details, const kmMqtt::mqtt::Publish& publish)
 {
     std::string payload;
     if (details.payload->size() > 0)
@@ -143,7 +143,7 @@ void MessagesModel::onPublishReceived(const cleanMqtt::mqtt::PublishEventDetails
     }
 
     //Add received message
-    bool isRetained{ (bool)publish.getFixedHeader().flags.getFlagValue(cleanMqtt::mqtt::PublishFlags::IS_RETAINED) };
+    bool isRetained{ (bool)publish.getFixedHeader().flags.getFlagValue(kmMqtt::mqtt::PublishFlags::IS_RETAINED) };
     addReceivedMessage( details.topic, payload, publish.getVariableHeader().qos, isRetained);
 }
 

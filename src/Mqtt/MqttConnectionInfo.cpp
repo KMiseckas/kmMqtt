@@ -1,8 +1,8 @@
-#include "cleanMqtt/Mqtt/MqttConnectionInfo.h"
+#include "kmMqtt/Mqtt/MqttConnectionInfo.h"
 
-#include "cleanMqtt/Mqtt/State/SessionState/SessionState.h"
+#include "kmMqtt/Mqtt/State/SessionState/SessionState.h"
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{

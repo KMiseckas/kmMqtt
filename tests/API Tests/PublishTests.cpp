@@ -1,12 +1,12 @@
 #include <doctest.h>
-#include <cleanMqtt/MqttClient.h>
+#include <kmMqtt/MqttClient.h>
 #include <memory>
 #include <string>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 
-using namespace cleanMqtt;
-using namespace cleanMqtt::mqtt;
+using namespace kmMqtt;
+using namespace kmMqtt::mqtt;
 
 TEST_SUITE("MqttClient Publish")
 {
@@ -410,7 +410,7 @@ TEST_SUITE("MqttClient Publish")
 
     TEST_CASE("Publish fails with disconnected socket")
     {
-        TestClientContext testContext(cleanMqtt::Config{}, false); //Socket connect will fail
+        TestClientContext testContext(kmMqtt::Config{}, false); //Socket connect will fail
         
         std::string topic = "test/disconnected";
         ByteBuffer payload(1);

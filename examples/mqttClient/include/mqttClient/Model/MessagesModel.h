@@ -2,13 +2,13 @@
 #define INCLUDE_MQTTCLIENT_MODEL_MESSAGESMODEL_H
 
 #include "mqttClient/Model/ViewModel.h"
-#include <cleanMqtt/Mqtt/Params/PublishOptions.h>
+#include <kmMqtt/Mqtt/Params/PublishOptions.h>
 #include <string>
 #include <vector>
 #include <memory>
 #include <chrono>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
     namespace mqtt
     {
@@ -38,16 +38,16 @@ struct MqttMessage
     MessageType type;
     std::chrono::system_clock::time_point timestamp;
 
-    cleanMqtt::mqtt::Qos receivedQos{ cleanMqtt::mqtt::Qos::QOS_0 };
+    kmMqtt::mqtt::Qos receivedQos{ kmMqtt::mqtt::Qos::QOS_0 };
     bool receivedRetain{ false };
 
     SentMessageStatus sentStatus{ SentMessageStatus::PENDING };
-    cleanMqtt::mqtt::PublishOptions sentOptions;
+    kmMqtt::mqtt::PublishOptions sentOptions;
     std::string lastError{ "" };
 
     MqttMessage() noexcept = default;
 
-    MqttMessage(const std::string& topic_, const std::string& payload_, cleanMqtt::mqtt::Qos qos, bool retain) noexcept
+    MqttMessage(const std::string& topic_, const std::string& payload_, kmMqtt::mqtt::Qos qos, bool retain) noexcept
         : topic(topic_),
         payload(payload_),
         type(MessageType::RECEIVED),
@@ -56,7 +56,7 @@ struct MqttMessage
         receivedRetain(retain) {
     }
 
-    MqttMessage(const std::string& topic_, const std::string& payload_, const cleanMqtt::mqtt::PublishOptions& options) noexcept
+    MqttMessage(const std::string& topic_, const std::string& payload_, const kmMqtt::mqtt::PublishOptions& options) noexcept
         : topic(topic_),
         payload(payload_),
         type(MessageType::SENT),
@@ -72,16 +72,16 @@ public:
     MessagesModel() noexcept;
     ~MessagesModel() override;
 
-    void setMqttClient(cleanMqtt::mqtt::MqttClient* client) noexcept;
+    void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
 
     void addReceivedMessage(const std::string& topic,
         const std::string& payload,
-        cleanMqtt::mqtt::Qos qos,
+        kmMqtt::mqtt::Qos qos,
         bool retain);
 
     void addSentMessage(const std::string& topic,
         const std::string& payload,
-        const cleanMqtt::mqtt::PublishOptions opts,
+        const kmMqtt::mqtt::PublishOptions opts,
         bool isSuccessRequest,
         const std::string& errMsg = "");
 
@@ -110,11 +110,11 @@ public:
 
 private:
     void setupEventHandlers();
-    void onPublishReceived(const cleanMqtt::mqtt::PublishEventDetails& details, const cleanMqtt::mqtt::Publish& publish);
+    void onPublishReceived(const kmMqtt::mqtt::PublishEventDetails& details, const kmMqtt::mqtt::Publish& publish);
     void updateSentMessageStatus(const std::string& topic, SentMessageStatus status, const std::string& error = "");
 
     std::vector<MqttMessage> m_messages;
-    cleanMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
+    kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
 };
 
 #endif //INCLUDE_MQTTCLIENT_MODEL_MESSAGESMODEL_H

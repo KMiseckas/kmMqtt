@@ -1,10 +1,10 @@
 #include <doctest.h>
-#include <cleanMqtt/Mqtt/TopicAliases.h>
+#include <kmMqtt/Mqtt/TopicAliases.h>
 #include <cstring>
 
 TEST_SUITE("Topic Aliases")
 {
-	using cleanMqtt::mqtt::TopicAliases;
+	using kmMqtt::mqtt::TopicAliases;
 
 	TEST_CASE("Add and find topic alias")
 	{

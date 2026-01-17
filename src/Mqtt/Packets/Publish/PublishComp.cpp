@@ -1,6 +1,6 @@
-#include <cleanMqtt/Mqtt/Packets/Publish/PublishComp.h>
+#include <kmMqtt/Mqtt/Packets/Publish/PublishComp.h>
 
-namespace cleanMqtt
+namespace kmMqtt
 {
 	namespace mqtt
 	{
