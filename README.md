@@ -1,31 +1,46 @@
-# CleanMQTT
+# kmMqtt
 
-A C++14 MQTT client library supporting MQTT 3.1.1 and 5.0 protocols.
+A C++14 MQTT 5.0 client library designed for game development and cross-platform applications.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Supported Platforms](#supported-platforms)
+- [Dependencies](#dependencies)
+- [Building](#building)
+- [Quick Start](#quick-start)
+- [Documentation](#documentation)
+- [Notes](#notes)
+- [References](#references)
 
 ## Overview
 
-CleanMQTT provides an MQTT client implementation designed with cross-platform support in mind. The library handles connection management, message publishing, topic subscriptions, and event-driven message handling.
+kmMqtt provides an MQTT 5.0 client implementation developed by a game development engineer with game engines in mind, but works across any C++14 application. The library handles connection management, message publishing, topic subscriptions, and event-driven message handling with a focus on cross-platform compatibility.
 
 ## Features
 
-- MQTT 3.1.1 and 5.0 protocol support
-- TCP and WebSocket transport (with optional TLS/WSS support via IXWebSocket)
-- Synchronous and asynchronous operation modes
-- Event-driven callback system
-- Automatic reconnection handling
-- QoS 0, 1, and 2 message delivery
-- Topic aliases and user properties (MQTT 5.0)
-- Session state management
-- Small buffer optimization for reduced heap allocations
+- **MQTT 5.0 protocol support** - Full implementation of MQTT 5.0 specification
+- **Cross-platform socket support** - Uses adapter pattern for platform-specific socket implementations
+  - Included: IXWebSocket-based implementation for Windows, Linux, and Android (macOS not tested but should work)
+  - Extendable to other closed-source platforms via `IWebSocket` interface
+- **Flexible operation modes** - Synchronous and asynchronous tick modes
+- **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
+- **Automatic reconnection handling** - Built-in reconnection logic
+- **Full QoS support** - QoS 0, 1, and 2 message delivery
+- **MQTT 5.0 features** - Topic aliases, user properties, and more
+- **Session state management** - In-memory session state tracking
+- **Performance optimizations** - Small buffer optimization for reduced heap allocations
 
 ## Supported Platforms
 
-The library targets C++14 and is intended for use on platforms supporting standard C++14 features. Platform-specific implementations are provided for:
+The library targets C++14 and is designed for cross-platform use. Platform-specific socket implementations can be provided through the `IWebSocket` interface:
 
-- Windows (via `DefaultWinEnv`)
-- Linux (via `DefaultLinuxEnv`)
+- **Tested**: Windows and Linux
+- **Expected to work**: Android, macOS
+- **Extendable**: Any platform by implementing `IMqttEnvironment` and `IWebSocket` interfaces
 
-Custom platform support can be added by implementing the `IMqttEnvironment` interface.
+The included IXWebSocket-based implementation (`DefaultWebsocket`) works on Windows, Linux, and Android.
 
 ## Dependencies
 
@@ -37,9 +52,8 @@ Custom platform support can be added by implementing the `IMqttEnvironment` inte
 ### Optional
 
 - **OpenSSL**: Required when `BUILD_IXWEBSOCKET=ON` for WebSocket Secure (WSS) support
-  - Windows: vcpkg or manual installation
-  - Linux: `libssl-dev` package
-  - macOS: `brew install openssl`
+  - Automatically installed by vcpkg on Windows and Linux when using CMake with vcpkg integration
+  - Manual installation: `libssl-dev` package on Linux, `brew install openssl` on macOS
 
 ## Building
 
@@ -66,7 +80,7 @@ See [BUILDING.md](BUILDING.md) for detailed build instructions and configuration
 
 ## Quick Start
 
-### Basic connection and publish
+### Non-blocking connection and publish (recommended for game engines)
 
 ```cpp
 #include <cleanMqtt/MqttClient.h>
@@ -75,6 +89,22 @@ using namespace cleanMqtt::mqtt;
 
 // Create client with default environment
 MqttClient client;
+
+// Register connection callback (required for non-blocking)
+client.onConnectEvent().subscribe([&client](const ConnectEventDetails& details) {
+    if (details.isSuccessful) {
+        // Connection successful, now we can publish
+        ByteBuffer payload(256);
+        payload.append("Hello MQTT");
+        
+        PublishOptions pubOpts;
+        pubOpts.qos = Qos::QOS_1;
+        
+        client.publish("test/topic", std::move(payload), std::move(pubOpts));
+    } else {
+        // Handle connection error
+    }
+});
 
 // Set up connection arguments
 ConnectArgs connectArgs;
@@ -85,19 +115,69 @@ connectArgs.setCleanStart(true);
 Address brokerAddr = Address::createURL("mqtt", "broker.example.com", "1883", "");
 ConnectAddress address(brokerAddr);
 
+// Initiate connection (non-blocking)
 ReqResult result = client.connect(std::move(connectArgs), std::move(address));
 if (result.isError()) {
-    // Handle connection error
+    // Handle immediate errors (e.g., invalid parameters)
+}
+// Connection result will arrive via onConnectEvent callback
+```
+
+### Blocking connection (for non-game environments)
+
+```cpp
+#include <cleanMqtt/MqttClient.h>
+#include <atomic>
+#include <chrono>
+#include <thread>
+
+using namespace cleanMqtt::mqtt;
+
+// Create client
+MqttClient client;
+
+// Track connection state
+std::atomic<bool> connected{false};
+std::atomic<bool> connectionFailed{false};
+
+// Register connection callback
+client.onConnectEvent().subscribe([&](const ConnectEventDetails& details) {
+    if (details.isSuccessful) {
+        connected = true;
+    } else {
+        connectionFailed = true;
+    }
+});
+
+// Set up connection
+ConnectArgs connectArgs;
+connectArgs.setClientId("my-client");
+connectArgs.setCleanStart(true);
+
+Address brokerAddr = Address::createURL("mqtt", "broker.example.com", "1883", "");
+ConnectAddress address(brokerAddr);
+
+// Initiate connection
+ReqResult result = client.connect(std::move(connectArgs), std::move(address));
+if (result.isError()) {
+    // Handle immediate error
 }
 
-// Publish a message
-ByteBuffer payload(256);
-payload.append("Hello MQTT");
+// Wait for connection callback
+while (!connected && !connectionFailed) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+}
 
-PublishOptions pubOpts;
-pubOpts.qos = Qos::QOS_1;
-
-client.publish("test/topic", std::move(payload), std::move(pubOpts));
+if (connected) {
+    // Now we can publish
+    ByteBuffer payload(256);
+    payload.append("Hello MQTT");
+    
+    PublishOptions pubOpts;
+    pubOpts.qos = Qos::QOS_1;
+    
+    client.publish("test/topic", std::move(payload), std::move(pubOpts));
+}
 ```
 
 ### Subscribing and receiving messages
@@ -137,12 +217,16 @@ while (running) {
 }
 ```
 
-## API Reference
+## Documentation
 
-See [API_REFERENCE.md](API_REFERENCE.md) for complete API documentation.
+- **[API_REFERENCE.md](API_REFERENCE.md)** - Complete API reference with detailed interface documentation
+- **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
 
 ## Notes
 
+- Connection operations (`connect()`) are **non-blocking** in both `ASYNC` and `SYNC` modes
+  - Use `onConnectEvent()` callback to determine when connection completes
+  - Blocking pattern shown above is useful for non-game environments
 - When using `TickMode::ASYNC`, the library manages its own thread for message processing
 - When using `TickMode::SYNC`, the application must call `tick()` regularly
 - Session state persistence to disk is not currently implemented
@@ -150,5 +234,4 @@ See [API_REFERENCE.md](API_REFERENCE.md) for complete API documentation.
 
 ## References
 
-- [MQTT 3.1.1 Specification](https://docs.oasis-open.org/mqtt/mqtt/v3.1.1/mqtt-v3.1.1.html)
 - [MQTT 5.0 Specification](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)

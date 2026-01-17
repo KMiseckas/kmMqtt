@@ -1,12 +1,27 @@
-# Building CleanMQTT
+# Building kmMqtt
 
-This document describes how to build CleanMQTT from source.
+This document describes how to build kmMqtt from source.
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Basic Build](#basic-build)
+- [CMake Options](#cmake-options)
+- [Platform-Specific Instructions](#platform-specific-instructions)
+- [Build Examples](#build-examples)
+- [Testing](#testing)
+- [Code Coverage](#code-coverage)
+- [Installing](#installing)
+- [Troubleshooting](#troubleshooting)
+- [Cross-Compilation](#cross-compilation)
+- [Integration with Other Build Systems](#integration-with-other-build-systems)
+- [Build Artifacts](#build-artifacts)
 
 ## Requirements
 
 - C++14 compatible compiler (GCC, Clang, MSVC)
 - CMake 3.5 or later
-- OpenSSL (required only when `BUILD_IXWEBSOCKET=ON`)
+- OpenSSL (required only when `BUILD_IXWEBSOCKET=ON`, auto-installed by vcpkg)
 
 ## Basic Build
 
@@ -16,9 +31,6 @@ cmake -B build
 
 # Build
 cmake --build build
-
-# Optional: Run tests
-cd build && ctest
 ```
 
 ## CMake Options
@@ -66,7 +78,7 @@ cd build && ctest
 |--------|---------|-------------|
 | `BUILD_IXWEBSOCKET` | `ON` | Build with IXWebSocket library for WebSocket support |
 
-When `BUILD_IXWEBSOCKET=ON`, OpenSSL is required for secure WebSocket (WSS) connections.
+When `BUILD_IXWEBSOCKET=ON`, OpenSSL is required for secure WebSocket (WSS) connections. vcpkg automatically installs OpenSSL on Windows and Linux.
 
 ## Platform-Specific Instructions
 
@@ -186,20 +198,6 @@ cmake --build build
 
 ## Testing
 
-### Run All Tests
-
-```bash
-cd build
-ctest --output-on-failure
-```
-
-### Run Tests with Specific Configuration
-
-```bash
-cd build
-ctest -C Release --output-on-failure
-```
-
 ### Run Specific Test
 
 ```bash
@@ -224,8 +222,9 @@ cmake -B build \
   -DBUILD_UNIT_TESTS=ON
 cmake --build build
 
-# Run tests
-cd build && ctest
+# Run tests manually
+cd build
+./cleanMqttTests
 
 # Generate report
 cmake --build . --target coverage_report
@@ -317,7 +316,7 @@ Add to `vcpkg.json`:
 ```json
 {
   "dependencies": [
-    "cleanmqtt"
+    "kmmqtt"
   ]
 }
 ```
@@ -327,11 +326,11 @@ Add to `vcpkg.json`:
 ```cmake
 include(FetchContent)
 FetchContent_Declare(
-  cleanmqtt
-  GIT_REPOSITORY https://github.com/KMiseckas/CleanMQTT.git
+  kmmqtt
+  GIT_REPOSITORY https://github.com/KMiseckas/kmMqtt.git
   GIT_TAG main
 )
-FetchContent_MakeAvailable(cleanmqtt)
+FetchContent_MakeAvailable(kmmqtt)
 
 target_link_libraries(your_target PRIVATE cleanMqtt)
 ```

@@ -1,6 +1,38 @@
 # API Reference
 
-This document describes the public API of CleanMQTT.
+This document describes the public API of kmMqtt.
+
+## Table of Contents
+
+- [Core Classes](#core-classes)
+  - [MqttClient](#mqttclient)
+- [Configuration Types](#configuration-types)
+  - [MqttClientOptions](#mqttclientoptions)
+  - [Config](#config)
+  - [ConnectArgs](#connectargs)
+  - [ConnectAddress](#connectaddress)
+  - [PublishOptions](#publishoptions)
+  - [SubscribeOptions / UnSubscribeOptions](#subscribeoptions--unsubscribeoptions)
+- [Data Types](#data-types)
+  - [ByteBuffer](#bytebuffer)
+  - [Topic](#topic)
+  - [Will](#will)
+- [Enumerations](#enumerations)
+  - [ConnectionStatus](#connectionstatus)
+  - [Qos](#qos)
+  - [MqttVersion](#mqttversion)
+  - [LocatorType](#locatortype)
+  - [PayloadFormatIndicator](#payloadformatindicator)
+- [Result Types](#result-types)
+  - [ReqResult](#reqresult)
+  - [ClientError](#clienterror)
+  - [MqttConnectionInfo](#mqttconnectioninfo)
+- [Packet Types](#packet-types)
+- [Extension Points](#extension-points)
+  - [IMqttEnvironment](#imqttenvironment)
+  - [ICallbackDispatcher](#icallbackdispatcher)
+  - [IWebSocket](#iwebsocket)
+- [Notes](#notes)
 
 ## Core Classes
 
@@ -30,7 +62,7 @@ ReqResult disconnect(DisconnectArgs&& args = {}) noexcept;
 ClientError shutdown() noexcept;
 ```
 
-- `connect()`: Initiates connection to broker. Returns request result indicating success or error
+- `connect()`: Initiates non-blocking connection to broker. Returns request result indicating if operation was queued successfully. Actual connection result delivered via `onConnectEvent()` callback
 - `disconnect()`: Closes connection to broker with optional disconnect parameters
 - `shutdown()`: Releases all resources and stops operations. Safe to call without prior `disconnect()`
 
@@ -434,37 +466,59 @@ Access packet data through getter methods following MQTT specification structure
 
 ## Extension Points
 
+The library uses the adapter pattern to enable cross-platform support. By implementing these interfaces, you can extend kmMqtt to any platform, including closed-source console platforms.
+
 ### IMqttEnvironment
 
 Interface for platform-specific functionality.
 
 **Header**: `<cleanMqtt/Interfaces/IMqttEnvironment.h>`
 
-Implement this interface to provide custom socket, threading, and timing implementations. Default implementations are provided via `DefaultEnvironmentFactory`.
+Implement this interface to provide custom socket, threading, and timing implementations for your target platform. Default implementations are provided via `DefaultEnvironmentFactory` for Windows and Linux.
+
+**Example use cases**:
+- Console platforms (PlayStation, Xbox, Nintendo Switch)
+- Custom embedded systems
+- Specialized runtime environments
 
 ### ICallbackDispatcher
 
-Interface for controlling callback execution.
+Interface for synchronizing callback execution with your application's event loop.
 
 **Header**: `<cleanMqtt/Interfaces/ICallbackDispatcher.h>`
 
-Allows custom callback dispatching strategies. Built-in implementations:
-- `ImmediateDispatcher`: Invokes callbacks immediately (used in ASYNC mode)
+Allows integration with game engine event systems or custom threading models. Built-in implementations:
+- `ImmediateDispatcher`: Invokes callbacks immediately from internal thread (used in ASYNC mode)
 - `DefaultDispatcher`: Defers callbacks until `tick()` is called (used in SYNC mode)
+
+**Example use cases**:
+- Synchronize MQTT callbacks with game engine frame updates
+- Integrate with custom job systems
+- Control callback execution on specific threads
 
 ### IWebSocket
 
-Interface for WebSocket transport implementations.
+Interface for socket transport implementations.
 
 **Header**: `<cleanMqtt/Interfaces/IWebSocket.h>`
 
-`DefaultWebsocket` implementation uses IXWebSocket and is available when `BUILD_IXWEBSOCKET=ON`.
+The adapter pattern allows any socket implementation to be used. The library includes `DefaultWebsocket` (IXWebSocket-based) which works on:
+- **Tested**: Windows, Linux, Android
+- **Expected**: macOS (not tested but should work)
+
+Implement this interface to support:
+- Platform-specific socket APIs (e.g., BSD sockets, Winsock, console SDKs)
+- Custom network stacks
+- Non-WebSocket transports (pure TCP/TLS)
+
+**Note**: The name `IWebSocket` is historical; implementations can use any transport protocol, not just WebSocket.
 
 ---
 
 ## Notes
 
 - All operations returning `ReqResult` or `ClientError` are marked `noexcept`
-- MQTT 5.0 specific properties are ignored when connected with MQTT 3.1.1
+- The library supports **MQTT 5.0 only** (MQTT 3.1.1 support has been removed)
 - Session persistence to disk is not implemented; session state exists in memory only
 - Topic aliases are tracked per connection and reset on reconnection
+- Connection operations are non-blocking; use event callbacks to determine completion
