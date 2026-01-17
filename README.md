@@ -219,8 +219,10 @@ while (running) {
 
 ## Documentation
 
-- **[API Documentation](docs/API/index.html)** - Complete API reference generated with Doxygen
+- **[API Documentation](docs/API/index.html)** - Complete API reference (generated with Doxygen - see build instructions)
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
+
+> **Note**: API documentation must be generated using Doxygen. The HTML documentation will be available at `docs/API/index.html` after generation.
 
 ## Notes
 
