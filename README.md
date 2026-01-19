@@ -25,7 +25,7 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 
 - **MQTT 5.0 protocol support** - Full implementation of MQTT 5.0 specification
 - **Cross-platform socket support** - Uses adapter pattern for platform-specific socket implementations
-  - Included: IXWebSocket-based implementation for Windows, Linux, and Android (macOS not tested but should work)
+  - Included: IXWebSocket-based implementation for Windows & Linux
   - Extendable to other closed-source platforms via `IWebSocket` interface
 - **Flexible operation modes** - Synchronous and asynchronous tick modes
 - **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
@@ -43,9 +43,10 @@ The library targets C++14 and is designed for cross-platform use. Platform-speci
 
 - **Tested**: Windows and Linux
 - **Expected to work**: Android, macOS
-- **Extendable**: Any platform by implementing `IMqttEnvironment` and `IWebSocket` interfaces
+- **Extendable**: By implementing `IMqttEnvironment` and `IWebSocket` interfaces
 
 Default IXWebSocket-based socket implementation (`DefaultWebsocket`) works on Windows & Linux (and should on Mac, iOS, and Android).
+The library hasn't been tested on other platforms besides Windows and Linux yet.
 
 ## Dependencies
 
