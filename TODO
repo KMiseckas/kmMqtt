@@ -1,5 +1,8 @@
 TODO:
 - Remove need to create variable and payload headers on heap.
+- Add IThread interface and replace std::thread instances.
+- Add ITime interface and replace std::chrono.
+- Replace few left over try/catch, add checks in place and return error codes.
 
 SAMPLES
 - Add configs view.
@@ -11,7 +14,7 @@ MEMORY & OPTIMIZATIONS
 Other
 - Documentation
 - Github actions: CI/CD (Builds, Tests, Code Analysis, etc).
-- API Integration tests (with a test MQTT broker, maybe use docker).
+- API Integration tests (with a test MQTT broker).
 - Authorization interface? (Reason code `Not authorized` can be sent by client in PUBACK, PUBREC)
 
 
