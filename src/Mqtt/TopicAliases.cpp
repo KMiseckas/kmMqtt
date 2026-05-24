@@ -23,13 +23,13 @@ namespace kmMqtt
 			auto iter{ m_topicAliasToNameMap.find(topicAlias) };
 			if (iter != m_topicAliasToNameMap.end())
 			{
-				if (std::strcmp(topicName, iter->second) == 0)
+				if (iter->second == topicName)
 				{
 					LogTrace("TopicAliases", "Topic name [%s] already mapped under requested topic alias [%d].", topicName, topicAlias);
 					return true;
 				}
 
-				LogTrace("TopicAliases", "Topic alias[%d] found in existing mapping to topic name [%s]. Erasing mapping.", topicAlias, iter->second);
+				LogTrace("TopicAliases", "Topic alias[%d] found in existing mapping to topic name [%s]. Erasing mapping.", topicAlias, iter->second.c_str());
 				m_topicAliasToNameMap.erase(topicAlias);
 			}
 
@@ -50,7 +50,7 @@ namespace kmMqtt
 				return false;
 			}
 
-			outTopicName = iter->second;
+			outTopicName = iter->second.c_str();
 			return true;
 		}
 	}
