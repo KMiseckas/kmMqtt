@@ -6,6 +6,7 @@
 #include <doctest.h>
 #include <kmMqtt/Mqtt/TopicAliases.h>
 #include <cstring>
+#include <string>
 
 TEST_SUITE("Topic Aliases")
 {
@@ -56,6 +57,22 @@ TEST_SUITE("Topic Aliases")
 		CHECK(aliases.tryAddTopicAlias(topic, 7)); // Should return true, no change
 		CHECK(aliases.tryFindTopicName(7, out));
 		CHECK(std::strcmp(out, topic) == 0);
+	}
+
+	TEST_CASE("Stored alias does not depend on caller topic buffer")
+	{
+		TopicAliases aliases;
+		std::string mutableTopic{ "topic/original/path" };
+		const char* out = nullptr;
+
+		CHECK(aliases.tryAddTopicAlias(mutableTopic.c_str(), 9));
+
+		mutableTopic[0] = 'X';
+		mutableTopic[1] = 'X';
+
+		CHECK(aliases.tryFindTopicName(9, out));
+		CHECK(out != nullptr);
+		CHECK(std::strcmp(out, "topic/original/path") == 0);
 	}
 
 	TEST_CASE("Invalid topic name")

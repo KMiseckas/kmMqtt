@@ -8,6 +8,7 @@
 
 #include <unordered_map>
 #include <cstdint>
+#include <string>
 
 namespace kmMqtt
 {
@@ -20,7 +21,7 @@ namespace kmMqtt
 			bool tryFindTopicName(std::uint16_t topicAlias, const char*& outTopicName) const;
 
 		protected:
-			std::unordered_multimap<std::uint16_t, const char*> m_topicAliasToNameMap;
+			std::unordered_multimap<std::uint16_t, std::string> m_topicAliasToNameMap;
 		};
 	}
 
