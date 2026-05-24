@@ -11,10 +11,10 @@
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_CXX_COMPILER": "cl.exe",
         "ENABLE_BYTEBUFFER_SBO": true,
-        "BYTEBUFFER_SBO_MAX_SIZE": 256,
+        "BYTEBUFFER_SBO_MAX_SIZE": "256",
         "ENABLE_UNIQUEFUNCTION_SBO": true,
-        "UNIQUEFUNCTION_SBO_MAX_SIZE": 32,
-        "LOG_BUFFER_SIZE": 2048,
+        "UNIQUEFUNCTION_SBO_MAX_SIZE": "32",
+        "LOG_BUFFER_SIZE": "2048",
         "BUILD_IXWEBSOCKET": true
       },
       "condition": {
@@ -28,7 +28,7 @@
       "hidden": true,
       "inherits": "windows-base",
       "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
-      "description": "Windows preset with vcpkg toolchain (requires VCPKG_ROOT environment variable)",
+      "description": "Windows preset with vcpkg toolchain (requires VCPKG_ROOT environment variable)"
     },
     {
       "name": "linux-base",
@@ -38,10 +38,10 @@
       "installDir": "${sourceDir}/out/install/${presetName}",
       "cacheVariables": {
         "ENABLE_BYTEBUFFER_SBO": true,
-        "BYTEBUFFER_SBO_MAX_SIZE": 256,
+        "BYTEBUFFER_SBO_MAX_SIZE": "256",
         "ENABLE_UNIQUEFUNCTION_SBO": true,
-        "UNIQUEFUNCTION_SBO_MAX_SIZE": 32,
-        "LOG_BUFFER_SIZE": 2048,
+        "UNIQUEFUNCTION_SBO_MAX_SIZE": "32",
+        "LOG_BUFFER_SIZE": "2048",
         "BUILD_IXWEBSOCKET": true
       },
       "condition": {

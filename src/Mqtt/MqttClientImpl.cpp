@@ -1404,11 +1404,11 @@ namespace kmMqtt
 			{
 				m_sendQueue.clearQueue();
 				m_connectionStatus = ConnectionStatus::DISCONNECTED;
-				DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet)]() {m_reconnectEvent({ ReconnectionStatus::FAILED, false, 0, errorCode }, p); });
+				DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet), failedError = errorCode]() {m_reconnectEvent({ ReconnectionStatus::FAILED, false, 0, failedError }, p); });
 
 				if (m_connectionInfo.hasBeenConnected)
 				{
-					DISPATCH_EVENT_TO_CONSUMER([&]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, false, errorCode }); });
+					DISPATCH_EVENT_TO_CONSUMER([&, failedError = errorCode]() {m_disconnectEvent({ DisconnectReasonCode::NORMAL_DISCONNECTION, false, false, failedError }); });
 				}
 			}
 		}
@@ -1433,7 +1433,7 @@ namespace kmMqtt
 			m_sendQueue.clearQueue();
 			m_connectionInfo.hasBeenConnected = false;
 
-			DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet)]() {m_connectEvent({ false, true, errorCode }, p); });
+			DISPATCH_EVENT_TO_CONSUMER([&, p = std::move(packet), failedError = errorCode]() {m_connectEvent({ false, true, failedError }, p); });
 		}
 
 		void MqttClientImpl::handleTimeOutConnect()
