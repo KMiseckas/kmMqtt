@@ -290,7 +290,9 @@ namespace kmMqtt
 			static constexpr std::uint8_t kMax_Partial_Send_Loops{ 3 };
 			std::uint8_t partialSendLoopCount{ 0 };
 
-			int sendResult{ 0 };
+			std::size_t bytesSent{ 0U };
+			ClientErrorCode sendResult{ ClientErrorCode::No_Error };
+			int socketError{ NO_SOCKET_ERROR };
 
 			/**
 			 * Second step: Try sending all data in send buffer.
@@ -306,20 +308,20 @@ namespace kmMqtt
 				partialSendLoopCount++;
 
 				//Try sending data in buffer through socket.
-				sendResult = sendData(m_sendBuffer);
+				sendResult = sendData(m_sendBuffer, bytesSent, socketError);
 
 				//If send was successful (full or partial), process result.
-				if (sendResult >= 0)
+				if (sendResult == ClientErrorCode::No_Error)
 				{
 					outResult.controlPacketSent = true;
-					outResult.totalBytesSent = sendResult;
+					outResult.totalBytesSent = bytesSent;
 
 					/**
 					 * If all data was sent successfully, clear buffer and return.
 					 * If only partial data was sent, remove sent data from buffer and loop to try send remaining data.
 					 * Notify relevant listeners of sent packets.
 					 */
-					if (sendResult == static_cast<int>(m_sendBuffer.size()))
+					if (bytesSent == m_sendBuffer.size())
 					{
 						if (hasPingPacket)
 						{
@@ -370,7 +372,7 @@ namespace kmMqtt
 						}
 						else
 						{
-							m_sendBuffer.removeFromBeginning(sendResult);
+							m_sendBuffer.removeFromBeginning(bytesSent);
 						}
 
 						return true;
@@ -379,7 +381,7 @@ namespace kmMqtt
 					{
 						if (hasPingPacket)
 						{
-							if (sendResult >= static_cast<int>(pingPacketLastByte))
+							if (bytesSent >= pingPacketLastByte)
 							{
 								//Ping packet was sent successfully.
 								m_onPingSentCallback();
@@ -388,7 +390,7 @@ namespace kmMqtt
 							//Notify other tracked packets as sent if their end byte index is within the sent data range.
 							for (auto& metadata : m_packetsMetadataInBuffer)
 							{
-								if (sendResult >= static_cast<int>(metadata.endByteInBuffer))
+								if (bytesSent >= metadata.endByteInBuffer)
 								{
 									switch (metadata.packetType)
 									{
@@ -425,50 +427,59 @@ namespace kmMqtt
 							}
 						}
 
-						m_sendBuffer.removeFromBeginning(sendResult);
+						m_sendBuffer.removeFromBeginning(bytesSent);
 					}
+				}
+				else
+				{
+					break;
 				}
 			}
 
-			if (sendResult >= 0)
+			if (sendResult == ClientErrorCode::No_Error)
 			{
 				return true;
 			}
 
 			outLastSendResult = {};
 			outLastSendResult.noSendReason = NoSendReason::SOCKET_SEND_ERROR;
-			outLastSendResult.socketError = sendResult;
+			outLastSendResult.socketError = socketError;
 			outLastSendResult.wasSent = false;
 			return false;
 		}
 
-		int SendQueue::sendData(const ByteBuffer& data)
+		ClientErrorCode SendQueue::sendData(const ByteBuffer& data, std::size_t& outBytesSent, int& outSocketError)
 		{
+			outBytesSent = 0U;
+			outSocketError = NO_SOCKET_ERROR;
+
 			if (m_socket == nullptr)
 			{
 				LogError("SendQueue", "Cannot send data, socket is nullptr.");
-				return -1;
+				return ClientErrorCode::Failed_Sending_Packet;
 			}
 
 			LogTrace("SendQueue", "Sending data. Size: %d", data.size());
 
 			if (data.size() > 0)
 			{
-				int sendResult{ m_socket->send(data) };
+				const int sendResult{ m_socket->send(data) };
 
 				if (sendResult >= 0)
 				{
+					outBytesSent = static_cast<std::size_t>(sendResult);
 					LogTrace("SendQueue", "Data sent, Bytes: %d of %d.", sendResult, data.size());
-					return sendResult;
+					return ClientErrorCode::No_Error;
 				}
 
-				LogError("SendQueue", "Sending packet failed at socket level: %d", m_socket->getLastError());
+				outSocketError = m_socket->getLastError();
+				LogError("SendQueue", "Sending packet failed at socket level: %d", outSocketError);
 
-				return m_socket->getLastError();
+				return ClientErrorCode::Failed_Sending_Packet;
 			}
 
 			LogWarning("SendQueue", "Cannot send data, data buffer size is 0.");
-			return 0;
+			return ClientErrorCode::No_Error;
 		}
 	}
 }
