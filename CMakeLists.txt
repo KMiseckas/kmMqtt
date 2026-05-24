@@ -229,6 +229,7 @@ endif()
 
 if(BUILD_UNIT_TESTS)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Minimum CMake version for unit tests")
+    include(CTest)
     add_subdirectory(tests)
 endif()
 
