@@ -907,12 +907,12 @@ namespace kmMqtt
 				}
 				else
 				{
-					m_connectionInfo.serverKeepAlive = m_connectionInfo.connectArgs.keepAliveInSec * 1000;
+					m_connectionInfo.serverKeepAlive = m_connectionInfo.connectArgs.keepAliveInSec;
 				}
 
 				//Set-up ping interval
-				m_connectionInfo.pingInterval = Milliseconds{ m_connectionInfo.serverKeepAlive };
-				if (m_config.pingAlways && m_connectionInfo.serverKeepAlive <= 0)
+				m_connectionInfo.pingInterval = std::chrono::duration_cast<Milliseconds>(std::chrono::seconds{ m_connectionInfo.serverKeepAlive });
+				if (m_config.pingAlways && m_connectionInfo.serverKeepAlive == 0)
 				{
 					m_connectionInfo.pingInterval = Milliseconds{ m_config.defaultPingInterval };
 				}
