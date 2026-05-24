@@ -388,20 +388,21 @@ namespace kmMqtt
 							}
 
 							//Notify other tracked packets as sent if their end byte index is within the sent data range.
-							for (auto& metadata : m_packetsMetadataInBuffer)
+							auto metadataIter = m_packetsMetadataInBuffer.begin();
+							while (metadataIter != m_packetsMetadataInBuffer.end())
 							{
-								if (bytesSent >= metadata.endByteInBuffer)
+								if (bytesSent >= metadataIter->endByteInBuffer)
 								{
-									switch (metadata.packetType)
+									switch (metadataIter->packetType)
 									{
 									case PacketType::PUBLISH_COMPLETE:
-										m_onPubCompSentCallback(metadata.packetId);
+										m_onPubCompSentCallback(metadataIter->packetId);
 										break;
 									case PacketType::PUBLISH_RELEASED:
-										m_onPubRelSentCallback(metadata.packetId);
+										m_onPubRelSentCallback(metadataIter->packetId);
 										break;
 									case PacketType::PUBLISH_RECEIVED:
-										m_onPubRecSentCallback(metadata.packetId);
+										m_onPubRecSentCallback(metadataIter->packetId);
 										break;
 									case PacketType::PUBLISH:
 									case PacketType::AUTH:
@@ -422,8 +423,11 @@ namespace kmMqtt
 										break;
 									}
 
-									m_packetsMetadataInBuffer.erase(m_packetsMetadataInBuffer.begin());
+									metadataIter = m_packetsMetadataInBuffer.erase(metadataIter);
+									continue;
 								}
+
+								++metadataIter;
 							}
 						}
 
