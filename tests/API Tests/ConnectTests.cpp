@@ -314,6 +314,49 @@ TEST_SUITE("MqttClient Connect")
         CHECK(testContext.socketPtr->connectCalled);
     }
 
+    TEST_CASE("ConnectAck keepAlive fallback uses connect args seconds")
+    {
+        TestClientContext testContext{ {}, true };
+        auto args = TestClientContext::getDefaultConnectArgs();
+        args.keepAliveInSec = 120;
+
+        testContext.tryConnect(ClientErrorCode::No_Error, std::move(args));
+
+        ByteBuffer ackBuffer(5);
+        ackBuffer += 32;    //Type
+        ackBuffer += 3;     //Remaining Length
+        ackBuffer += 0;     //Flag
+        ackBuffer += 0;     //Reason
+        ackBuffer += 0;     //Property Length
+
+        testContext.receiveResponse(ackBuffer);
+
+        const auto& info = testContext.client->getConnectionInfo();
+        CHECK(info.serverKeepAlive == 120);
+        CHECK(info.pingInterval.count() == 120000);
+    }
+
+    TEST_CASE("ConnectAck server keepAlive property is converted to milliseconds once")
+    {
+        TestClientContext testContext{ {}, true };
+        testContext.tryConnect();
+
+        ByteBuffer ackBuffer(8);
+        ackBuffer += 32;    //Type
+        ackBuffer += 6;     //Remaining Length
+        ackBuffer += 0;     //Flag
+        ackBuffer += 0;     //Reason
+        ackBuffer += 3;     //Property Length
+        ackBuffer += static_cast<std::uint8_t>(PropertyType::SERVER_KEEP_ALIVE);
+        ackBuffer.append(static_cast<std::uint16_t>(2));
+
+        testContext.receiveResponse(ackBuffer);
+
+        const auto& info = testContext.client->getConnectionInfo();
+        CHECK(info.serverKeepAlive == 2);
+        CHECK(info.pingInterval.count() == 2000);
+    }
+
     TEST_CASE("Connect with username and password")
     {
         TestClientContext testContext;
