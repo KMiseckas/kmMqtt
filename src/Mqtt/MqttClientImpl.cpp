@@ -791,15 +791,16 @@ namespace kmMqtt
 			}
 			else
 			{
-				m_connectionStatus = ConnectionStatus::DISCONNECTED;
 				LogError("MqttClient", "Socket failed to connect!");
+				const bool wasReconnecting{ m_connectionStatus == ConnectionStatus::RECONNECTING };
 
-				if (m_connectionStatus == ConnectionStatus::RECONNECTING)
+				if (wasReconnecting)
 				{
 					reconnect();
 				}
 				else
 				{
+					m_connectionStatus = ConnectionStatus::DISCONNECTED;
 					DISPATCH_EVENT_TO_CONSUMER([&, p = ConnectAck{}]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
 				}
 			}
