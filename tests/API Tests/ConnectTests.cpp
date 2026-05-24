@@ -478,4 +478,63 @@ TEST_SUITE("MqttClient Connect")
 
         CHECK(connectEventFired);
     }
+
+    TEST_CASE("Reconnect callback failure keeps reconnecting flow active")
+    {
+        TestClientContext testContext{ {}, true };
+
+        auto address = TestClientContext::getDefaultConnectAddress();
+        address.otherAddresses.push_back(Address::createURL("", "localhost", "1884", ""));
+
+        int reconnectingEventCount{ 0 };
+        bool connectFailureEventFired{ false };
+
+        testContext.client->onReconnectEvent().add([&](const mqtt::ReconnectEventDetails& details, const mqtt::ConnectAck&)
+            {
+                if (details.status == mqtt::ReconnectionStatus::RECONNECTING)
+                {
+                    ++reconnectingEventCount;
+                }
+            });
+
+        testContext.client->onConnectEvent().add([&](const mqtt::ConnectEventDetails& details, const mqtt::ConnectAck&)
+            {
+                if (!details.isSuccessful && !details.hasReceivedAck && details.error == mqtt::ClientErrorCode::Socket_Connect_Failed)
+                {
+                    connectFailureEventFired = true;
+                }
+            });
+
+        testContext.tryConnect(mqtt::ClientErrorCode::No_Error, TestClientContext::getDefaultConnectArgs(), std::move(address));
+
+        ByteBuffer connectAck(5);
+        connectAck += 32;
+        connectAck += 3;
+        connectAck += 0;
+        connectAck += 0;
+        connectAck += 0;
+        testContext.receiveResponse(connectAck);
+
+        //Force the reconnect connect-attempt to fail; callback false is simulated manually below.
+        testContext.socketPtr->connectResult = false;
+
+        ByteBuffer disconnectPacket(4);
+        disconnectPacket += 224;
+        disconnectPacket += 2;
+        disconnectPacket += static_cast<std::uint8_t>(mqtt::DisconnectReasonCode::USE_ANOTHER_SERVER);
+        disconnectPacket += 0;
+        testContext.receiveResponse(disconnectPacket);
+
+        CHECK(testContext.client->getConnectionStatus() == mqtt::ConnectionStatus::RECONNECTING);
+        CHECK(reconnectingEventCount == 1);
+
+        //Simulate socket connect callback failure while in reconnecting state.
+        REQUIRE(testContext.socketPtr->onConnectCb != nullptr);
+        testContext.socketPtr->onConnectCb(false);
+        testContext.client->tick();
+
+        CHECK(testContext.client->getConnectionStatus() == mqtt::ConnectionStatus::RECONNECTING);
+        CHECK(reconnectingEventCount == 2);
+        CHECK(connectFailureEventFired == false);
+    }
 }
