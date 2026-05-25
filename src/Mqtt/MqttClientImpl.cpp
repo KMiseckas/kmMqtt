@@ -946,7 +946,7 @@ namespace kmMqtt
 				const uint16_t* serverReceiveMaximum{ nullptr };
 				if (packet.getVariableHeader().properties.tryGetProperty(PropertyType::RECEIVE_MAXIMUM, serverReceiveMaximum))
 				{
-					if (serverReceiveMaximum != 0) //0 Means default limit.
+					if (*serverReceiveMaximum != 0) //0 Means default limit.
 					{
 						m_connectionInfo.receiveMaximumAsServer = *serverReceiveMaximum;
 					}
