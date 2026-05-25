@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: false   # Don't cancel other jobs when one fails — see all failures at once.
+      fail-fast: false # Don't cancel other jobs when one fails — see all failures at once.
       matrix:
         include:
           # Linux
@@ -64,7 +64,10 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y ninja-build libssl-dev
+          sudo apt-get install -y ninja-build libssl-dev \
+            libwayland-dev wayland-protocols libxkbcommon-dev \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev \
+            libgl1-mesa-dev
 
       # Windows: activate MSVC compiler (required for cl.exe + Ninja)
       - name: Setup MSVC environment
@@ -80,8 +83,8 @@ jobs:
         if: ${{ matrix.use_vcpkg == true }}
         uses: lukka/run-vcpkg@v11
         with:
-          vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486  # must match builtin-baseline in vcpkg.json
-          runVcpkgInstall: true  # runs 'vcpkg install' from vcpkg.json automatically
+          vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486 # must match builtin-baseline in vcpkg.json
+          runVcpkgInstall: true # runs 'vcpkg install' from vcpkg.json automatically
 
       # Configure
       # cmake --preset reads binaryDir and all cacheVariables from CMakePresets.json.
