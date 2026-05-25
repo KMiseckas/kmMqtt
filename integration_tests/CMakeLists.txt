@@ -6,14 +6,31 @@ project ("kmMqttIntegrationTests" LANGUAGES CXX)
 # Broker configuration
 # Override these via -D<VAR>=... on the cmake command line to point at a
 # different broker (e.g. a local Mosquitto container in a CI pipeline).
+#
+# WS  (plain WebSocket)  — HiveMQ public broker defaults: ws://broker.hivemq.com:8000/mqtt
+# WSS (TLS  WebSocket)   — HiveMQ public broker defaults: wss://broker.hivemq.com:8884/mqtt
+#
+# To target a local broker (e.g. Mosquitto in Docker):
+#   cmake -DKMMQTT_IT_WS_HOST=localhost  -DKMMQTT_IT_WS_PORT=8000  \
+#         -DKMMQTT_IT_WSS_HOST=localhost -DKMMQTT_IT_WSS_PORT=8884 ...
 # ---------------------------------------------------------------------------
-set(KMMQTT_IT_BROKER_SCHEME  "ws"               CACHE STRING "WebSocket scheme for integration-test broker (ws / wss)")
-set(KMMQTT_IT_BROKER_HOST    "broker.hivemq.com" CACHE STRING "Hostname of the integration-test broker")
-set(KMMQTT_IT_BROKER_PORT    "8000"              CACHE STRING "Port of the integration-test broker")
-set(KMMQTT_IT_BROKER_PATH    "/mqtt"             CACHE STRING "WebSocket path of the integration-test broker")
-set(KMMQTT_IT_TIMEOUT_SEC    "15"               CACHE STRING "Seconds to wait for broker responses in each test")
 
-message(STATUS "Integration test broker: ${KMMQTT_IT_BROKER_SCHEME}://${KMMQTT_IT_BROKER_HOST}:${KMMQTT_IT_BROKER_PORT}${KMMQTT_IT_BROKER_PATH}")
+# WS endpoint
+set(KMMQTT_IT_WS_SCHEME  "ws"                CACHE STRING "Scheme for plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS_HOST    "broker.hivemq.com"  CACHE STRING "Hostname for plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS_PORT    "8000"               CACHE STRING "Port for plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS_PATH    "/mqtt"              CACHE STRING "WebSocket path for plain-WebSocket integration-test broker")
+
+# WSS endpoint
+set(KMMQTT_IT_WSS_SCHEME "wss"               CACHE STRING "Scheme for TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS_HOST   "broker.hivemq.com"  CACHE STRING "Hostname for TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS_PORT   "8884"              CACHE STRING "Port for TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS_PATH   "/mqtt"             CACHE STRING "WebSocket path for TLS-WebSocket integration-test broker")
+
+set(KMMQTT_IT_TIMEOUT_SEC "15"               CACHE STRING "Seconds to wait for broker responses in each test")
+
+message(STATUS "Integration test WS  broker: ${KMMQTT_IT_WS_SCHEME}://${KMMQTT_IT_WS_HOST}:${KMMQTT_IT_WS_PORT}${KMMQTT_IT_WS_PATH}")
+message(STATUS "Integration test WSS broker: ${KMMQTT_IT_WSS_SCHEME}://${KMMQTT_IT_WSS_HOST}:${KMMQTT_IT_WSS_PORT}${KMMQTT_IT_WSS_PATH}")
 
 file(GLOB_RECURSE integration_test_source_files "*.cpp" "*.h")
 add_executable(${PROJECT_NAME} ${integration_test_source_files})
@@ -31,10 +48,14 @@ target_link_libraries(${PROJECT_NAME} PRIVATE kmMqtt)
 
 # Expose broker config to the test binary as compile-time definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-    KMMQTT_IT_BROKER_SCHEME="${KMMQTT_IT_BROKER_SCHEME}"
-    KMMQTT_IT_BROKER_HOST="${KMMQTT_IT_BROKER_HOST}"
-    KMMQTT_IT_BROKER_PORT="${KMMQTT_IT_BROKER_PORT}"
-    KMMQTT_IT_BROKER_PATH="${KMMQTT_IT_BROKER_PATH}"
+    KMMQTT_IT_WS_SCHEME="${KMMQTT_IT_WS_SCHEME}"
+    KMMQTT_IT_WS_HOST="${KMMQTT_IT_WS_HOST}"
+    KMMQTT_IT_WS_PORT="${KMMQTT_IT_WS_PORT}"
+    KMMQTT_IT_WS_PATH="${KMMQTT_IT_WS_PATH}"
+    KMMQTT_IT_WSS_SCHEME="${KMMQTT_IT_WSS_SCHEME}"
+    KMMQTT_IT_WSS_HOST="${KMMQTT_IT_WSS_HOST}"
+    KMMQTT_IT_WSS_PORT="${KMMQTT_IT_WSS_PORT}"
+    KMMQTT_IT_WSS_PATH="${KMMQTT_IT_WSS_PATH}"
     KMMQTT_IT_TIMEOUT_SEC=${KMMQTT_IT_TIMEOUT_SEC}
 )
 

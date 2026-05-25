@@ -33,13 +33,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 - [tests] Added logger regression coverage for exception logging and formatted logging API call paths.
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
-- [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
+- [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`. Connects to a real MQTT 5.0 broker over plain WebSocket (WS) and TLS WebSocket (WSS) and validates connect / graceful-disconnect / non-graceful-disconnect end-to-end. Defaults to HiveMQ public broker (`broker.hivemq.com:8000/mqtt` for WS, `broker.hivemq.com:8884/mqtt` for WSS); all broker coordinates are overridable at CMake configure time via `KMMQTT_IT_WS_*` and `KMMQTT_IT_WSS_*` cache variables to support local/dockerised brokers. Toggled by new `BUILD_INTEGRATION_TESTS` option (default ON, requires `BUILD_IXWEBSOCKET=ON`). CTest label `integration` enables selective inclusion/exclusion (`ctest -L integration` / `ctest -LE integration`).
+- [ci] Added `integration_tests.yml` GitHub Actions workflow — builds and runs integration tests only (`-L integration`) on Linux (GCC) and Windows (MSVC x64). Triggers on push to `integration_tests` branch, PRs targeting `dev`/`master`, and `workflow_dispatch`.
+- [ci] `dev_ci.yml`, `release_ci.yml`, and `sanitizers.yml` now exclude integration tests from their CTest runs via `-LE integration`.
 - [ci] Added `dev_ci.yml` GitHub Actions workflow triggering on push/PR to `dev`.
 - [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to `master`.
 - [ci] Added `sanitizers.yml` GitHub Actions workflow triggering on push/PR to `master`.
 - [ci] Added `post_merge.yml` GitHub Actions workflow triggering on push to `master`.
 - [doc] Added README badges.
-- [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
 
 ## [1.0.0]
 

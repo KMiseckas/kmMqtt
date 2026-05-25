@@ -63,8 +63,10 @@ jobs:
       - name: Build
         run: cmake --build "${{ github.workspace }}/out/build/${{ matrix.preset }}"
 
+      # -LE integration excludes broker-dependent integration tests from sanitizer runs.
       - name: Test
         run: >
           ctest
           --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
           --output-on-failure
+          -LE integration
