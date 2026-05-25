@@ -24,6 +24,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] SendQueue regression test to verify socket send failures with positive OS error codes are reported as send errors.
 - [tests] Reconnect regression test covering socket connect callback failure while reconnecting.
 - [tests] Added connect-ack keepalive regression tests covering both fallback and SERVER_KEEP_ALIVE property paths.
+- [tests] Added PacketHelper regression coverage for will packets with null payload pointers.
+- [tests] Added receive-maximum regression coverage for broker `RECEIVE_MAXIMUM=0`, asserting default-limit behavior is preserved.
+- [tests] Added API regression coverage that default `MqttClient` construction starts async ticking.
+- [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 
 ## [1.0.0]
 
