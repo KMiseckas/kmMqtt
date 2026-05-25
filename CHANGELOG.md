@@ -32,6 +32,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 - [tests] Added logger regression coverage for exception logging and formatted logging API call paths.
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
+- [ci] Added `dev_ci.yml` GitHub Actions workflow triggering on push/PR to `dev`.
+- [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to `master`.
+- [ci] Added `sanitizers.yml` GitHub Actions workflow triggering on push/PR to `master`.
+- [ci] Added `post_merge.yml` GitHub Actions workflow triggering on push to `master`.
+- [doc] Added README badges.
 
 ## [1.0.0]
 
