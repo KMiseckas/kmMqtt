@@ -1,0 +1,188 @@
+# Post-merge quality jobs: coverage reports, API documentation, and GitHub Pages.
+#
+# Jobs:
+#   coverage-gcc    — GCC build + lcov HTML report + badge JSON
+#   docs            — Doxygen docs + embeds badge JSON → uploads Pages artifact
+#   deploy-pages    — Deploys the Pages artifact to GitHub Pages
+#
+# One-time GitHub setup required before Pages will work:
+#   Repo → Settings → Pages → Source → "GitHub Actions"
+#
+# Badge URL (add to README.md after first successful run):
+#   [![Coverage](https://img.shields.io/endpoint?url=https://kmiseckas.github.io/kmMqtt/coverage.json)](https://kmiseckas.github.io/kmMqtt/)
+#   [![Docs](https://img.shields.io/badge/docs-doxygen-blue)](https://kmiseckas.github.io/kmMqtt/)
+
+name: Post-Merge Quality
+
+on:
+  push:
+    branches: [master]
+
+# Required for the deploy-pages job.
+# 'contents: read' is the safe default for all other jobs.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Prevent two Pages deployments running at the same time.
+# cancel-in-progress: false so a second push waits rather than cancelling a deploy mid-flight.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  # GCC Coverage
+  # Steps:
+  #   1. Build with GCC coverage instrumentation (linux-gcc-coverage preset).
+  #   2. Run tests — this writes .gcda profiling data files next to the objects.
+  #   3. Run coverage_report target — lcov captures .gcda data then genhtml
+  #      renders the HTML report into out/build/linux-gcc-coverage/coverage/.
+  coverage-gcc:
+    name: "Coverage | GCC"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libssl-dev lcov
+
+      - name: Configure
+        run: cmake --preset linux-gcc-coverage
+
+      - name: Build
+        run: cmake --build "${{ github.workspace }}/out/build/linux-gcc-coverage"
+
+      # Run tests first — GCC's coverage_report target uses lcov --capture which
+      # reads .gcda files that are only written after the test binary executes.
+      - name: Run tests
+        run: >
+          ctest
+          --test-dir "${{ github.workspace }}/out/build/linux-gcc-coverage"
+          --output-on-failure
+
+      - name: Generate coverage report
+        run: >
+          cmake --build "${{ github.workspace }}/out/build/linux-gcc-coverage"
+          --target coverage_report
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-gcc
+          path: out/build/linux-gcc-coverage/coverage/
+          if-no-files-found: error
+          retention-days: 30
+
+      # Extract line coverage % from the filtered lcov info file that the
+      # coverage_report target wrote, then emit a shields.io endpoint JSON.
+      # The JSON is later embedded into the Pages site so the badge can be
+      # served at https://kmiseckas.github.io/kmMqtt/coverage.json.
+      - name: Extract coverage and write badge JSON
+        run: |
+          INFO="${{ github.workspace }}/out/build/linux-gcc-coverage/coverage_filtered.info"
+          COVERAGE=$(lcov --summary "$INFO" 2>&1 | grep -oP 'lines\.\.\.\.\.\.: \K[0-9.]+')
+
+          if [ -z "$COVERAGE" ]; then
+            echo "Warning: could not extract coverage percentage"
+            COVERAGE="unknown"
+            COLOR="lightgrey"
+          else
+            COLOR=$(awk -v c="$COVERAGE" 'BEGIN {
+              if      (c >= 90) print "brightgreen"
+              else if (c >= 75) print "green"
+              else if (c >= 60) print "yellowgreen"
+              else if (c >= 50) print "yellow"
+              else               print "red"
+            }')
+            echo "Coverage: ${COVERAGE}%  Color: ${COLOR}"
+          fi
+
+          printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' \
+            "$COVERAGE" "$COLOR" > coverage.json
+
+      - name: Upload badge JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-badge
+          path: coverage.json
+          if-no-files-found: error
+          retention-days: 30
+
+  # Doxygen Documentation + Pages artifact
+  # Depends on coverage-gcc so it can embed coverage.json into the Pages site.
+  # The uploaded Pages artifact contains:
+  #   docs/html/         — full Doxygen HTML
+  #   coverage.json      — shields.io badge endpoint
+  docs:
+    name: "Documentation | Doxygen"
+    needs: coverage-gcc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          # graphviz provides the 'dot' tool for class/call graph diagrams in Doxygen.
+          sudo apt-get install -y ninja-build doxygen graphviz
+
+      # BUILD_IXWEBSOCKET=OFF skips the IXWebSocket FetchContent fetch and the
+      # OpenSSL find_package, neither of which are needed to run Doxygen.
+      - name: Configure
+        run: cmake --preset linux-docs -DBUILD_IXWEBSOCKET=OFF
+
+      # The docs target has no DEPENDS on the library, so no library build step
+      # is needed. The target just runs doxygen against the configured Doxyfile.
+      - name: Generate documentation
+        run: >
+          cmake --build "${{ github.workspace }}/out/build/linux-docs"
+          --target docs
+
+      # Pull the badge JSON from the coverage-gcc job and place it at the root
+      # of the docs output so it is served at /coverage.json on GitHub Pages.
+      - name: Download coverage badge
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-badge
+          path: out/build/linux-docs/docs/html/
+
+      # upload-pages-artifact zips the directory and registers it for deployment.
+      # Only one call per workflow run is allowed.
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out/build/linux-docs/docs/html/
+
+      # Also keep a plain downloadable artifact alongside the deployed Pages.
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: out/build/linux-docs/docs/html/
+          if-no-files-found: error
+          retention-days: 90
+
+  # GitHub Pages Deployment
+  # Deploys the Pages artifact uploaded by the docs job.
+  # The 'environment' block links this deployment to the github-pages environment
+  # and surfaces the live URL in the GitHub UI.
+  deploy-pages:
+    name: "Deploy to GitHub Pages"
+    needs: docs
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+
+    steps:
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4

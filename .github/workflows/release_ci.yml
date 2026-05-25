@@ -1,0 +1,102 @@
+# Release CI: configure, build, and test across all supported platforms and presets.
+#
+# To add a new platform or build configuration:
+#   1. Add a CMake configure preset to CMakePresets.json.
+#   2. Add a corresponding entry to the matrix.include list below.
+#      - Set 'use_vcpkg: true' for any Windows preset that uses the windows-vcpkg base.
+#
+# Workflow triggers:
+#   - Every push to master.
+#   - Every pull request targeting master.
+
+name: Release Debug Builds and Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false   # Don't cancel other jobs when one fails — see all failures at once.
+      matrix:
+        include:
+          # Linux
+          - name: "Linux | GCC | Debug"
+            os: ubuntu-latest
+            preset: linux-gcc-debug
+
+          - name: "Linux | Clang | Debug"
+            os: ubuntu-latest
+            preset: linux-clang-debug
+
+          - name: "Linux | GCC | Release"
+            os: ubuntu-latest
+            preset: linux-gcc-release
+
+          - name: "Linux | Clang | Release"
+            os: ubuntu-latest
+            preset: linux-clang-release
+
+          # Windows
+          - name: "Windows | MSVC x64 | Debug"
+            os: windows-latest
+            preset: x64-debug
+            use_vcpkg: true
+
+          - name: "Windows | MSVC x64 | Release"
+            os: windows-latest
+            preset: x64-release
+            use_vcpkg: true
+
+    steps:
+      # Checkout
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Linux: install build tools and OpenSSL
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libssl-dev
+
+      # Windows: activate MSVC compiler (required for cl.exe + Ninja)
+      - name: Setup MSVC environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      # Windows: bootstrap vcpkg and install dependencies from vcpkg.json
+      # lukka/run-vcpkg checks out the exact vcpkg commit from builtin-baseline,
+      # runs bootstrap-vcpkg, and caches the installed packages between runs.
+      - name: Setup vcpkg
+        if: ${{ matrix.use_vcpkg == true }}
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486  # must match builtin-baseline in vcpkg.json
+          runVcpkgInstall: true  # runs 'vcpkg install' from vcpkg.json automatically
+
+      # Configure
+      # cmake --preset reads binaryDir and all cacheVariables from CMakePresets.json.
+      # VCPKG_ROOT is set by the lukka/run-vcpkg action on Windows runs.
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      # Build
+      # Targets the binaryDir defined by the preset (out/build/<preset-name>).
+      - name: Build
+        run: cmake --build "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+
+      # Test
+      - name: Test
+        run: >
+          ctest
+          --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+          --output-on-failure

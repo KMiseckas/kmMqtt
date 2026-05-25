@@ -2,6 +2,16 @@ Licensed under Apache 2.0. See LICENSE and NOTICE.
 
 # kmMqtt
 
+[![CI](https://github.com/KMiseckas/kmMqtt/actions/workflows/release_ci.yml/badge.svg?branch=master)](https://github.com/KMiseckas/kmMqtt/actions/workflows/release_ci.yml)
+[![Sanitizers](https://github.com/KMiseckas/kmMqtt/actions/workflows/sanitizers.yml/badge.svg?branch=master)](https://github.com/KMiseckas/kmMqtt/actions/workflows/sanitizers.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://kmiseckas.github.io/kmMqtt/coverage.json)](https://kmiseckas.github.io/kmMqtt/)
+[![Docs](https://img.shields.io/badge/docs-doxygen-blue)](https://kmiseckas.github.io/kmMqtt/)
+
+[![C++14](https://img.shields.io/badge/C%2B%2B-14-blue?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/14)
+[![MQTT](https://img.shields.io/badge/MQTT-5.0-orange)](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
+[![License](https://img.shields.io/github/license/KMiseckas/kmMqtt)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20Adaptable-lightgrey)](https://github.com/KMiseckas/kmMqtt#supported-platforms)
+
 A C++14 MQTT 5.0 client library designed for game development and cross-platform applications.
 kmMqtt started as a hobby project to deepen my understanding of MQTT 5.0 and to practice designing and implementing a clean, cross-platform C++ core SDK while learning modern build and tooling workflows.
 
@@ -31,11 +41,11 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 - **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
 - **Automatic reconnection handling** - Built-in reconnection logic
 - **Full QoS support** - QoS 0, 1, and 2 message delivery
-- **Session state management** - In-memory session state tracking*
+- **Session state management** - In-memory session state tracking\*
 - **SBO** - Small buffer optimization for reduced heap allocations in critical paths.
 - **CMake** - Uses cmake for build file generation.
 
-*Disk saved session states currently not-included and WIP.
+\*Disk saved session states currently not-included and WIP.
 
 ## Supported Platforms
 
@@ -85,10 +95,10 @@ client.onConnectEvent().add([&client](const ConnectEventDetails& details) {
         std::string payloadStr{"Hello MQTT"};
         ByteBuffer payload(payloadStr.length());
         payload.append(payloadStr.data(), payloadStr.length());
-        
+
         PublishOptions pubOpts;
         pubOpts.qos = Qos::QOS_1;
-        
+
         client.publish("test/topic", std::move(payload), std::move(pubOpts));
     } else {
         // Handle connection error
@@ -162,10 +172,10 @@ if (connected) {
     std::string payloadStr{"Hello MQTT"};
     ByteBuffer payload(payloadStr.length());
     payload.append(payloadStr.data(), payloadStr.length());
-    
+
     PublishOptions pubOpts;
     pubOpts.qos = Qos::QOS_1;
-    
+
     client.publish("test/topic", std::move(payload), std::move(pubOpts));
 }
 ```
