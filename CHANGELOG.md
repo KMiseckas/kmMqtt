@@ -32,6 +32,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 - [tests] Added logger regression coverage for exception logging and formatted logging API call paths.
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
+- [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
 
 ## [1.0.0]
 
