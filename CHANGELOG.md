@@ -18,6 +18,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] Default client construction now starts async ticking when using default ASYNC options.
 - [lib] SessionState message updates now evaluate reordering against pre-update status, restoring expected move-to-end behavior for QoS state transitions.
 - [lib] Websocket fallback builds now compile with `BUILD_IXWEBSOCKET=OFF` by keeping `DefaultWebsocket` declarations available in both build modes.
+- [lib] Logger compile guards now provide a defensive `LOG_LEVEL` fallback when logs are enabled but no explicit compile definition is supplied.
 
 ### Added
 
@@ -28,6 +29,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added receive-maximum regression coverage for broker `RECEIVE_MAXIMUM=0`, asserting default-limit behavior is preserved.
 - [tests] Added API regression coverage that default `MqttClient` construction starts async ticking.
 - [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
+- [tests] Added logger regression coverage for exception logging and formatted logging API call paths.
 
 ## [1.0.0]
 
