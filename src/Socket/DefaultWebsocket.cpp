@@ -3,9 +3,10 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file in the project root for full license information.
 
+#include "kmMqtt/Sockets/DefaultWebsocket.h"
+
 #ifdef BUILD_IXWEBSOCKET
 
-#include "kmMqtt/Sockets/DefaultWebsocket.h"
 #include "kmMqtt/Logger/Log.h"
 
 #include <ixwebsocket/IXNetSystem.h>

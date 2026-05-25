@@ -8,10 +8,11 @@
 
 #include <kmMqtt/Interfaces/IWebSocket.h>
 
-#ifdef BUILD_IXWEBSOCKET
-#include <ixwebsocket/IXWebSocket.h>
 #include <memory>
 #include <string>
+
+#ifdef BUILD_IXWEBSOCKET
+#include <ixwebsocket/IXWebSocket.h>
 #endif
 
 namespace kmMqtt
