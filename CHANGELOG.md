@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] Websocket fallback builds now compile with `BUILD_IXWEBSOCKET=OFF` by keeping `DefaultWebsocket` declarations available in both build modes.
 - [lib] Logger compile guards now provide a defensive `LOG_LEVEL` fallback when logs are enabled but no explicit compile definition is supplied.
 - [lib][api] Breaking: `ClientErrorCode::TimeOut` and `ClientErrorCode::Using_Tick_Async` now use unique numeric values (`10` and `11`) instead of overlapping with existing codes.
+- [lib] Compilation error on Clang/GCC due to move operation on reference in SessionState.
 
 ### Added
 
