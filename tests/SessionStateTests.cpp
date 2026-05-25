@@ -104,6 +104,50 @@ TEST_SUITE("SessionState Tests")
         state.updateMessage(44, PublishMessageStatus::WaitingForPubComp);
     }
 
+    TEST_CASE("updateMessage moves message to end for pubrel transition")
+    {
+        SessionState state("client_order", 1000, 500);
+
+        PublishOptions options;
+        options.qos = Qos::QOS_1;
+
+        ByteBuffer payload1{ 1 };
+        payload1 += 0x01;
+        ByteBuffer payload2{ 1 };
+        payload2 += 0x02;
+        ByteBuffer payload3{ 1 };
+        payload3 += 0x03;
+
+        CHECK(state.addMessage(10, PublishMessageData{ "topic/1", std::move(payload1), options }) == ClientErrorCode::No_Error);
+        CHECK(state.addMessage(20, PublishMessageData{ "topic/2", std::move(payload2), options }) == ClientErrorCode::No_Error);
+        CHECK(state.addMessage(30, PublishMessageData{ "topic/3", std::move(payload3), options }) == ClientErrorCode::No_Error);
+
+        state.updateMessage(10, PublishMessageStatus::WaitingForPubRel);
+
+        std::vector<std::uint16_t> order;
+        for (const auto& msg : state.messages())
+        {
+            order.push_back(msg.data.packetID);
+        }
+
+        REQUIRE(order.size() == 3);
+        CHECK(order[0] == 20);
+        CHECK(order[1] == 30);
+        CHECK(order[2] == 10);
+
+        bool movedFound = false;
+        for (const auto& msg : state.messages())
+        {
+            if (msg.data.packetID == 10)
+            {
+                movedFound = true;
+                CHECK(msg.data.status == PublishMessageStatus::WaitingForPubRel);
+                break;
+            }
+        }
+        CHECK(movedFound);
+    }
+
     TEST_CASE("removeMessage erases")
     {
         SessionState state("client5", 1000, 500);
