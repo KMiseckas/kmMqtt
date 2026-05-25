@@ -38,6 +38,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [ci] Added `sanitizers.yml` GitHub Actions workflow triggering on push/PR to `master`.
 - [ci] Added `post_merge.yml` GitHub Actions workflow triggering on push to `master`.
 - [doc] Added README badges.
+- [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
 
 ## [1.0.0]
 

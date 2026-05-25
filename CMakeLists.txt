@@ -233,6 +233,14 @@ if(BUILD_UNIT_TESTS)
     add_subdirectory(tests)
 endif()
 
+if(BUILD_INTEGRATION_TESTS)
+    if(NOT COMMAND add_test)
+        # CTest may not have been included yet (e.g. when unit tests are off)
+        include(CTest)
+    endif()
+    add_subdirectory(integration_tests)
+endif()
+
 #Add coverage report generation if coverage is enabled
 if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
