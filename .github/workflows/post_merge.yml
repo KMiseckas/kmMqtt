@@ -54,6 +54,15 @@ jobs:
             libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev \
             libgl1-mesa-dev
 
+      # Cache FetchContent dependency sources and build artefacts (_deps/) between runs.
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/out/build/linux-gcc-coverage/_deps
+          key: Linux-deps-linux-gcc-coverage-${{ hashFiles('CMakeLists.txt', 'examples/CMakeLists.txt') }}
+          restore-keys: |
+            Linux-deps-linux-gcc-coverage-
+
       - name: Configure
         run: cmake --preset linux-gcc-coverage
 
