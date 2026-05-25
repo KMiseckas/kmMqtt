@@ -230,6 +230,34 @@ TEST_SUITE("MqttClient Receive Maximum")
         CHECK(info.receiveMaximumAsServer == 65535);
     }
 
+    TEST_CASE("Receive Maximum - Server side - Zero value keeps default limit")
+    {
+        Config config;
+        TestClientContext testContext{ config };
+
+        ConnectArgs args{ "Id" };
+
+        ConnectAddress address{ Address::createURL("", "localhost", "1883", "") };
+        testContext.client->connect(std::move(args), std::move(address));
+        CHECK(testContext.client->tick().noError());
+
+        ByteBuffer connAckBuffer(8);
+        connAckBuffer += 0x20; // CONNACK type
+        connAckBuffer += 0x06; // Remaining length
+        connAckBuffer += 0x00; // Session present = false
+        connAckBuffer += 0x00; // Reason code = success
+        connAckBuffer += 0x03; // Properties length
+        connAckBuffer += 0x21; // Receive Maximum property ID
+        connAckBuffer += 0x00; // Value MSB
+        connAckBuffer += 0x00; // Value LSB (0 means default limit)
+
+        testContext.receiveResponse(connAckBuffer);
+        CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
+
+        const MqttConnectionInfo& info = testContext.client->getConnectionInfo();
+        CHECK(info.receiveMaximumAsServer == 65535);
+    }
+
     TEST_CASE("Receive Maximum - Client side - QOS 0 does not affect receive maximum")
     {
         Config config;

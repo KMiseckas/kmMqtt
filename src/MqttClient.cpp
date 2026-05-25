@@ -14,7 +14,14 @@ namespace kmMqtt
 		{
 			auto envFactory{ DefaultEnvironmentFactory() };
 			auto env{ envFactory.createEnvironment() };
-			m_impl = std::make_unique<MqttClientImpl>(env, MqttClientOptions{});
+			const MqttClientOptions defaultOptions{};
+			m_impl = std::make_unique<MqttClientImpl>(env, defaultOptions);
+
+			if (defaultOptions.getTickMode() == TickMode::ASYNC)
+			{
+				m_impl->tickAsync();
+			}
+
 			delete env;
 		}
 
