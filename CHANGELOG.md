@@ -13,7 +13,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] SendQueue now returns SDK send status with out bytes-sent and socket-error values, preventing positive socket error codes from being treated as successful bytes sent.
 - [lib] Reconnect socket-connect failure path now branches on the pre-failure state before status mutation, restoring reconnect retry flow when a reconnect attempt fails at socket callback time.
 - [lib] Keepalive negotiation now consistently treats broker and client keepalive as seconds and converts once at ping scheduling, fixing mixed seconds/milliseconds behavior.
-- [cmake] Fixed `LOG_LEVEL_TARGET` cache declaration so `LOG_LEVEL` compile definitions stay numeric and stable across CMake configuration updates.
 - [lib] Logger compile guards now provide a defensive `LOG_LEVEL` fallback when logs are enabled but no explicit compile definition is supplied.
 
 ### Added
