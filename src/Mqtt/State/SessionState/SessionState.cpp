@@ -95,7 +95,7 @@ namespace kmMqtt
 		ClientErrorCode SessionState::addPrevStateMessage(const std::uint16_t packetId, const PublishMessageData& publishMsgData) noexcept
 		{
 			//std::chrono::steady_clock::now() to Retry ASAP when restoring previous session state messages.
-			MessageContainerData data{ packetId, std::move(publishMsgData), std::chrono::steady_clock::now(), true };
+			MessageContainerData data{ packetId, publishMsgData, std::chrono::steady_clock::now(), true };
 
 			//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
 			/*if (m_persistantStore != nullptr)

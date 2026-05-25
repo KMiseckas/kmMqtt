@@ -1,0 +1,70 @@
+# Sanitizer CI: runs ASan, UBSan, and TSan builds on Linux.
+#
+# Sanitizers catch memory errors, undefined behavior, and data races at runtime.
+# These run separately from main CI because they are slower and only work on Linux.
+#
+# To add a new sanitizer preset:
+#   1. Add a configure preset in CMakePresets.json with the desired ENABLE_*SAN flags.
+#   2. Add an entry to matrix.include below.
+
+name: Sanitizers
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+  sanitizers:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # AddressSanitizer + UndefinedBehaviorSanitizer
+          - name: "ASan + UBSan | GCC"
+            preset: linux-gcc-ubsan-asan
+
+          - name: "ASan + UBSan | Clang"
+            preset: linux-clang-ubsan-asan
+
+          # ThreadSanitizer
+          - name: "TSan | GCC"
+            preset: linux-gcc-tsan
+
+          - name: "TSan | Clang"
+            preset: linux-clang-tsan
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y ninja-build libssl-dev \
+            libwayland-dev wayland-protocols libxkbcommon-dev \
+            libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libxext-dev \
+            libgl1-mesa-dev
+
+      # Cache FetchContent dependency sources and build artefacts (_deps/) between runs.
+      - name: Cache FetchContent dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/out/build/${{ matrix.preset }}/_deps
+          key: ${{ runner.os }}-deps-${{ matrix.preset }}-${{ hashFiles('CMakeLists.txt', 'examples/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-${{ matrix.preset }}-
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+
+      - name: Test
+        run: >
+          ctest
+          --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+          --output-on-failure

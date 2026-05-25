@@ -20,6 +20,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] Websocket fallback builds now compile with `BUILD_IXWEBSOCKET=OFF` by keeping `DefaultWebsocket` declarations available in both build modes.
 - [lib] Logger compile guards now provide a defensive `LOG_LEVEL` fallback when logs are enabled but no explicit compile definition is supplied.
 - [lib][api] Breaking: `ClientErrorCode::TimeOut` and `ClientErrorCode::Using_Tick_Async` now use unique numeric values (`10` and `11`) instead of overlapping with existing codes.
+- [lib] Compilation error on Clang/GCC due to move operation on reference in SessionState.
 
 ### Added
 
@@ -32,6 +33,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 - [tests] Added logger regression coverage for exception logging and formatted logging API call paths.
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
+- [ci] Added `dev_ci.yml` GitHub Actions workflow triggering on push/PR to `dev`.
+- [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to `master`.
+- [ci] Added `sanitizers.yml` GitHub Actions workflow triggering on push/PR to `master`.
+- [ci] Added `post_merge.yml` GitHub Actions workflow triggering on push to `master`.
+- [doc] Added README badges.
 
 ## [1.0.0]
 
