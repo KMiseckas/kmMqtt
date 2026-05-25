@@ -76,15 +76,23 @@ jobs:
         with:
           arch: x64
 
-      # Windows: bootstrap vcpkg and install dependencies from vcpkg.json
-      # lukka/run-vcpkg checks out the exact vcpkg commit from builtin-baseline,
-      # runs bootstrap-vcpkg, and caches the installed packages between runs.
+      # Cache the vcpkg tool + installed packages, then run lukka/run-vcpkg.
+      - name: Cache vcpkg
+        if: ${{ matrix.use_vcpkg == true }}
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg
+          key: vcpkg-af752f21c9d79ba3df9cb0250ce2233933f58486-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-af752f21c9d79ba3df9cb0250ce2233933f58486-
+
       - name: Setup vcpkg
         if: ${{ matrix.use_vcpkg == true }}
         uses: lukka/run-vcpkg@v11
         with:
+          vcpkgDirectory: ${{ github.workspace }}/vcpkg # must match the cache path above
           vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486 # must match builtin-baseline in vcpkg.json
-          runVcpkgInstall: true # runs 'vcpkg install' from vcpkg.json automatically
+          runVcpkgInstall: true # no-op on cache hit; installs on first run or after key change
 
       # Cache FetchContent dependency sources and build artefacts (_deps/) between runs.
       # Key: OS + preset + hash of all files containing FetchContent declarations.
