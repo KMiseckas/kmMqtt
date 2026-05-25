@@ -23,6 +23,14 @@ TEST_SUITE("MqttClient API Tests")
 		CHECK_NOTHROW(MqttClient());
 	}
 
+	TEST_CASE("Constructor - Default starts ASYNC ticking")
+	{
+		MqttClient client;
+		CHECK(client.getIsTickAsync() == true);
+
+		client.shutdown();
+	}
+
 	TEST_CASE("Constructor - Custom Environment and Options")
 	{
 		TestEnvironment env;

@@ -82,7 +82,9 @@ namespace kmMqtt
 				UTF8String{conArgs.clientId},
 				std::move(willProperties),
 				UTF8String{conArgs.will == nullptr ? "" : conArgs.will->willTopic},
-				conArgs.will == nullptr ? BinaryData() : BinaryData{conArgs.will->payload->size(), conArgs.will->payload->bytes()},
+				(conArgs.will != nullptr && conArgs.will->payload != nullptr)
+					? BinaryData{ conArgs.will->payload->size(), conArgs.will->payload->bytes() }
+					: BinaryData(),
 				UTF8String{conArgs.username},
 				BinaryData{static_cast<std::uint16_t>(conArgs.password.size()), reinterpret_cast<const std::uint8_t*>(conArgs.password.c_str())}
 			};

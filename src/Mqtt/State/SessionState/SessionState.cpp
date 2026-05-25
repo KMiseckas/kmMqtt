@@ -132,9 +132,10 @@ namespace kmMqtt
 					return;
 				}
 
+				const PublishMessageStatus oldStatus{ iter->data.status };
 				iter->data.status = newStatus;
 
-				const bool bringToFront{ shouldBringToFront(iter->data.status, newStatus) };
+				const bool bringToFront{ shouldBringToFront(oldStatus, newStatus) };
 				if (bringToFront)
 				{
 					m_messages.moveToEnd(packetId);
