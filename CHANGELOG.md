@@ -13,12 +13,14 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] SendQueue now returns SDK send status with out bytes-sent and socket-error values, preventing positive socket error codes from being treated as successful bytes sent.
 - [lib] Reconnect socket-connect failure path now branches on the pre-failure state before status mutation, restoring reconnect retry flow when a reconnect attempt fails at socket callback time.
 - [lib] Keepalive negotiation now consistently treats broker and client keepalive as seconds and converts once at ping scheduling, fixing mixed seconds/milliseconds behavior.
+- [lib][api] Breaking: `ClientErrorCode::TimeOut` and `ClientErrorCode::Using_Tick_Async` now use unique numeric values (`10` and `11`) instead of overlapping with existing codes.
 
 ### Added
 
 - [tests] SendQueue regression test to verify socket send failures with positive OS error codes are reported as send errors.
 - [tests] Reconnect regression test covering socket connect callback failure while reconnecting.
 - [tests] Added connect-ack keepalive regression tests covering both fallback and SERVER_KEEP_ALIVE property paths.
+- [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
 
 ## [1.0.0]
 
