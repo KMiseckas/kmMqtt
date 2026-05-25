@@ -6,6 +6,9 @@
 #include <doctest.h>
 #include <kmMqtt/Mqtt/ClientError.h>
 
+#include <array>
+#include <set>
+
 using namespace kmMqtt::mqtt;
 
 TEST_SUITE("ClientError Tests")
@@ -111,5 +114,26 @@ TEST_SUITE("ClientError Tests")
 		{
 			CHECK(ClientErrorCode::No_Error != error);
 		}
+	}
+
+	TEST_CASE("Base ClientErrorCode numeric values are unique")
+	{
+		const std::array<std::uint16_t, 12> baseCodes{
+			static_cast<std::uint16_t>(ClientErrorCode::No_Error),
+			static_cast<std::uint16_t>(ClientErrorCode::Unknown),
+			static_cast<std::uint16_t>(ClientErrorCode::Invalid_Argument),
+			static_cast<std::uint16_t>(ClientErrorCode::Missing_Argument),
+			static_cast<std::uint16_t>(ClientErrorCode::Not_Connected),
+			static_cast<std::uint16_t>(ClientErrorCode::Socket_Error),
+			static_cast<std::uint16_t>(ClientErrorCode::MQTT_Not_Active),
+			static_cast<std::uint16_t>(ClientErrorCode::Failed_Sending_Packet),
+			static_cast<std::uint16_t>(ClientErrorCode::Failed_Writing_To_Persistent_Storage),
+			static_cast<std::uint16_t>(ClientErrorCode::Failed_Decoding_Packet),
+			static_cast<std::uint16_t>(ClientErrorCode::TimeOut),
+			static_cast<std::uint16_t>(ClientErrorCode::Using_Tick_Async)
+		};
+
+		const std::set<std::uint16_t> uniqueCodes(baseCodes.begin(), baseCodes.end());
+		CHECK(uniqueCodes.size() == baseCodes.size());
 	}
 }
