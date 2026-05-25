@@ -16,6 +16,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] CONNECT packet composition now guards will-payload encoding when a will payload pointer is absent, preventing null dereference in packet creation.
 - [lib] CONNACK receive-maximum parsing now checks the decoded value (not pointer presence), so broker value `0` correctly keeps the protocol default limit.
 - [lib] Default client construction now starts async ticking when using default ASYNC options.
+- [lib] SessionState message updates now evaluate reordering against pre-update status, restoring expected move-to-end behavior for QoS state transitions.
 
 ### Added
 
@@ -25,6 +26,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added PacketHelper regression coverage for will packets with null payload pointers.
 - [tests] Added receive-maximum regression coverage for broker `RECEIVE_MAXIMUM=0`, asserting default-limit behavior is preserved.
 - [tests] Added API regression coverage that default `MqttClient` construction starts async ticking.
+- [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 
 ## [1.0.0]
 
