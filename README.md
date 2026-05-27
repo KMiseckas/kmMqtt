@@ -19,6 +19,7 @@ kmMqtt started as a hobby project to deepen my understanding of MQTT 5.0 and to 
 
 - [Overview](#overview)
 - [Features](#features)
+- [Protocol Support Notes](#protocol-support-notes)
 - [Supported Platforms](#supported-platforms)
 - [Dependencies](#dependencies)
 - [Building](#building)
@@ -33,7 +34,7 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 
 ## Features
 
-- **MQTT 5.0 protocol support** - Full implementation of MQTT 5.0 specification
+- **MQTT 5.0 protocol support** - Broad MQTT 5.0 client coverage for connect/publish/subscribe/session workflows, with known gaps documented below
 - **Cross-platform socket support** - Uses adapter pattern for platform-specific socket implementations
   - Included: IXWebSocket-based implementation for Windows & Linux
   - Extendable to other closed-source platforms via `IWebSocket` interface
@@ -46,6 +47,17 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 - **CMake** - Uses cmake for build file generation.
 
 \*Disk saved session states currently not-included and WIP.
+
+## Protocol Support Notes
+
+| Area                                                                                      | Status                        | Notes                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core MQTT client workflows (connect, publish, subscribe, QoS 0/1/2, keepalive, reconnect) | Implemented                   | Covered by unit/API tests and integration smoke/full suites.                                                                                              |
+| CONNECT username/password authentication                                                  | Implemented                   | Standard MQTT CONNECT username/password fields are supported and can be used for broker authentication.                                                   |
+| MQTT 5 AUTH packet exchange (enhanced auth flow)                                          | Partial / not fully supported | `AUTH` is currently treated as unsupported in the receive queue, so full enhanced-auth exchange is not implemented yet.                                   |
+| `ConnectArgs` extended auth fields                                                        | Partial                       | `extendedAuthenticationMethod` and `extendedAuthenticationData` are exposed in API, but are not fully wired end-to-end for production AUTH workflows yet. |
+
+If your broker uses standard CONNECT username/password auth, that path is supported. If your broker or deployment requires enhanced AUTH packet exchange, treat that path as not fully supported for now.
 
 ## Supported Platforms
 
@@ -222,6 +234,8 @@ while (running) {
 - **[Coverage](https://kmiseckas.github.io/kmMqtt/)** - Click Coverage top right corner.
 - **[API Documentation](https://kmiseckas.github.io/kmMqtt/)** - Complete API reference (generated with Doxygen - see build instructions)
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
+- **[docs/CI.md](docs/CI.md)** - CI workflow overview, triggers, and quality-pipeline map
+- **[docs/INTEGRATION_TESTS.md](docs/INTEGRATION_TESTS.md)** - Integration suite structure, labels, broker overrides, and local run commands
 
 > **Note**: API documentation must be generated using Doxygen. The HTML documentation will be available at `docs/API/index.html` after generation.
 
