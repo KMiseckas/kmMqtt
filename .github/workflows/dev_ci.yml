@@ -6,7 +6,6 @@
 #      - Set 'use_vcpkg: true' for any Windows preset that uses the windows-vcpkg base.
 #
 # Workflow triggers:
-#   - Every push to dev.
 #   - Every pull request targeting dev.
 
 name: Dev Debug Builds and Tests
@@ -108,3 +107,12 @@ jobs:
           ctest
           --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
           --output-on-failure
+          -LE integration
+
+      - name: Integration smoke tests (Linux GCC Debug only)
+        if: runner.os == 'Linux' && matrix.preset == 'linux-gcc-debug'
+        run: >
+          ctest
+          --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+          --output-on-failure
+          -L integration_public_smoke

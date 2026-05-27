@@ -10,18 +10,18 @@
 
 int main(int argc, char** argv)
 {
-    doctest::Context context;
-    context.applyCommandLine(argc, argv);
+	doctest::Context context;
+	context.applyCommandLine(argc, argv);
 
-    kmMqtt::DefaultLogger logger;
-    kmMqtt::setLogger(&logger, true);
+	kmMqtt::DefaultLogger logger;
+	kmMqtt::setLogger(&logger, true);
 
-    int res = context.run();
+	int res = context.run();
 
-    if (context.shouldExit())
-    {
-        return res;
-    }
+	if (context.shouldExit())
+	{
+		return res;
+	}
 
-    return res;
+	return res;
 }

@@ -35,7 +35,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
 - [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
 - [ci] Added `dev_ci.yml` GitHub Actions workflow triggering on push/PR to `dev`.
-- [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to `master`.
+- [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to  `master`.
 - [ci] Added `sanitizers.yml` GitHub Actions workflow triggering on push/PR to `master`.
 - [ci] Added `post_merge.yml` GitHub Actions workflow triggering on push to `master`.
 - [doc] Added README badges.
