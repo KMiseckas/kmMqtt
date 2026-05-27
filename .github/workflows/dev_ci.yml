@@ -75,13 +75,18 @@ jobs:
             vcpkg-af752f21c9d79ba3df9cb0250ce2233933f58486-
 
       # Skipped on push when the vcpkg cache was an exact hit — nothing new to install.
+      # VCPKG_BINARY_SOURCES enables the GitHub Actions binary cache backend: compiled package
+      # archives (e.g. openssl) are stored and restored keyed by package+version+triplet,
+      # so even on a directory-cache miss only changed packages are rebuilt from source.
       - name: Setup vcpkg
         if: ${{ matrix.use_vcpkg == true && (github.event_name == 'pull_request' || steps.vcpkg-cache.outputs.cache-hit != 'true') }}
         uses: lukka/run-vcpkg@v11
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         with:
           vcpkgDirectory: ${{ github.workspace }}/vcpkg # must match the cache path above
           vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486 # must match builtin-baseline in vcpkg.json
-          runVcpkgInstall: true # no-op on cache hit; installs on first run or after key change
+          runVcpkgInstall: ${{ steps.vcpkg-cache.outputs.cache-hit != 'true' }} # skip install on exact hit; packages are already in vcpkg/installed/
 
       # Cache FetchContent dependency sources and build artefacts (_deps/) between runs.
       # Key: OS + preset + hash of all files containing FetchContent declarations.
@@ -102,11 +107,15 @@ jobs:
       # On push: skipped when all relevant caches are exact hits — dev branch is already seeded.
       # On push with a stale or missing cache: runs to repopulate.
       # matrix.use_vcpkg guards the vcpkg-cache check so Linux jobs only depend on deps-cache.
+      # VCPKG_BINARY_SOURCES is forwarded so the vcpkg toolchain invocation during cmake configure
+      # also reads/writes the binary cache (manifest-mode install happens at configure time).
       - name: Configure
         if: >
           github.event_name == 'pull_request' ||
           (matrix.use_vcpkg == true && steps.vcpkg-cache.outputs.cache-hit != 'true') ||
           steps.deps-cache.outputs.cache-hit != 'true'
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         run: cmake --preset ${{ matrix.preset }}
 
       # Build
@@ -127,7 +136,7 @@ jobs:
           -LE integration
 
       - name: Integration smoke tests (Linux GCC Debug only)
-        if: runner.os == 'Linux' && matrix.preset == 'linux-gcc-debug'
+        if: runner.os == 'Linux' && matrix.preset == 'linux-gcc-debug' && github.event_name == 'pull_request'
         run: >
           ctest
           --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
