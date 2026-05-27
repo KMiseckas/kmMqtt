@@ -4,20 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
-## [1.1.0][unreleased] - 2026-05-23
+## [1.1.0] - 2026-05-27
 
 ### Fixed
 
 - [examples] Publish completion status handling for PUBLISH_COMPLETE packet type
 - [lib][api] Non-breaking: Topic alias mappings now store an owned topic-name copy, preventing dangling pointers when callers pass temporary or later-mutated C-string buffers.
 - [lib] SendQueue now returns SDK send status with out bytes-sent and socket-error values, preventing positive socket error codes from being treated as successful bytes sent.
+- [lib] SendQueue partial-send metadata cleanup now erases matched entries safely while iterating, preventing stale metadata and incorrect callback dispatch in mixed packet buffers.
 - [lib] Reconnect socket-connect failure path now branches on the pre-failure state before status mutation, restoring reconnect retry flow when a reconnect attempt fails at socket callback time.
+- [lib] Socket error handling during CONNECTING/RECONNECTING now emits a failed connect event (`Socket_Connect_Failed`) instead of forcing immediate shutdown, improving caller-visible failure reporting.
 - [lib] Keepalive negotiation now consistently treats broker and client keepalive as seconds and converts once at ping scheduling, fixing mixed seconds/milliseconds behavior.
 - [lib] CONNECT packet composition now guards will-payload encoding when a will payload pointer is absent, preventing null dereference in packet creation.
 - [lib] CONNACK receive-maximum parsing now checks the decoded value (not pointer presence), so broker value `0` correctly keeps the protocol default limit.
 - [lib] Default client construction now starts async ticking when using default ASYNC options.
 - [lib] SessionState message updates now evaluate reordering against pre-update status, restoring expected move-to-end behavior for QoS state transitions.
-- [lib] Websocket fallback builds now compile with `BUILD_IXWEBSOCKET=OFF` by keeping `DefaultWebsocket` declarations available in both build modes.
+- [lib][api] Non-breaking: Websocket fallback builds now compile with `BUILD_IXWEBSOCKET=OFF` by keeping `DefaultWebsocket` declarations available in both build modes.
 - [lib] Logger compile guards now provide a defensive `LOG_LEVEL` fallback when logs are enabled but no explicit compile definition is supplied.
 - [lib][api] Breaking: `ClientErrorCode::TimeOut` and `ClientErrorCode::Using_Tick_Async` now use unique numeric values (`10` and `11`) instead of overlapping with existing codes.
 - [lib] Compilation error on Clang/GCC due to move operation on reference in SessionState.
@@ -35,10 +37,13 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
 - [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
 - [ci] Added `dev_ci.yml` GitHub Actions workflow triggering on push/PR to `dev`.
-- [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to  `master`.
+- [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to `master`.
 - [ci] Added `sanitizers.yml` GitHub Actions workflow triggering on push/PR to `master`.
 - [ci] Added `post_merge.yml` GitHub Actions workflow triggering on push to `master`.
 - [doc] Added README badges.
+- [doc] Added dedicated CI workflow documentation in `docs/CI.md`, including trigger/scope summary and quality pipeline flow.
+- [doc] Added dedicated integration-test documentation in `docs/INTEGRATION_TESTS.md`, including labels, broker overrides, and local run commands.
+- [doc] Updated README feature/protocol notes to clarify that MQTT 5 AUTH/enhanced authentication support is currently partial and not fully supported end-to-end.
 
 ## [1.0.0]
 
