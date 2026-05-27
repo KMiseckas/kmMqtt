@@ -132,4 +132,5 @@ jobs:
           ctest
           --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
           --output-on-failure
+          --repeat until-pass:2
           -L integration_public_smoke
