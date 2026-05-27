@@ -27,10 +27,32 @@ set(KMMQTT_IT_WSS_HOST   "broker.hivemq.com"  CACHE STRING "Hostname for TLS-Web
 set(KMMQTT_IT_WSS_PORT   "8884"              CACHE STRING "Port for TLS-WebSocket integration-test broker")
 set(KMMQTT_IT_WSS_PATH   "/mqtt"             CACHE STRING "WebSocket path for TLS-WebSocket integration-test broker")
 
+# WS fallback endpoints
+set(KMMQTT_IT_WS2_HOST   "broker.emqx.io"    CACHE STRING "Hostname for secondary plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS2_PORT   "8083"              CACHE STRING "Port for secondary plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS2_PATH   "/mqtt"             CACHE STRING "WebSocket path for secondary plain-WebSocket integration-test broker")
+
+set(KMMQTT_IT_WS3_HOST   "test.mosquitto.org" CACHE STRING "Hostname for tertiary plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS3_PORT   "8080"               CACHE STRING "Port for tertiary plain-WebSocket integration-test broker")
+set(KMMQTT_IT_WS3_PATH   "/mqtt"              CACHE STRING "WebSocket path for tertiary plain-WebSocket integration-test broker")
+
+# WSS fallback endpoints
+set(KMMQTT_IT_WSS2_HOST  "broker.emqx.io"    CACHE STRING "Hostname for secondary TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS2_PORT  "8084"              CACHE STRING "Port for secondary TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS2_PATH  "/mqtt"             CACHE STRING "WebSocket path for secondary TLS-WebSocket integration-test broker")
+
+set(KMMQTT_IT_WSS3_HOST  "test.mosquitto.org" CACHE STRING "Hostname for tertiary TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS3_PORT  "8081"               CACHE STRING "Port for tertiary TLS-WebSocket integration-test broker")
+set(KMMQTT_IT_WSS3_PATH  "/mqtt"              CACHE STRING "WebSocket path for tertiary TLS-WebSocket integration-test broker")
+
 set(KMMQTT_IT_TIMEOUT_SEC "15"               CACHE STRING "Seconds to wait for broker responses in each test")
 
 message(STATUS "Integration test WS  broker: ${KMMQTT_IT_WS_SCHEME}://${KMMQTT_IT_WS_HOST}:${KMMQTT_IT_WS_PORT}${KMMQTT_IT_WS_PATH}")
 message(STATUS "Integration test WSS broker: ${KMMQTT_IT_WSS_SCHEME}://${KMMQTT_IT_WSS_HOST}:${KMMQTT_IT_WSS_PORT}${KMMQTT_IT_WSS_PATH}")
+message(STATUS "Integration test WS  fallback #2: ${KMMQTT_IT_WS_SCHEME}://${KMMQTT_IT_WS2_HOST}:${KMMQTT_IT_WS2_PORT}${KMMQTT_IT_WS2_PATH}")
+message(STATUS "Integration test WS  fallback #3: ${KMMQTT_IT_WS_SCHEME}://${KMMQTT_IT_WS3_HOST}:${KMMQTT_IT_WS3_PORT}${KMMQTT_IT_WS3_PATH}")
+message(STATUS "Integration test WSS fallback #2: ${KMMQTT_IT_WSS_SCHEME}://${KMMQTT_IT_WSS2_HOST}:${KMMQTT_IT_WSS2_PORT}${KMMQTT_IT_WSS2_PATH}")
+message(STATUS "Integration test WSS fallback #3: ${KMMQTT_IT_WSS_SCHEME}://${KMMQTT_IT_WSS3_HOST}:${KMMQTT_IT_WSS3_PORT}${KMMQTT_IT_WSS3_PATH}")
 
 file(GLOB_RECURSE integration_test_source_files "*.cpp" "*.h")
 add_executable(${PROJECT_NAME} ${integration_test_source_files})
@@ -57,6 +79,18 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     KMMQTT_IT_WSS_PORT="${KMMQTT_IT_WSS_PORT}"
     KMMQTT_IT_WSS_PATH="${KMMQTT_IT_WSS_PATH}"
     KMMQTT_IT_TIMEOUT_SEC=${KMMQTT_IT_TIMEOUT_SEC}
+    KMMQTT_IT_WS2_HOST="${KMMQTT_IT_WS2_HOST}"
+    KMMQTT_IT_WS2_PORT="${KMMQTT_IT_WS2_PORT}"
+    KMMQTT_IT_WS2_PATH="${KMMQTT_IT_WS2_PATH}"
+    KMMQTT_IT_WS3_HOST="${KMMQTT_IT_WS3_HOST}"
+    KMMQTT_IT_WS3_PORT="${KMMQTT_IT_WS3_PORT}"
+    KMMQTT_IT_WS3_PATH="${KMMQTT_IT_WS3_PATH}"
+    KMMQTT_IT_WSS2_HOST="${KMMQTT_IT_WSS2_HOST}"
+    KMMQTT_IT_WSS2_PORT="${KMMQTT_IT_WSS2_PORT}"
+    KMMQTT_IT_WSS2_PATH="${KMMQTT_IT_WSS2_PATH}"
+    KMMQTT_IT_WSS3_HOST="${KMMQTT_IT_WSS3_HOST}"
+    KMMQTT_IT_WSS3_PORT="${KMMQTT_IT_WSS3_PORT}"
+    KMMQTT_IT_WSS3_PATH="${KMMQTT_IT_WSS3_PATH}"
 )
 
 # Suppress "enumeration value 'X' not handled in switch" warnings.
@@ -64,12 +98,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=switch)
 endif()
 
-# Register with CTest using a dedicated label so they can be run or excluded
-# independently from unit tests:
-#   ctest -L integration          -- run only integration tests
-#   ctest -LE integration         -- exclude integration tests
+# Register smoke and full integration test runs separately so CI can choose
+# quick checks for PRs and broader checks on protected branch flows.
+#   ctest -L integration_public_smoke
+#   ctest -L integration_public_full
 add_test(
-    NAME ${PROJECT_NAME}
-    COMMAND $<TARGET_FILE:${PROJECT_NAME}>
+    NAME ${PROJECT_NAME}_smoke
+    COMMAND $<TARGET_FILE:${PROJECT_NAME}> "--test-suite=Integration - Smoke*"
 )
-set_tests_properties(${PROJECT_NAME} PROPERTIES LABELS "integration")
+set_tests_properties(${PROJECT_NAME}_smoke PROPERTIES LABELS "integration;integration_public_smoke")
+
+add_test(
+    NAME ${PROJECT_NAME}_full
+    COMMAND $<TARGET_FILE:${PROJECT_NAME}> "--test-suite=Integration - Full*"
+)
+set_tests_properties(${PROJECT_NAME}_full PROPERTIES LABELS "integration;integration_public_full")

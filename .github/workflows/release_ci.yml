@@ -123,3 +123,20 @@ jobs:
           ctest
           --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
           --output-on-failure
+          -LE integration
+
+      - name: Integration smoke tests (Linux GCC Debug PR only)
+        if: runner.os == 'Linux' && matrix.preset == 'linux-gcc-debug' && github.event_name == 'pull_request'
+        run: >
+          ctest
+          --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+          --output-on-failure
+          -L integration_public_smoke
+
+      - name: Integration full tests (Linux GCC Debug push only)
+        if: runner.os == 'Linux' && matrix.preset == 'linux-gcc-debug' && github.event_name == 'push'
+        run: >
+          ctest
+          --test-dir "${{ github.workspace }}/out/build/${{ matrix.preset }}"
+          --output-on-failure
+          -L integration
