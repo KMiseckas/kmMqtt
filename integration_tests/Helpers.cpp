@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <sstream>
 #include <string>
+#include <kmMqtt/MqttClient.h>
 
 using namespace kmMqtt;
 using namespace kmMqtt::mqtt;
