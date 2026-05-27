@@ -79,6 +79,7 @@ jobs:
       # Cache the vcpkg tool + installed packages, then run lukka/run-vcpkg.
       - name: Cache vcpkg
         if: ${{ matrix.use_vcpkg == true }}
+        id: vcpkg-cache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/vcpkg
@@ -86,13 +87,18 @@ jobs:
           restore-keys: |
             vcpkg-af752f21c9d79ba3df9cb0250ce2233933f58486-
 
+      # VCPKG_BINARY_SOURCES enables the GitHub Actions binary cache backend: compiled package
+      # archives (e.g. openssl) are stored and restored keyed by package+version+triplet,
+      # so packages are not rebuilt from source on every run.
       - name: Setup vcpkg
         if: ${{ matrix.use_vcpkg == true }}
         uses: lukka/run-vcpkg@v11
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         with:
           vcpkgDirectory: ${{ github.workspace }}/vcpkg # must match the cache path above
           vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486 # must match builtin-baseline in vcpkg.json
-          runVcpkgInstall: true # no-op on cache hit; installs on first run or after key change
+          runVcpkgInstall: ${{ steps.vcpkg-cache.outputs.cache-hit != 'true' }} # skip install on exact hit; packages are already in vcpkg/installed/
 
       # Cache FetchContent dependency sources and build artefacts (_deps/) between runs.
       # Key: OS + preset + hash of all files containing FetchContent declarations.
@@ -109,7 +115,11 @@ jobs:
       # Configure
       # cmake --preset reads binaryDir and all cacheVariables from CMakePresets.json.
       # VCPKG_ROOT is set by the lukka/run-vcpkg action on Windows runs.
+      # VCPKG_BINARY_SOURCES is forwarded so the vcpkg toolchain invocation during cmake configure
+      # also reads/writes the binary cache (manifest-mode install happens at configure time).
       - name: Configure
+        env:
+          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
         run: cmake --preset ${{ matrix.preset }}
 
       # Build
