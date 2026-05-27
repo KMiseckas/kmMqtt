@@ -92,50 +92,50 @@
 #endif
 
 namespace kmMqtt_it {
-struct BrokerEndpoint {
-  const char *scheme;
-  const char *host;
-  const char *port;
-  const char *path;
-  int timeoutSec;
-};
+	struct BrokerEndpoint {
+		const char* scheme;
+		const char* host;
+		const char* port;
+		const char* path;
+		int timeoutSec;
+	};
 
-struct WsBrokerConfig {
-  static constexpr const char *scheme = KMMQTT_IT_WS_SCHEME;
-  static constexpr const char *host = KMMQTT_IT_WS_HOST;
-  static constexpr const char *port = KMMQTT_IT_WS_PORT;
-  static constexpr const char *path = KMMQTT_IT_WS_PATH;
-  static constexpr int timeoutSec = KMMQTT_IT_TIMEOUT_SEC;
-};
+	struct WsBrokerConfig {
+		static constexpr const char* scheme = KMMQTT_IT_WS_SCHEME;
+		static constexpr const char* host = KMMQTT_IT_WS_HOST;
+		static constexpr const char* port = KMMQTT_IT_WS_PORT;
+		static constexpr const char* path = KMMQTT_IT_WS_PATH;
+		static constexpr int timeoutSec = KMMQTT_IT_TIMEOUT_SEC;
+	};
 
-struct WssBrokerConfig {
-  static constexpr const char *scheme = KMMQTT_IT_WSS_SCHEME;
-  static constexpr const char *host = KMMQTT_IT_WSS_HOST;
-  static constexpr const char *port = KMMQTT_IT_WSS_PORT;
-  static constexpr const char *path = KMMQTT_IT_WSS_PATH;
-  static constexpr int timeoutSec = KMMQTT_IT_TIMEOUT_SEC;
-};
+	struct WssBrokerConfig {
+		static constexpr const char* scheme = KMMQTT_IT_WSS_SCHEME;
+		static constexpr const char* host = KMMQTT_IT_WSS_HOST;
+		static constexpr const char* port = KMMQTT_IT_WSS_PORT;
+		static constexpr const char* path = KMMQTT_IT_WSS_PATH;
+		static constexpr int timeoutSec = KMMQTT_IT_TIMEOUT_SEC;
+	};
 
-static constexpr BrokerEndpoint k_wsBrokerCandidates[] = {
-    {WsBrokerConfig::scheme, WsBrokerConfig::host, WsBrokerConfig::port,
-     WsBrokerConfig::path, WsBrokerConfig::timeoutSec},
-    {WsBrokerConfig::scheme, KMMQTT_IT_WS2_HOST, KMMQTT_IT_WS2_PORT,
-     KMMQTT_IT_WS2_PATH, KMMQTT_IT_TIMEOUT_SEC},
-    {WsBrokerConfig::scheme, KMMQTT_IT_WS3_HOST, KMMQTT_IT_WS3_PORT,
-     KMMQTT_IT_WS3_PATH, KMMQTT_IT_TIMEOUT_SEC}};
+	static constexpr BrokerEndpoint k_wsBrokerCandidates[] = {
+		{WsBrokerConfig::scheme, WsBrokerConfig::host, WsBrokerConfig::port,
+		 WsBrokerConfig::path, WsBrokerConfig::timeoutSec},
+		{WsBrokerConfig::scheme, KMMQTT_IT_WS2_HOST, KMMQTT_IT_WS2_PORT,
+		 KMMQTT_IT_WS2_PATH, KMMQTT_IT_TIMEOUT_SEC},
+		{WsBrokerConfig::scheme, KMMQTT_IT_WS3_HOST, KMMQTT_IT_WS3_PORT,
+		 KMMQTT_IT_WS3_PATH, KMMQTT_IT_TIMEOUT_SEC} };
 
-static constexpr BrokerEndpoint k_wssBrokerCandidates[] = {
-    {WssBrokerConfig::scheme, WssBrokerConfig::host, WssBrokerConfig::port,
-     WssBrokerConfig::path, WssBrokerConfig::timeoutSec},
-    {WssBrokerConfig::scheme, KMMQTT_IT_WSS2_HOST, KMMQTT_IT_WSS2_PORT,
-     KMMQTT_IT_WSS2_PATH, KMMQTT_IT_TIMEOUT_SEC},
-    {WssBrokerConfig::scheme, KMMQTT_IT_WSS3_HOST, KMMQTT_IT_WSS3_PORT,
-     KMMQTT_IT_WSS3_PATH, KMMQTT_IT_TIMEOUT_SEC}};
+	static constexpr BrokerEndpoint k_wssBrokerCandidates[] = {
+		{WssBrokerConfig::scheme, WssBrokerConfig::host, WssBrokerConfig::port,
+		 WssBrokerConfig::path, WssBrokerConfig::timeoutSec},
+		{WssBrokerConfig::scheme, KMMQTT_IT_WSS2_HOST, KMMQTT_IT_WSS2_PORT,
+		 KMMQTT_IT_WSS2_PATH, KMMQTT_IT_TIMEOUT_SEC},
+		{WssBrokerConfig::scheme, KMMQTT_IT_WSS3_HOST, KMMQTT_IT_WSS3_PORT,
+		 KMMQTT_IT_WSS3_PATH, KMMQTT_IT_TIMEOUT_SEC} };
 
-static constexpr std::size_t k_wsBrokerCandidatesCount =
-    sizeof(k_wsBrokerCandidates) / sizeof(k_wsBrokerCandidates[0]);
-static constexpr std::size_t k_wssBrokerCandidatesCount =
-    sizeof(k_wssBrokerCandidates) / sizeof(k_wssBrokerCandidates[0]);
+	static constexpr std::size_t k_wsBrokerCandidatesCount =
+		sizeof(k_wsBrokerCandidates) / sizeof(k_wsBrokerCandidates[0]);
+	static constexpr std::size_t k_wssBrokerCandidatesCount =
+		sizeof(k_wssBrokerCandidates) / sizeof(k_wssBrokerCandidates[0]);
 } // namespace kmMqtt_it
 
 #endif // KMMQTT_INTEGRATION_TESTS_BROKERCONFIG_H

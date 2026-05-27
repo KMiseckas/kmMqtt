@@ -840,6 +840,13 @@ namespace kmMqtt
 		void MqttClientImpl::handleSocketErrorEvent(int error)
 		{
 			LogError("MqttClient", "Shutting down, socket error occurred: %d", error);
+
+			if (m_connectionStatus == ConnectionStatus::CONNECTING || m_connectionStatus == ConnectionStatus::RECONNECTING)
+			{
+				DISPATCH_EVENT_TO_CONSUMER([this, p = ConnectAck{}]() {m_connectEvent({ false, false, ClientErrorCode::Socket_Connect_Failed }, p); });
+				return;
+			}
+
 			shutdown();
 		}
 
