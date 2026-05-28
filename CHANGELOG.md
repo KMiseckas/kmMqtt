@@ -26,7 +26,6 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] Deferred error callbacks now capture owned `ClientError` values instead of `DisconnectArgs` string pointers, fixing ASAN/UBSAN heap-use-after-free during decode/send failure reporting.
 - [cmake] Sanitizer linker flags on `kmMqtt` are now set for benchmark and integration test projects.
 - [tests][cmake] Unit tests now use doctest `v2.4.12`, pulling in upstream fixes that reduce framework-originated MemorySanitizer noise.
-- [tests][cmake] MemorySanitizer test environment for `kmMqttTests` now applies a doctest-only suppression file so sanitizer output stays focused on kmMqtt-originated issues.
 
 ### Added
 
