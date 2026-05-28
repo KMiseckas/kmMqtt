@@ -78,7 +78,6 @@ For workflow trigger and quality-pipeline details, see [docs/CI.md](docs/CI.md).
 | `ENABLE_ASAN`               | `OFF`   | Enable AddressSanitizer             |
 | `ENABLE_UBSAN`              | `OFF`   | Enable UndefinedBehaviorSanitizer   |
 | `ENABLE_TSAN`               | `OFF`   | Enable ThreadSanitizer              |
-| `ENABLE_MSAN`               | `OFF`   | Enable MemorySanitizer (Clang only) |
 
 ### Protocol Options
 

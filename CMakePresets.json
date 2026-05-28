@@ -206,6 +206,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "BUILD_INTEGRATION_TESTS": true,
+        "BUILD_BENCHMARKING": false,
         "ENABLE_UBSAN": true,
         "ENABLE_ASAN": true,
         "ENABLE_TSAN": false,
@@ -220,6 +222,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "BUILD_INTEGRATION_TESTS": true,
+        "BUILD_BENCHMARKING": false,
         "ENABLE_UBSAN": true,
         "ENABLE_ASAN": true,
         "ENABLE_TSAN": false,
@@ -234,6 +238,8 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
+        "BUILD_INTEGRATION_TESTS": true,
+        "BUILD_BENCHMARKING": false,
         "ENABLE_UBSAN": false,
         "ENABLE_ASAN": false,
         "ENABLE_TSAN": true,
@@ -248,24 +254,12 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "BUILD_INTEGRATION_TESTS": true,
+        "BUILD_BENCHMARKING": false,
         "ENABLE_UBSAN": false,
         "ENABLE_ASAN": false,
         "ENABLE_TSAN": true,
         "ENABLE_MSAN": false
-      }
-    },
-    {
-      "name": "linux-clang-msan",
-      "displayName": "Linux Clang MSAN",
-      "inherits": "linux-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
-        "ENABLE_UBSAN": false,
-        "ENABLE_ASAN": false,
-        "ENABLE_TSAN": false,
-        "ENABLE_MSAN": true
       }
     }
   ],

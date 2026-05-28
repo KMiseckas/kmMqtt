@@ -76,29 +76,36 @@ jobs:
         with:
           arch: x64
 
-      # Cache the vcpkg tool + installed packages, then run lukka/run-vcpkg.
-      - name: Cache vcpkg
+      # 1. Determine where vcpkg will store binary archives on Windows
+      - name: VCPKG - Set Binary Cache Path
+        if: ${{ matrix.use_vcpkg == true }}
+        run: |
+          echo "VCPKG_DEFAULT_BINARY_CACHE=${{ github.workspace }}/vcpkg_binary_cache" >> $GITHUB_ENV
+        shell: bash
+
+      # 2. Cache the binary cache directory
+      - name: VCPKG - Cache Binaries
         if: ${{ matrix.use_vcpkg == true }}
         id: vcpkg-cache
         uses: actions/cache@v4
         with:
-          path: ${{ github.workspace }}/vcpkg
-          key: vcpkg-af752f21c9d79ba3df9cb0250ce2233933f58486-${{ hashFiles('vcpkg.json') }}
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ runner.os }}-vcpkg-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-af752f21c9d79ba3df9cb0250ce2233933f58486-
+            ${{ runner.os }}-vcpkg-
 
-      # VCPKG_BINARY_SOURCES enables the GitHub Actions binary cache backend: compiled package
-      # archives (e.g. openssl) are stored and restored keyed by package+version+triplet,
-      # so packages are not rebuilt from source on every run.
-      - name: Setup vcpkg
+      # 3. Setup vcpkg with modern NuGet cache parameters
+      - name: VCPKG - Setup vcpkg
         if: ${{ matrix.use_vcpkg == true }}
         uses: lukka/run-vcpkg@v11
         env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+          # This tells vcpkg to use the local directory we are caching via GitHub Actions
+          VCPKG_BINARY_SOURCES: "clear;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         with:
-          vcpkgDirectory: ${{ github.workspace }}/vcpkg # must match the cache path above
-          vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486 # must match builtin-baseline in vcpkg.json
-          runVcpkgInstall: ${{ steps.vcpkg-cache.outputs.cache-hit != 'true' }} # skip install on exact hit; packages are already in vcpkg/installed/
+          vcpkgDirectory: ${{ github.workspace }}/vcpkg
+          vcpkgGitCommitId: af752f21c9d79ba3df9cb0250ce2233933f58486
+          # Let manifest mode handle the installation automatically during CMake configure
+          runVcpkgInstall: false
 
       # Cache FetchContent dependency sources and build artefacts (_deps/) between runs.
       # Key: OS + preset + hash of all files containing FetchContent declarations.
@@ -119,7 +126,7 @@ jobs:
       # also reads/writes the binary cache (manifest-mode install happens at configure time).
       - name: Configure
         env:
-          VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
+          VCPKG_BINARY_SOURCES: "clear;files,${{ env.VCPKG_DEFAULT_BINARY_CACHE }},readwrite"
         run: cmake --preset ${{ matrix.preset }}
 
       # Build

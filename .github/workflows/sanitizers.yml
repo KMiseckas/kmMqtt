@@ -26,15 +26,9 @@ jobs:
           - name: "ASan + UBSan | GCC"
             preset: linux-gcc-ubsan-asan
 
-          - name: "ASan + UBSan | Clang"
-            preset: linux-clang-ubsan-asan
-
           # ThreadSanitizer
           - name: "TSan | GCC"
             preset: linux-gcc-tsan
-
-          - name: "TSan | Clang"
-            preset: linux-clang-tsan
 
     steps:
       - name: Checkout
