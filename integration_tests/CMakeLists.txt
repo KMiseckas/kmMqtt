@@ -98,6 +98,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=switch)
 endif()
 
+target_link_options(${PROJECT_NAME} PRIVATE ${KMMQTT_SANITIZER_FLAGS})
+set_target_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT "MSAN_OPTIONS=halt_on_error=false")
+
 # Register smoke and full integration test runs separately so CI can choose
 # quick checks for PRs and broader checks on protected branch flows.
 #   ctest -L integration_public_smoke

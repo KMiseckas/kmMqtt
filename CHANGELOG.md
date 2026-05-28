@@ -23,6 +23,10 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [lib] Logger compile guards now provide a defensive `LOG_LEVEL` fallback when logs are enabled but no explicit compile definition is supplied.
 - [lib][api] Breaking: `ClientErrorCode::TimeOut` and `ClientErrorCode::Using_Tick_Async` now use unique numeric values (`10` and `11`) instead of overlapping with existing codes.
 - [lib] Compilation error on Clang/GCC due to move operation on reference in SessionState.
+- [lib] Deferred error callbacks now capture owned `ClientError` values instead of `DisconnectArgs` string pointers, fixing ASAN/UBSAN heap-use-after-free during decode/send failure reporting.
+- [cmake] Sanitizer linker flags on `kmMqtt` are now set for benchmark and integration test projects.
+- [tests][cmake] Unit tests now use doctest `v2.4.12`, pulling in upstream fixes that reduce framework-originated MemorySanitizer noise.
+- [tests][cmake] MemorySanitizer test environment for `kmMqttTests` now applies a doctest-only suppression file so sanitizer output stays focused on kmMqtt-originated issues.
 
 ### Added
 
@@ -35,6 +39,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - [tests] Added SessionState regression coverage for message reordering on `WaitingForPubRel` transitions.
 - [tests] Added logger regression coverage for exception logging and formatted logging API call paths.
 - [tests] Added unit and API regression coverage to enforce uniqueness and expected numeric assignments for base `ClientErrorCode` values.
+- [tests] Connect API decode-failure tests now assert non-empty error message payload to guard deferred error-message lifetime regressions.
 - [tests][cmake] Integration test project (`kmMqttIntegrationTests`) added under `integration_tests/`.
 - [ci] Added `dev_ci.yml` GitHub Actions workflow triggering on push/PR to `dev`.
 - [ci] Added `release_ci.yml` GitHub Actions workflow triggering on push/PR to `master`.
