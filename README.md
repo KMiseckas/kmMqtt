@@ -2,6 +2,16 @@ Licensed under Apache 2.0. See LICENSE and NOTICE.
 
 # kmMqtt
 
+[![CI](https://github.com/KMiseckas/kmMqtt/actions/workflows/release_ci.yml/badge.svg?branch=master)](https://github.com/KMiseckas/kmMqtt/actions/workflows/release_ci.yml)
+[![Sanitizers](https://github.com/KMiseckas/kmMqtt/actions/workflows/sanitizers.yml/badge.svg?branch=master)](https://github.com/KMiseckas/kmMqtt/actions/workflows/sanitizers.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://kmiseckas.github.io/kmMqtt/coverage.json)](https://kmiseckas.github.io/kmMqtt/)
+[![Docs](https://img.shields.io/badge/docs-doxygen-blue)](https://kmiseckas.github.io/kmMqtt/)
+
+[![C++14](https://img.shields.io/badge/C%2B%2B-14-blue?logo=cplusplus&logoColor=white)](https://en.cppreference.com/w/cpp/14)
+[![MQTT](https://img.shields.io/badge/MQTT-5.0-orange)](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
+[![License](https://img.shields.io/github/license/KMiseckas/kmMqtt)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20Adaptable-lightgrey)](https://github.com/KMiseckas/kmMqtt#supported-platforms)
+
 A C++14 MQTT 5.0 client library designed for game development and cross-platform applications.
 kmMqtt started as a hobby project to deepen my understanding of MQTT 5.0 and to practice designing and implementing a clean, cross-platform C++ core SDK while learning modern build and tooling workflows.
 
@@ -9,6 +19,7 @@ kmMqtt started as a hobby project to deepen my understanding of MQTT 5.0 and to 
 
 - [Overview](#overview)
 - [Features](#features)
+- [Protocol Support Notes](#protocol-support-notes)
 - [Supported Platforms](#supported-platforms)
 - [Dependencies](#dependencies)
 - [Building](#building)
@@ -23,7 +34,7 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 
 ## Features
 
-- **MQTT 5.0 protocol support** - Full implementation of MQTT 5.0 specification
+- **MQTT 5.0 protocol support** - Broad MQTT 5.0 client coverage for connect/publish/subscribe/session workflows, with known gaps documented below
 - **Cross-platform socket support** - Uses adapter pattern for platform-specific socket implementations
   - Included: IXWebSocket-based implementation for Windows & Linux
   - Extendable to other closed-source platforms via `IWebSocket` interface
@@ -31,11 +42,22 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 - **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
 - **Automatic reconnection handling** - Built-in reconnection logic
 - **Full QoS support** - QoS 0, 1, and 2 message delivery
-- **Session state management** - In-memory session state tracking*
+- **Session state management** - In-memory session state tracking\*
 - **SBO** - Small buffer optimization for reduced heap allocations in critical paths.
 - **CMake** - Uses cmake for build file generation.
 
-*Disk saved session states currently not-included and WIP.
+\*Disk saved session states currently not-included and WIP.
+
+## Protocol Support Notes
+
+| Area                                                                                      | Status                        | Notes                                                                                                                                                     |
+| ----------------------------------------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core MQTT client workflows (connect, publish, subscribe, QoS 0/1/2, keepalive, reconnect) | Implemented                   | Covered by unit/API tests and integration smoke/full suites.                                                                                              |
+| CONNECT username/password authentication                                                  | Implemented                   | Standard MQTT CONNECT username/password fields are supported and can be used for broker authentication.                                                   |
+| MQTT 5 AUTH packet exchange (enhanced auth flow)                                          | Partial / not fully supported | `AUTH` is currently treated as unsupported in the receive queue, so full enhanced-auth exchange is not implemented yet.                                   |
+| `ConnectArgs` extended auth fields                                                        | Partial                       | `extendedAuthenticationMethod` and `extendedAuthenticationData` are exposed in API, but are not fully wired end-to-end for production AUTH workflows yet. |
+
+If your broker uses standard CONNECT username/password auth, that path is supported. If your broker or deployment requires enhanced AUTH packet exchange, treat that path as not fully supported for now.
 
 ## Supported Platforms
 
@@ -85,10 +107,10 @@ client.onConnectEvent().add([&client](const ConnectEventDetails& details) {
         std::string payloadStr{"Hello MQTT"};
         ByteBuffer payload(payloadStr.length());
         payload.append(payloadStr.data(), payloadStr.length());
-        
+
         PublishOptions pubOpts;
         pubOpts.qos = Qos::QOS_1;
-        
+
         client.publish("test/topic", std::move(payload), std::move(pubOpts));
     } else {
         // Handle connection error
@@ -162,10 +184,10 @@ if (connected) {
     std::string payloadStr{"Hello MQTT"};
     ByteBuffer payload(payloadStr.length());
     payload.append(payloadStr.data(), payloadStr.length());
-    
+
     PublishOptions pubOpts;
     pubOpts.qos = Qos::QOS_1;
-    
+
     client.publish("test/topic", std::move(payload), std::move(pubOpts));
 }
 ```
@@ -212,6 +234,8 @@ while (running) {
 - **[Coverage](https://kmiseckas.github.io/kmMqtt/)** - Click Coverage top right corner.
 - **[API Documentation](https://kmiseckas.github.io/kmMqtt/)** - Complete API reference (generated with Doxygen - see build instructions)
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
+- **[docs/CI.md](docs/CI.md)** - CI workflow overview, triggers, and quality-pipeline map
+- **[docs/INTEGRATION_TESTS.md](docs/INTEGRATION_TESTS.md)** - Integration suite structure, labels, broker overrides, and local run commands
 
 > **Note**: API documentation must be generated using Doxygen. The HTML documentation will be available at `docs/API/index.html` after generation.
 

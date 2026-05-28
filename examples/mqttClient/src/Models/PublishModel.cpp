@@ -169,6 +169,10 @@ void PublishModel::onPublishCompleted(const kmMqtt::mqtt::PublishCompleteEventDe
                 {
                     message.status = PublishMessageStatus::ACKNOWLEDGED;
                 }
+                else if (details.packetType == kmMqtt::mqtt::PacketType::PUBLISH_COMPLETE)
+                {
+                    message.status = PublishMessageStatus::ACKNOWLEDGED;
+                }
 
                 message.lastError = "";
             }

@@ -25,8 +25,8 @@ namespace kmMqtt
 			Failed_Sending_Packet = 7U,
 			Failed_Writing_To_Persistent_Storage = 8U, //Not used yet
 			Failed_Decoding_Packet = 9U,
-			TimeOut = 8U,
-			Using_Tick_Async = 9U, //Client is using async tick mode, cannot call tick functions explicitly.
+			TimeOut = 10U,
+			Using_Tick_Async = 11U, //Client is using async tick mode, cannot call tick functions explicitly.
 
 			//Connect Errors
 			ConnectError = 1000U,

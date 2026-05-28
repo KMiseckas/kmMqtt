@@ -23,4 +23,9 @@ endif()
 
 #Sanitizer link options added.
 target_link_options(${PROJECT_NAME} PRIVATE ${KMMQTT_SANITIZER_FLAGS})
-set_target_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT "MSAN_OPTIONS=halt_on_error=false")
+set_target_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT "MSAN_OPTIONS=suppressions=${CMAKE_CURRENT_SOURCE_DIR}/tests/msan_suppressions.txt:halt_on_error=false")
+
+add_test(
+	NAME ${PROJECT_NAME}
+	COMMAND $<TARGET_FILE:${PROJECT_NAME}>
+)

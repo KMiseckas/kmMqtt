@@ -67,6 +67,23 @@ TEST_SUITE("PacketHelper Tests")
 		CHECK(packet.getPayloadHeader().willPayload.size() == 3);
 	}
 
+	TEST_CASE("createConnectPacket with will message and null payload")
+	{
+		MqttConnectionInfo connectionInfo;
+		connectionInfo.connectArgs = ConnectArgs("TestClient");
+
+		auto will = std::make_unique<Will>("will/topic");
+		will->willQos = Qos::QOS_1;
+		will->payload = nullptr;
+
+		connectionInfo.connectArgs.will = std::move(will);
+
+		Connect packet = createConnectPacket(connectionInfo);
+
+		CHECK(packet.getPayloadHeader().willTopic.getString() == "will/topic");
+		CHECK(packet.getPayloadHeader().willPayload.size() == 0);
+	}
+
 	TEST_CASE("createConnectPacket with user properties")
 	{
 		MqttConnectionInfo connectionInfo;

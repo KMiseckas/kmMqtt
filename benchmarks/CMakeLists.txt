@@ -17,4 +17,7 @@ FetchContent_MakeAvailable(benchmark)
 
 add_executable(${PROJECT_NAME} ${benchmarks_source_files})
 
+target_link_options(${PROJECT_NAME} PRIVATE ${KMMQTT_SANITIZER_FLAGS})
+set_target_properties(${PROJECT_NAME} PROPERTIES ENVIRONMENT "MSAN_OPTIONS=halt_on_error=false")
+
 target_link_libraries(${PROJECT_NAME} PRIVATE kmMqtt benchmark::benchmark)

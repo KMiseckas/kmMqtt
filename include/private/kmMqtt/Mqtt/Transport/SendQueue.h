@@ -9,6 +9,7 @@
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <kmMqtt/Interfaces/IWebSocket.h>
+#include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
 #include <cstdint>
 #include <chrono>
 #include <memory>
@@ -69,7 +70,7 @@ namespace kmMqtt
 
 		private:
 			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
-			int sendData(const ByteBuffer& data);
+			ClientErrorCode sendData(const ByteBuffer& data, std::size_t& outBytesSent, int& outSocketError);
 
 			std::shared_ptr<IWebSocket> m_socket;
 			std::function<void()> m_onPingSentCallback;

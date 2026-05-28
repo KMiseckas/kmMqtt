@@ -8,8 +8,10 @@
 #include <kmMqtt/Environments/DefaultWinEnv.h>
 #include <kmMqtt/Environments/DefaultLinuxEnv.h>
 #include <kmMqtt/Interfaces/IMqttEnvironment.h>
+#include <kmMqtt/Mqtt/Params/ConnectAddress.h>
 #include <kmMqtt/Config.h>
 #include <memory>
+#include <string>
 
 TEST_SUITE("Environment Tests")
 {
@@ -190,6 +192,31 @@ TEST_SUITE("Environment Tests")
 		delete env;
 		CHECK(true);
 	}
+
+#ifndef BUILD_IXWEBSOCKET
+	TEST_CASE("Default websocket fallback reports not built when ixwebsocket is disabled")
+	{
+		DefaultEnvironmentFactory factory;
+		IMqttEnvironment* env = factory.createEnvironment();
+		REQUIRE(env != nullptr);
+
+		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		REQUIRE(socket != nullptr);
+
+		const mqtt::Address address = mqtt::Address::createURL("", "localhost", "1883", "");
+		CHECK(socket->connect(address) == false);
+
+		ByteBuffer payload{ 1 };
+		payload += 0x01;
+		CHECK(socket->send(payload) == -1);
+		CHECK(socket->close() == false);
+
+		CHECK(socket->getLastCloseReason() != nullptr);
+		CHECK(std::string(socket->getLastCloseReason()).find("BUILD_IXWEBSOCKET=OFF") != std::string::npos);
+
+		delete env;
+	}
+#endif
 
 	TEST_CASE("Multiple environments can coexist")
 	{

@@ -16,9 +16,13 @@ namespace kmMqtt
 #define WARNING 3
 #define ERROR 4
 
-#ifndef ENABLE_LOGS
+#ifndef LOG_LEVEL
+#ifdef ENABLE_LOGS
+#define LOG_LEVEL 0
+#else
 #define LOG_LEVEL 999
 #endif //ENABLE_LOGS
+#endif //LOG_LEVEL
 
 #ifndef LOG_BUFFER_SIZE
 #define LOG_BUFFER_SIZE 2048

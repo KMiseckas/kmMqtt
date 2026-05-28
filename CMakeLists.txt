@@ -40,7 +40,7 @@ if(FORCE_ADD_PROPERTIES)
 endif()
 
 if(ENABLE_LOGS)
-    set(LOG_LEVEL_TARGET 0 STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
+    set(LOG_LEVEL_TARGET 0 CACHE STRING "Set the log level for which to print logs (TRACE, INFO, DEBUG, WARNING, ERROR).")
     target_compile_definitions(${PROJECT_NAME} PRIVATE 
     LOG_LEVEL=${LOG_LEVEL_TARGET}
     ENABLE_LOGS)
@@ -191,7 +191,8 @@ if(ENABLE_MSAN)
     if(NOT ENABLE_ASAN AND NOT ENABLE_TSAN)
         if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             message(STATUS "Building with MemorySanitizer")
-            set(MSAN_FLAGS "-fsanitize=memory" "-fsanitize-memory-track-origins" "-fno-omit-frame-pointer" "-fsanitize-recover=all")
+            set(MSAN_IGNORE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/msan_ignore.txt")
+            set(MSAN_FLAGS "-fsanitize=memory" "-fsanitize-memory-track-origins" "-fno-omit-frame-pointer")
             target_compile_options(${PROJECT_NAME} PRIVATE ${MSAN_FLAGS})
             target_link_options(${PROJECT_NAME} PRIVATE ${MSAN_FLAGS})
         endif()
@@ -229,7 +230,16 @@ endif()
 
 if(BUILD_UNIT_TESTS)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Minimum CMake version for unit tests")
+    include(CTest)
     add_subdirectory(tests)
+endif()
+
+if(BUILD_INTEGRATION_TESTS)
+    if(NOT COMMAND add_test)
+        # CTest may not have been included yet (e.g. when unit tests are off)
+        include(CTest)
+    endif()
+    add_subdirectory(integration_tests)
 endif()
 
 #Add coverage report generation if coverage is enabled
