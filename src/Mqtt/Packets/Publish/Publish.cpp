@@ -35,6 +35,7 @@ namespace kmMqtt
 		Publish::~Publish()
 		{
 			delete m_variableHeader;
+			delete m_payloadHeader;
 		}
 
 		PacketType Publish::getPacketType() const noexcept
