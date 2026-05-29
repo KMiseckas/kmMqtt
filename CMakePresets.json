@@ -183,7 +183,8 @@
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_CXX_COMPILER": "g++",
         "BUILD_COVERAGE": true,
-        "BUILD_UNIT_TESTS": true
+        "BUILD_UNIT_TESTS": true,
+        "BUILD_INTEGRATION_TESTS": true
       }
     },
     {
@@ -195,7 +196,8 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "BUILD_COVERAGE": true,
-        "BUILD_UNIT_TESTS": true
+        "BUILD_UNIT_TESTS": true,
+        "BUILD_INTEGRATION_TESTS": true
       }
     },
     {
