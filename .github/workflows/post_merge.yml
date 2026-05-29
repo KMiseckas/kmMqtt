@@ -67,7 +67,9 @@ jobs:
         run: cmake --preset linux-gcc-coverage
 
       - name: Build
-        run: cmake --build "${{ github.workspace }}/out/build/linux-gcc-coverage"
+        run: >
+          cmake --build "${{ github.workspace }}/out/build/linux-gcc-coverage"
+          --target kmMqttTests kmMqttIntegrationTests
 
       # Run tests first — GCC's coverage_report target uses lcov --capture which
       # reads .gcda files that are only written after the test binary executes.

@@ -259,9 +259,10 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 
     target_compile_options(${PROJECT_NAME} PRIVATE ${COVERAGE_COMPILE_FLAGS})
     target_compile_options(kmMqttTests PRIVATE ${COVERAGE_COMPILE_FLAGS})
-
+    target_compile_options(kmMqttIntegrationTests PRIVATE ${COVERAGE_COMPILE_FLAGS})
     target_link_options(${PROJECT_NAME} PRIVATE ${COVERAGE_LINK_FLAGS})
     target_link_options(kmMqttTests PRIVATE ${COVERAGE_LINK_FLAGS})
+    target_link_options(kmMqttIntegrationTests PRIVATE ${COVERAGE_LINK_FLAGS})
     target_link_options(mqttClient PRIVATE ${COVERAGE_LINK_FLAGS})
 
     set(COVERAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/coverage")
@@ -278,10 +279,10 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
             COMMAND ${CMAKE_COMMAND} -E remove_directory "${COVERAGE_OUTPUT_DIR}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_OUTPUT_DIR}"
             COMMAND ${LCOV_PATH} --capture --directory ${CMAKE_BINARY_DIR} --output-file coverage.info
-            COMMAND ${LCOV_PATH} --remove coverage.info '*/_deps/*' '/usr/*' '*/tests/*' '*/examples/*' '*/benchmarks/*' --output-file coverage_filtered.info --ignore-errors unused
+            COMMAND ${LCOV_PATH} --remove coverage.info '*/_deps/*' '/usr/*' '*/tests/*' '*/integration_tests/*' '*/examples/*' '*/benchmarks/*' --output-file coverage_filtered.info --ignore-errors unused
             COMMAND ${GENHTML_PATH} coverage_filtered.info --output-directory coverage --ignore-errors source
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            DEPENDS kmMqttTests
+            DEPENDS kmMqttTests kmMqttIntegrationTests
             COMMENT "Generating coverage report with lcov"
         )
                 
@@ -307,10 +308,10 @@ if(BUILD_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
                 COMMAND ${CMAKE_COMMAND} -E make_directory "${COVERAGE_OUTPUT_DIR}"
                 COMMAND ${CMAKE_COMMAND} -E env LLVM_PROFILE_FILE=default.profraw ${CMAKE_CTEST_COMMAND} --output-on-failure
                 COMMAND ${LLVM_PROFDATA_PATH} merge -sparse default.profraw -o coverage.profdata
-                COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:kmMqttTests> -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="tests|examples|benchmarks|/usr|_deps"
+                COMMAND ${LLVM_COV_PATH} show $<TARGET_FILE:kmMqttTests> -instr-profile=coverage.profdata -format=html -output-dir=${COVERAGE_OUTPUT_DIR} -ignore-filename-regex="tests|integration_tests|examples|benchmarks|/usr|_deps"
                 COMMAND ${CMAKE_COMMAND} -E echo "Coverage report generated: ${COVERAGE_OUTPUT_DIR}/index.html"
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                DEPENDS kmMqttTests
+                DEPENDS kmMqttTests kmMqttIntegrationTests
                 COMMENT "Generating coverage report with llvm-cov"
             )
         else()

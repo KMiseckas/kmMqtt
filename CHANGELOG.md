@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [1.1.1] - 2026-05-30
+
+### Fixed
+
+- [lib] Memory leak due to not destroyed payload header in publish packet destructor.
+- [ci] Post-merge coverage workflow now builds explicit test targets (`kmMqttTests`, `kmMqttIntegrationTests`) instead of the default build target, preventing premature coverage-target execution before tests run.
+
 ## [1.1.0] - 2026-05-27
 
 ### Fixed
