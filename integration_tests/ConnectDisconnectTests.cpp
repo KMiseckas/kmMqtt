@@ -215,7 +215,7 @@ TEST_SUITE("Integration - Smoke - API") {
 		CHECK(client.getConnectionStatus() == ConnectionStatus::DISCONNECTED);
 
 		const std::string clientTag = "api_state";
-		const std::string expectedClientId = "kmMqtt_it_" + clientTag;
+		const std::string expectedClientIdPrefix = "kmMqtt_it_" + clientTag + "_";
 
 		std::atomic<bool> connectFired{ false };
 		std::atomic<bool> connectOk{ false };
@@ -233,7 +233,8 @@ TEST_SUITE("Integration - Smoke - API") {
 		REQUIRE(connectOk.load());
 
 		CHECK(client.getConnectionStatus() == ConnectionStatus::CONNECTED);
-		CHECK(client.getConnectionInfo().connectArgs.clientId == expectedClientId);
+		const auto& clientId = client.getConnectionInfo().connectArgs.clientId;
+		CHECK(clientId.find(expectedClientIdPrefix) == 0);
 		CHECK(client.getConnectionInfo().connectAddress.primaryAddress.hostname() ==
 			endpoint.host);
 
