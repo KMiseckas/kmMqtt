@@ -47,7 +47,16 @@ namespace kmMqtt_it {
 
 	/// Builds minimal MQTT 5.0 connect args with a transport-tagged client id.
 	inline kmMqtt::mqtt::ConnectArgs makeConnectArgs(const std::string& tag) {
-		kmMqtt::mqtt::ConnectArgs args{ "kmMqtt_it_" + tag };
+		// Keep IDs unique across concurrent CI jobs on shared public brokers.
+		static const auto runSeed =
+			std::chrono::high_resolution_clock::now().time_since_epoch().count();
+		static std::atomic<unsigned long> connectCounter{ 0UL };
+
+		std::ostringstream clientId;
+		clientId << "kmMqtt_it_" << tag << "_" << runSeed << "_"
+			<< connectCounter.fetch_add(1UL);
+
+		kmMqtt::mqtt::ConnectArgs args{ clientId.str() };
 		args.protocolName = "MQTT";
 		args.version = kmMqtt::mqtt::MqttVersion::MQTT_5_0;
 		args.cleanStart = true;

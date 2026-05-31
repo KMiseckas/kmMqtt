@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [Unreleased]
+
+### Fixed
+
+- [tests] Integration-test `makeConnectArgs` now appends per-run/per-call uniqueness to client IDs, reducing intermittent public-broker connect flakes caused by client-id collisions across concurrent CI jobs.
+
 ## [1.1.1] - 2026-05-30
 
 ### Fixed
