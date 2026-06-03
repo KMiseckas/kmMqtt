@@ -10,6 +10,11 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - [tests] Integration-test `makeConnectArgs` now appends per-run/per-call uniqueness to client IDs, reducing intermittent public-broker connect flakes caused by client-id collisions across concurrent CI jobs.
 
+### Added
+
+- [lib][api] Non-breaking: Added custom allocator foundation with per-client allocator injection through `MqttClientOptions`.
+- [tests] Added allocator infrastructure unit tests (default allocator behavior, `kmNew` exception-safety, STL adapter behavior, and client/options wiring).
+
 ## [1.1.1] - 2026-05-30
 
 ### Fixed
