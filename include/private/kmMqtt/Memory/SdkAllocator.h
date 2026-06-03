@@ -29,7 +29,10 @@ namespace kmMqtt
 			using other = SdkAllocator<U>;
 		};
 
-		SdkAllocator() noexcept = default;
+		SdkAllocator() noexcept 
+			: m_allocator{&GetDefaultAllocatorInstance()}
+		{
+		}
 
 		explicit SdkAllocator(IAllocator* allocator) noexcept
 			: m_allocator{ allocator }
