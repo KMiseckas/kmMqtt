@@ -10,6 +10,7 @@
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/ByteBuffer.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 #include <cstdint>
 #include <map>
 
@@ -223,27 +224,27 @@ namespace kmMqtt
 			{
 				void* decodeUInt8(const ByteBuffer& buffer)
 				{
-					return new std::uint8_t(buffer.readUint8());
+					return kmNew(std::uint8_t, buffer.readUint8());
 				}
 
 				void* decodeUInt16(const ByteBuffer& buffer)
 				{
-					return new std::uint16_t(buffer.readUInt16());
+					return kmNew(std::uint16_t, buffer.readUInt16());
 				}
 
 				void* decodeUInt32(const ByteBuffer& buffer)
 				{
-					return new std::uint32_t(buffer.readUInt32());
+					return kmNew(std::uint32_t, buffer.readUInt32());
 				}
 
 				void* decodeUTF8String(const ByteBuffer& buffer)
 				{
-					return new UTF8String(buffer);
+					return kmNew(UTF8String, buffer);
 				}
 
 				void* decodeUTF8StringPair(const ByteBuffer& buffer)
 				{
-					return new UTF8StringPair(buffer);
+					return kmNew(UTF8StringPair, buffer);
 				}
 
 				void* decodeVariableByteInteger(const ByteBuffer& buffer)
@@ -253,7 +254,7 @@ namespace kmMqtt
 
 				void* decodeBinaryData(const ByteBuffer& buffer)
 				{
-					auto bd = new BinaryData();
+					auto bd = kmNew(BinaryData);
 					bd->decode(buffer);
 					return bd;
 				}
@@ -268,37 +269,37 @@ namespace kmMqtt
 			{
 				void destructUInt8(void* data)
 				{
-					delete static_cast<std::uint8_t*>(data);
+					kmDelete(static_cast<std::uint8_t*>(data));
 				}
 
 				void destructUInt16(void* data)
 				{
-					delete static_cast<std::uint16_t*>(data);
+					kmDelete(static_cast<std::uint16_t*>(data));
 				}
 
 				void destructUInt32(void* data)
 				{
-					delete static_cast<std::uint32_t*>(data);
+					kmDelete(static_cast<std::uint32_t*>(data));
 				}
 
 				void destructUTF8String(void* data)
 				{
-					delete static_cast<UTF8String*>(data);
+					kmDelete(static_cast<UTF8String*>(data));
 				}
 
 				void destructUTF8StringPair(void* data)
 				{
-					delete static_cast<UTF8StringPair*>(data);
+					kmDelete(static_cast<UTF8StringPair*>(data));
 				}
 
 				void destructVariableByteInteger(void* data)
 				{
-					delete static_cast<VariableByteInteger*>(data);
+					kmDelete(static_cast<VariableByteInteger*>(data));
 				}
 
 				void destructBinaryData(void* data)
 				{
-					delete static_cast<BinaryData*>(data);
+					kmDelete(static_cast<BinaryData*>(data));
 				}
 			}
 		}

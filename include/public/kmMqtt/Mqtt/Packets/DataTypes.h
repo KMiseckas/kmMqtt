@@ -33,7 +33,8 @@ namespace kmMqtt
 		public:
 			~BinaryData()
 			{
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+
 			}
 
 			BinaryData() noexcept
@@ -42,8 +43,11 @@ namespace kmMqtt
 			}
 
 			explicit BinaryData(std::uint16_t size, const std::uint8_t* bytes) noexcept
-				: m_size(size), m_bytes(new uint8_t[size])
+				: m_size(size)
 			{
+				void* memory = getAllocator().allocate(size * sizeof(std::uint8_t), alignof(std::uint8_t));
+				m_bytes = static_cast<std::uint8_t*>(memory);
+
 				std::memcpy(m_bytes, bytes, size);
 			}
 
@@ -65,7 +69,8 @@ namespace kmMqtt
 			{
 				if (m_size > 0)
 				{
-					m_bytes = new std::uint8_t[m_size];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, other.m_bytes, m_size);
 				}
 			}
@@ -97,7 +102,8 @@ namespace kmMqtt
 
 				if (m_size > 0)
 				{
-					m_bytes = new std::uint8_t[m_size];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, other.m_bytes, m_size);
 				}
 
@@ -131,9 +137,13 @@ namespace kmMqtt
 
 				if (m_size > 0)
 				{
-					delete[] m_bytes;
-					m_bytes = new std::uint8_t[m_size];
+					getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
+
 					std::memcpy(m_bytes, &buffer[buffer.readCursor()], m_size);
+
 					buffer.incrementReadCursor(m_size);
 				}
 			}
@@ -198,7 +208,8 @@ namespace kmMqtt
 					return nullptr;
 				}
 
-				return new VariableByteInteger(buffer);
+				void* memory = getAllocator().allocate(sizeof(VariableByteInteger), alignof(VariableByteInteger));
+				return new (memory) VariableByteInteger(buffer);
 			}
 
 			static VariableByteInteger* tryCreateNewFromValue(const std::uint32_t& val) noexcept
@@ -209,7 +220,8 @@ namespace kmMqtt
 					return nullptr;
 				}
 
-				return new VariableByteInteger(val);
+				void* memory = getAllocator().allocate(sizeof(VariableByteInteger), alignof(VariableByteInteger));
+				return new (memory) VariableByteInteger(val);
 			}
 
 			constexpr std::uint32_t uint32Value() const noexcept
@@ -350,7 +362,8 @@ namespace kmMqtt
 			{
 				if (m_size > 0)
 				{
-					m_bytes = new std::uint8_t[size];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, val, m_size);
 				}
 			}
@@ -371,7 +384,8 @@ namespace kmMqtt
 
 				if (m_size > 0)
 				{
-					m_bytes = new std::uint8_t[val.size()];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, val.c_str(), m_size);
 				}
 			}
@@ -381,7 +395,8 @@ namespace kmMqtt
 			{
 				if (m_size > 0)
 				{
-					m_bytes = new std::uint8_t[other.m_size];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, other.m_bytes, m_size);
 				}
 			}
@@ -411,12 +426,13 @@ namespace kmMqtt
 					return *this;
 				}
 
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
 
 				m_size = other.m_size;
 				if (m_size > 0)
 				{
-					m_bytes = new std::uint8_t[m_size];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, other.m_bytes, m_size);
 				}
 				else
@@ -434,12 +450,13 @@ namespace kmMqtt
 					LogException("UTF8String", std::runtime_error("Construction from string failed. Cannot exceed size of 65535 (uint16_t)."));
 				}
 
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
 
 				m_size = static_cast<std::uint16_t>(other.size());
 				if (other.size() > 0)
 				{
-					m_bytes = new std::uint8_t[m_size];
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
 					std::memcpy(m_bytes, other.c_str(), m_size);
 				}
 				else
@@ -452,7 +469,7 @@ namespace kmMqtt
 
 			~UTF8String()
 			{
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
 			}
 
 			std::size_t encodingSize() const noexcept override
@@ -472,9 +489,13 @@ namespace kmMqtt
 
 				if (m_size > 0)
 				{
-					delete[] m_bytes;
-					m_bytes = new std::uint8_t[m_size];
+					getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+
+					void* memory = getAllocator().allocate(m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
+					m_bytes = static_cast<std::uint8_t*>(memory);
+
 					std::memcpy(m_bytes, &buffer[buffer.readCursor()], m_size);
+
 					buffer.incrementReadCursor(m_size);
 				}
 			}

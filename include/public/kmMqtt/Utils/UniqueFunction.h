@@ -7,6 +7,7 @@
 #define INCLUDE_KMMQTT_UTILS_UNIQUEFUNCTION_H
 
 #include <kmMqtt/GlobalMacros.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 #include <kmMqtt/Utils/TemplateUtils.h>
 #include <type_traits>
 #include <memory>
@@ -176,7 +177,7 @@ namespace kmMqtt
 			m_callable = reinterpret_cast<ICallable*>(&m_buffer);
 			m_usesBuffer = true;
 #else
-			m_callable = new TCallable(std::forward<TFunc>(func));
+			m_callable = kmNew(TCallable, std::forward<TFunc>(func));
 #endif
 		}
 
@@ -189,10 +190,10 @@ namespace kmMqtt
 			using TCallable = Callable<std::decay_t<TFunc>>;
 
 #ifdef ENABLE_UNIQUEFUNCTION_SBO
-			m_callable = new TCallable(std::forward<TFunc>(func));
+			m_callable = kmNew(TCallable, std::forward<TFunc>(func));
 			m_usesBuffer = false;
 #else
-			m_callable = new TCallable(std::forward<TFunc>(func));
+			m_callable = kmNew(TCallable, std::forward<TFunc>(func));
 #endif
 		}
 
@@ -210,10 +211,10 @@ namespace kmMqtt
 				}
 				else
 				{
-					delete m_callable; // Delete heap-allocated callable
+					kmDelete(m_callable); // Delete heap-allocated callable
 				}
 #else
-				delete m_callable; // Delete heap-allocated callable
+				kmDelete(m_callable); // Delete heap-allocated callable
 #endif
 			}
 		}

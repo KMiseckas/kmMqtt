@@ -10,6 +10,7 @@
 #include <kmMqtt/Mqtt/Packets/Properties.h>
 #include <kmMqtt/GlobalMacros.h>
 #include <cstring>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 TEST_SUITE("Properties Tests")
 {
@@ -732,45 +733,45 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Destruct all UInt8 property types")
 		{
-			std::uint8_t* value = new std::uint8_t(5);
+			std::uint8_t* value = kmNew(std::uint8_t, 5);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::PAYLOAD_FORMAT_INDICATOR));
 		}
 
 		SUBCASE("Destruct all UInt16 property types")
 		{
-			std::uint16_t* value = new std::uint16_t(1000);
+			std::uint16_t* value = kmNew(std::uint16_t, 1000);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::SERVER_KEEP_ALIVE));
 		}
 
 		SUBCASE("Destruct all UInt32 property types")
 		{
-			std::uint32_t* value = new std::uint32_t(123456);
+			std::uint32_t* value = kmNew(std::uint32_t, 123456);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::MESSAGE_EXPIRY_INTERVAL));
 		}
 
 		SUBCASE("Destruct UTF8String property types")
 		{
-			UTF8String* value = new UTF8String("test");
+			UTF8String* value = kmNew(UTF8String, "test");
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::CONTENT_TYPE));
 		}
 
 		SUBCASE("Destruct BinaryData property types")
 		{
 			const std::uint8_t data[] = {0x01};
-			BinaryData* value = new BinaryData(1, data);
+			BinaryData* value = kmNew(BinaryData, 1, data);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::CORRELATION_DATA));
 		}
 
 		SUBCASE("Destruct UTF8StringPair property types")
 		{
-			UTF8StringPair* value = new UTF8StringPair("k", "v");
+			UTF8StringPair* value = kmNew(UTF8StringPair, "k", "v");
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::USER_PROPERTY));
 		}
 
 		SUBCASE("Destruct VariableByteInteger property types")
 		{
 			bool success;
-			VariableByteInteger* value = new VariableByteInteger(VariableByteInteger::tryCreateFromValue(100, &success));
+			VariableByteInteger* value = kmNew(VariableByteInteger, VariableByteInteger::tryCreateFromValue(100, &success));
 			CHECK(success);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::SUBSCRIPTION_IDENTIFIER));
 		}

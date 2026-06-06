@@ -7,6 +7,7 @@
 #include <kmMqtt/Logger/Log.h>
 #include <kmMqtt/Logger/LoggerInstance.h>
 #include <kmMqtt/Interfaces/ILogger.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 #include <stdexcept>
 #include <string>
@@ -44,7 +45,7 @@ TEST_SUITE("Logger Tests")
 	TEST_CASE("LogException routes fatal log and rethrows")
 	{
 		auto* previousLogger = kmMqtt::getLogger();
-		auto* testLogger = new CountingLogger();
+		auto* testLogger = kmNew(CountingLogger);
 		kmMqtt::setLogger(testLogger, false);
 
 		const std::runtime_error error("logger failure");
@@ -54,13 +55,13 @@ TEST_SUITE("Logger Tests")
 		CHECK(testLogger->lastCategory == "logger-test");
 
 		kmMqtt::setLogger(previousLogger, false);
-		delete testLogger;
+		kmDelete(testLogger);
 	}
 
 	TEST_CASE("Log APIs can be called with formatted arguments")
 	{
 		auto* previousLogger = kmMqtt::getLogger();
-		auto* testLogger = new CountingLogger();
+		auto* testLogger = kmNew(CountingLogger);
 		kmMqtt::setLogger(testLogger, false);
 
 		CHECK_NOTHROW(kmMqtt::LogInfo("logger-test", "value=%d", 42));
@@ -68,6 +69,6 @@ TEST_SUITE("Logger Tests")
 		CHECK_NOTHROW(kmMqtt::LogError("logger-test", "value=%d", 44));
 
 		kmMqtt::setLogger(previousLogger, false);
-		delete testLogger;
+		kmDelete(testLogger);
 	}
 }

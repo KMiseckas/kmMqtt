@@ -11,7 +11,7 @@ namespace kmMqtt
 	{
 		//FixedHeaderFlags is 2 for PUBREL packets as per MQTT 5 spec (Reserved as 0010)
 		PublishRel::PublishRel(PubRelVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(2U)), m_variableHeader{ new PubRelVariableHeader(std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(2U)), m_variableHeader{ kmNew(PubRelVariableHeader, std::move(variableHeader)) }
 		{
 			setUpHeaders();
 		}
@@ -31,7 +31,7 @@ namespace kmMqtt
 
 		PublishRel::~PublishRel()
 		{
-			delete m_variableHeader;
+			kmDelete(m_variableHeader);
 		}
 
 		PacketType PublishRel::getPacketType() const noexcept
@@ -48,7 +48,7 @@ namespace kmMqtt
 		{
 			if (m_variableHeader == nullptr)
 			{
-				m_variableHeader = new PubRelVariableHeader();
+				m_variableHeader = kmNew(PubRelVariableHeader);
 			}
 
 			addEncodeHeader(m_variableHeader);

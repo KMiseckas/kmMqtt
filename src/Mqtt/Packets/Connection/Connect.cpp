@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		Connect::Connect(ConnectVariableHeader&& variableHeader, ConnectPayloadHeader&& payloadHeader) noexcept
 			: BasePacket(FixedHeaderFlags(k_ConnectFixedHeaderFlags)),
-			m_variableHeader(new ConnectVariableHeader(std::move(variableHeader))),
-			m_payloadHeader(new ConnectPayloadHeader(std::move(payloadHeader)))
+			m_variableHeader(kmNew(ConnectVariableHeader, std::move(variableHeader))),
+			m_payloadHeader(kmNew(ConnectPayloadHeader, std::move(payloadHeader)))
 		{
 			setUpHeaders();
 		}
@@ -34,8 +34,8 @@ namespace kmMqtt
 
 		Connect::~Connect()
 		{
-			delete m_payloadHeader;
-			delete m_variableHeader;
+			kmDelete(m_payloadHeader);
+			kmDelete(m_variableHeader);
 		}
 
 		PacketType Connect::getPacketType() const noexcept
@@ -57,12 +57,12 @@ namespace kmMqtt
 		{
 			if (m_variableHeader == nullptr)
 			{
-				m_variableHeader = new ConnectVariableHeader();
+				m_variableHeader = kmNew(ConnectVariableHeader);
 			}
 
 			if (m_payloadHeader == nullptr)
 			{
-				m_payloadHeader = new ConnectPayloadHeader();
+				m_payloadHeader = kmNew(ConnectPayloadHeader);
 			}
 
 			addEncodeHeader(m_variableHeader);

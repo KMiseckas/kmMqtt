@@ -10,6 +10,7 @@
 #include <kmMqtt/Mqtt/Packets/PropertyType.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <kmMqtt/Mqtt/Packets/ErrorCodes.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 #include <memory>
 #include <unordered_map>
@@ -291,7 +292,7 @@ namespace kmMqtt
 					}
 				}
 
-				m_properties.insert(std::make_pair(T, new DataT(value)));
+				m_properties.insert(std::make_pair(T, kmNew(DataT, value)));
 				m_propertiesSizeInBytes += 1 + sizeof(value);
 
 				return true;
@@ -326,7 +327,7 @@ namespace kmMqtt
 				}
 
 				m_propertiesSizeInBytes += 1 + static_cast<std::uint32_t>(value.encodingSize());
-				m_properties.insert(std::make_pair(T, new DataT(std::move(value))));
+				m_properties.insert(std::make_pair(T, kmNew(DataT, std::move(value))));
 
 				return true;
 			}

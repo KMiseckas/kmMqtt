@@ -18,6 +18,7 @@ namespace kmMqtt
     public:
         virtual ~DefaultEnvironmentFactory() = default;
         virtual IMqttEnvironment* createEnvironment();
+		virtual void deleteEnvironment(IMqttEnvironment* env);
     };
 }
 

@@ -22,7 +22,7 @@ namespace kmMqtt
 				m_impl->tickAsync();
 			}
 
-			delete env;
+			envFactory.deleteEnvironment(env);
 		}
 
 		MqttClient::MqttClient(const IMqttEnvironment* const env, const MqttClientOptions& clientOptions)

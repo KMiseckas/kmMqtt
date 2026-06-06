@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		Publish::Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept
 			:BasePacket(flags),
-			m_payloadHeader{ new PublishPayloadHeader(std::move(payloadHeader)) },
-			m_variableHeader{ new PublishVariableHeader(std::move(variableHeader)) }
+			m_payloadHeader{ kmNew(PublishPayloadHeader, std::move(payloadHeader)) },
+			m_variableHeader{ kmNew(PublishVariableHeader, std::move(variableHeader)) }
 		{
 			setUpHeaders();
 		}
@@ -34,8 +34,8 @@ namespace kmMqtt
 
 		Publish::~Publish()
 		{
-			delete m_variableHeader;
-			delete m_payloadHeader;
+			kmDelete(m_variableHeader);
+			kmDelete(m_payloadHeader);
 		}
 
 		PacketType Publish::getPacketType() const noexcept
@@ -57,12 +57,12 @@ namespace kmMqtt
 		{
 			if (m_variableHeader == nullptr)
 			{
-				m_variableHeader = new PublishVariableHeader();
+				m_variableHeader = kmNew(PublishVariableHeader);
 			}
 
 			if (m_payloadHeader == nullptr)
 			{
-				m_payloadHeader = new PublishPayloadHeader();
+				m_payloadHeader = kmNew(PublishPayloadHeader);
 			}
 
 			addEncodeHeader(m_variableHeader);

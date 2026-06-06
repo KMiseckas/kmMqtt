@@ -459,7 +459,8 @@ TEST_SUITE("Integration - Full - Stability") {
 		const auto& endpoint = selection.endpoint;
 
 		DefaultEnvironmentFactory envFactory;
-		std::unique_ptr<IMqttEnvironment> env(envFactory.createEnvironment());
+		auto deleter = [&](IMqttEnvironment* env) { envFactory.deleteEnvironment(env); };
+		std::unique_ptr<IMqttEnvironment, decltype(deleter)> env(envFactory.createEnvironment(), std::move(deleter));
 
 		MqttClientOptions opts;
 		opts.tickMode(TickMode::SYNC);

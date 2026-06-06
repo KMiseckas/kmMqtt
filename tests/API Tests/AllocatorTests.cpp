@@ -162,19 +162,4 @@ TEST_SUITE("Allocator Infrastructure Tests")
 		CHECK(allocator.allocateCallCount > 0U);
 		CHECK(allocator.deallocateCallCount > 0U);
 	}
-
-	TEST_CASE("SdkAllocator supports null allocator fallback and equality semantics")
-	{
-		SdkAllocator<int> nullA;
-		SdkAllocator<int> nullB;
-		CHECK(nullA == nullB);
-
-		CountingAllocator allocator;
-		SdkAllocator<int> intAllocator(&allocator);
-		SdkAllocator<float> floatAllocator(&allocator);
-		SdkAllocator<float> floatAllocatorOther;
-
-		CHECK(intAllocator == floatAllocator);
-		CHECK(intAllocator != floatAllocatorOther);
-	}
 }

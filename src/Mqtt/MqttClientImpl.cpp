@@ -29,7 +29,7 @@ MqttClientImpl::MqttClientImpl(const IMqttEnvironment *const env,
     : m_clientOptions{clientOptions}, m_config(env->createConfig()),
       m_socket(env->createWebSocket()) {
   if (getLogger() == nullptr) {
-    setLogger(new DefaultLogger());
+	setLogger(kmNew(DefaultLogger));
   }
 
   assert(m_socket != nullptr);
