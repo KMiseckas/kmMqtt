@@ -52,12 +52,12 @@ TEST_SUITE("PacketHelper Tests")
 		MqttConnectionInfo connectionInfo;
 		connectionInfo.connectArgs = ConnectArgs("TestClient");
 		
-		auto will = std::make_unique<Will>("will/topic");
+		auto will = kmMqtt::kmStd::make_unique<Will>("will/topic");
 		will->willQos = Qos::QOS_1;
 		will->retainWillMessage = true;
 		will->willDelayInterval = 10;
 		std::uint8_t payloadBytes[] = {0x01, 0x02, 0x03};
-		will->payload = std::make_unique<BinaryData>(3, payloadBytes);
+		will->payload = kmMqtt::kmStd::make_unique<BinaryData>(3, payloadBytes);
 		
 		connectionInfo.connectArgs.will = std::move(will);
 
@@ -72,7 +72,7 @@ TEST_SUITE("PacketHelper Tests")
 		MqttConnectionInfo connectionInfo;
 		connectionInfo.connectArgs = ConnectArgs("TestClient");
 
-		auto will = std::make_unique<Will>("will/topic");
+		auto will = kmMqtt::kmStd::make_unique<Will>("will/topic");
 		will->willQos = Qos::QOS_1;
 		will->payload = nullptr;
 
@@ -208,7 +208,7 @@ TEST_SUITE("PacketHelper Tests")
 		PublishOptions options;
 		options.responseTopic = "response/topic";
 		std::uint8_t corrData[] = {0xAA, 0xBB};
-		options.correlationData = std::make_unique<BinaryData>(2, corrData);
+		options.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(2, corrData);
 
 		Publish packet = createPublishPacket(connectionInfo, false, "request/topic", payload, options, 0);
 

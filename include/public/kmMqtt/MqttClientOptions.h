@@ -9,6 +9,7 @@
 #include "kmMqtt/Dispatchers/ImmediateDispatcher.h"
 #include "kmMqtt/Interfaces/ICallbackDispatcher.h"
 #include "kmMqtt/Dispatchers/DefaultDispatcher.h"
+#include <kmMqtt/STL/KmMemory.h>
 
 #include <memory>
 
@@ -60,17 +61,17 @@ namespace kmMqtt
 		 * @param callbackDispatcher The custom callback dispatcher to use.
 		 * @return Reference to the updated MqttClientOptions object.
 		 */
-		MqttClientOptions& callbackDispatcher(const std::shared_ptr<ICallbackDispatcher>& callbackDispatcher)
+		MqttClientOptions& callbackDispatcher(const kmStd::shared_ptr<ICallbackDispatcher>& callbackDispatcher)
 		{
 			if (getTickMode() == TickMode::ASYNC)
 			{
 				if (callbackDispatcher == nullptr)
 				{
-					m_callbackDispatcher = std::make_shared<ImmediateDispatcher>();
+					m_callbackDispatcher = kmStd::make_shared<ImmediateDispatcher>();
 				}
 				else if (std::dynamic_pointer_cast<DefaultDispatcher>(callbackDispatcher) != nullptr)
 				{
-					m_callbackDispatcher = std::make_shared<ImmediateDispatcher>();
+					m_callbackDispatcher = kmStd::make_shared<ImmediateDispatcher>();
 				}
 				else
 				{
@@ -81,7 +82,7 @@ namespace kmMqtt
 			}
 			else
 			{
-				m_callbackDispatcher = callbackDispatcher == nullptr ? std::make_shared<DefaultDispatcher>() : callbackDispatcher;
+				m_callbackDispatcher = callbackDispatcher == nullptr ? kmStd::make_shared<DefaultDispatcher>() : callbackDispatcher;
 				m_useInternalCallbackDeferrer = std::dynamic_pointer_cast<DefaultDispatcher>(m_callbackDispatcher) != nullptr;
 			}
 
@@ -103,7 +104,7 @@ namespace kmMqtt
 		 * 
 		 * @return Shared pointer to the ICallbackDispatcher instance.
 		 */
-		std::shared_ptr<ICallbackDispatcher> getCallbackDispatcher() const
+		kmStd::shared_ptr<ICallbackDispatcher> getCallbackDispatcher() const
 		{
 			return m_callbackDispatcher;
 		}
@@ -120,7 +121,7 @@ namespace kmMqtt
 
 	private:
 		TickMode m_tickMode{ TickMode::ASYNC };
-		std::shared_ptr<ICallbackDispatcher> m_callbackDispatcher{ std::make_shared<DefaultDispatcher>()};
+		kmStd::shared_ptr<ICallbackDispatcher> m_callbackDispatcher{kmStd::make_shared<DefaultDispatcher>()};
 		bool m_useInternalCallbackDeferrer{ false };
 	};
 }

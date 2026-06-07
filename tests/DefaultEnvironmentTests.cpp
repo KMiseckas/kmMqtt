@@ -41,7 +41,7 @@ TEST_SUITE("Environment Tests")
 		CHECK(config.pingAlways == true);
 		CHECK(config.defaultPingInterval == 15000U);
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		CHECK(socket != nullptr);
 
 		kmDelete(env);
@@ -64,7 +64,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultWinEnv createWebSocket returns valid socket")
 	{
 		DefaultWinEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		CHECK(socket != nullptr);
 		CHECK(socket->isConnected() == false);
@@ -73,8 +73,8 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultWinEnv createWebSocket returns unique instances")
 	{
 		DefaultWinEnv env;
-		std::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
-		std::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
 
 		CHECK(socket1 != nullptr);
 		CHECK(socket2 != nullptr);
@@ -94,7 +94,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultWinEnv websocket has correct interface methods")
 	{
 		DefaultWinEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		REQUIRE(socket != nullptr);
 
@@ -121,7 +121,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultLinuxEnv createWebSocket returns valid socket")
 	{
 		DefaultLinuxEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		CHECK(socket != nullptr);
 		CHECK(socket->isConnected() == false);
@@ -130,8 +130,8 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultLinuxEnv createWebSocket returns unique instances")
 	{
 		DefaultLinuxEnv env;
-		std::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
-		std::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
 
 		CHECK(socket1 != nullptr);
 		CHECK(socket2 != nullptr);
@@ -151,7 +151,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultLinuxEnv websocket has correct interface methods")
 	{
 		DefaultLinuxEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		REQUIRE(socket != nullptr);
 
@@ -172,7 +172,7 @@ TEST_SUITE("Environment Tests")
 		Config config = env->createConfig();
 		CHECK(config.connectTimeOutMS > 0);
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		CHECK(socket != nullptr);
 
 		kmDelete(env);
@@ -201,7 +201,7 @@ TEST_SUITE("Environment Tests")
 		IMqttEnvironment* env = factory.createEnvironment();
 		REQUIRE(env != nullptr);
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		REQUIRE(socket != nullptr);
 
 		const mqtt::Address address = mqtt::Address::createURL("", "localhost", "1883", "");
@@ -261,7 +261,7 @@ TEST_SUITE("Environment Tests")
 		DefaultEnvironmentFactory factory;
 		IMqttEnvironment* env = factory.createEnvironment();
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		REQUIRE(socket != nullptr);
 
 		bool connectCalled = false;

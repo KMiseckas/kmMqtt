@@ -10,6 +10,7 @@
 #include "kmMqtt/Config.h"
 #include "kmMqtt/Interfaces/ILogger.h"
 #include "kmMqtt/Interfaces/IWebSocket.h"
+#include <kmMqtt/STL/KmMemory.h>
 
 #include <memory>
 #include <string>
@@ -44,7 +45,7 @@ namespace kmMqtt
 		 * 
 		 * @return A shared pointer to an IWebSocket implementation for network communication.
 		 */
-		virtual std::shared_ptr<IWebSocket> createWebSocket() const noexcept = 0;
+		virtual kmStd::shared_ptr<IWebSocket> createWebSocket() const noexcept = 0;
 	};
 }
 

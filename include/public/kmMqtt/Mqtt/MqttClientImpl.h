@@ -35,6 +35,7 @@
 #include "kmMqtt/Utils/PacketIdPool.h" 
 #include "kmMqtt/Interfaces/IMqttEnvironment.h"
 #include "kmMqtt/Mqtt/ReceiveMaximumTracker.h"
+#include <kmMqtt/STL/KmMemory.h>
 
 #include <atomic>
 #include <condition_variable>
@@ -179,7 +180,7 @@ else\
 			Config m_config;
 			PacketIdPool m_packetIdPool;
 
-			std::shared_ptr<IWebSocket> m_socket{ nullptr };
+			kmStd::shared_ptr<IWebSocket> m_socket{nullptr};
 			ByteBuffer m_leftOverBuffer{ 0U };
 
 			DisconnectReasonCode m_gracefulDisconnectReason{ DisconnectReasonCode::NORMAL_DISCONNECTION };

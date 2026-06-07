@@ -10,6 +10,7 @@
 #include <kmMqtt/Mqtt/Enums/PayloadFormatIndicator.h>
 #include <kmMqtt/Mqtt/Enums/Qos.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <string>
 #include <memory>
 #include <map>
@@ -36,7 +37,7 @@ namespace kmMqtt
 			{
 				if (other.correlationData != nullptr)
 				{
-					correlationData = std::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+					correlationData = kmStd::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
 				}
 			}
 
@@ -49,7 +50,7 @@ namespace kmMqtt
 
 				if (other.correlationData != nullptr)
 				{
-					correlationData = std::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
+					correlationData = kmStd::make_unique<BinaryData>(other.correlationData->size(), other.correlationData->bytes());
 				}
 
 				responseTopic = other.responseTopic;
@@ -106,7 +107,7 @@ namespace kmMqtt
 				return *this;
 			}
 
-			std::unique_ptr<BinaryData> correlationData{ nullptr };
+			kmStd::unique_ptr<BinaryData> correlationData{nullptr};
 			std::string responseTopic{ "" };
 			std::uint16_t topicAlias{ 0U };
 			std::uint32_t messageExpiryInterval{ 0U };

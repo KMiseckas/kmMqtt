@@ -8,7 +8,7 @@
 #include <kmMqtt/Memory/AllocatorContext.h>
 #include <kmMqtt/Memory/AllocatorUtils.h>
 #include <kmMqtt/Memory/DefaultAllocator.h>
-#include <kmMqtt/Memory/SdkAllocator.h>
+#include <kmMqtt/Memory/StdAllocator.h>
 #include <kmMqtt/MqttClient.h>
 
 #include <cstdint>
@@ -148,11 +148,11 @@ TEST_SUITE("Allocator Infrastructure Tests")
 		setAllocator(nullptr);
 	}
 
-	TEST_CASE("SdkAllocator uses SDK allocator for std containers")
+	TEST_CASE("SdkAllocator uses STD allocator for std containers")
 	{
 		CountingAllocator allocator;
 		{
-			std::vector<int, SdkAllocator<int>> values{ SdkAllocator<int>(&allocator) };
+			std::vector<int, StdAllocator<int>> values{ StdAllocator<int>(&allocator) };
 			values.push_back(1);
 			values.push_back(2);
 			values.push_back(3);

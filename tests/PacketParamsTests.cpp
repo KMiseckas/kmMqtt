@@ -10,6 +10,7 @@
 #include <kmMqtt/Mqtt/Params/PublishOptions.h>
 #include <kmMqtt/Mqtt/Params/SubscribeOptions.h>
 #include <kmMqtt/Mqtt/Params/UnSubscribeOptions.h>
+#include <kmMqtt/STL/KmMemory.h>
 
 TEST_SUITE("Packet Params Tests")
 {
@@ -123,10 +124,10 @@ TEST_SUITE("Packet Params Tests")
 		original.responseTopic = "response/topic";
 		
 		const std::uint8_t corrData[] = {0x01, 0x02, 0x03};
-		original.correlationData = std::make_unique<BinaryData>(3, corrData);
+		original.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(3, corrData);
 		
 		const std::uint8_t payloadData[] = {0xAA, 0xBB};
-		original.payload = std::make_unique<BinaryData>(2, payloadData);
+		original.payload = kmMqtt::kmStd::make_unique<BinaryData>(2, payloadData);
 		
 		original.userProperties["key"] = "value";
 
@@ -156,7 +157,7 @@ TEST_SUITE("Packet Params Tests")
 		original.willQos = Qos::QOS_2;
 		
 		const std::uint8_t data[] = {0xFF};
-		original.payload = std::make_unique<BinaryData>(1, data);
+		original.payload = kmMqtt::kmStd::make_unique<BinaryData>(1, data);
 
 		Will moved(std::move(original));
 
@@ -171,7 +172,7 @@ TEST_SUITE("Packet Params Tests")
 	{
 		Will original("assign/topic");
 		const std::uint8_t data[] = {0x11};
-		original.correlationData = std::make_unique<BinaryData>(1, data);
+		original.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(1, data);
 
 		Will target("target/topic");
 		target = original;
@@ -185,7 +186,7 @@ TEST_SUITE("Packet Params Tests")
 	{
 		Will original("moveassign/topic");
 		const std::uint8_t data[] = {0x22};
-		original.payload = std::make_unique<BinaryData>(1, data);
+		original.payload = kmMqtt::kmStd::make_unique<BinaryData>(1, data);
 
 		Will target("target/topic");
 		target = std::move(original);
@@ -228,11 +229,11 @@ TEST_SUITE("Packet Params Tests")
 		original.sessionExpiryInterval = 3600;
 		original.userProperties["prop"] = "value";
 		
-		original.will = std::make_unique<Will>("will/topic");
+		original.will = kmMqtt::kmStd::make_unique<Will>("will/topic");
 		original.will->willQos = Qos::QOS_1;
 		
 		const std::uint8_t authData[] = {0x01, 0x02};
-		original.extendedAuthenticationData = std::make_unique<BinaryData>(2, authData);
+		original.extendedAuthenticationData = kmMqtt::kmStd::make_unique<BinaryData>(2, authData);
 
 		ConnectArgs copy(original);
 
@@ -257,7 +258,7 @@ TEST_SUITE("Packet Params Tests")
 	TEST_CASE("ConnectArgs - Move Constructor")
 	{
 		ConnectArgs original("moveClient");
-		original.will = std::make_unique<Will>("will/move");
+		original.will = kmMqtt::kmStd::make_unique<Will>("will/move");
 		original.extendedAuthenticationMethod = "SCRAM-SHA-256";
 
 		ConnectArgs moved(std::move(original));
@@ -274,7 +275,7 @@ TEST_SUITE("Packet Params Tests")
 	{
 		ConnectArgs original("assignClient");
 		original.receiveMaximum = 100;
-		original.will = std::make_unique<Will>("assign/will");
+		original.will = kmMqtt::kmStd::make_unique<Will>("assign/will");
 
 		ConnectArgs target("target");
 		target = original;
@@ -295,7 +296,7 @@ TEST_SUITE("Packet Params Tests")
 	{
 		ConnectArgs original("moveAssignClient");
 		original.maximumTopicAliases = 50;
-		original.will = std::make_unique<Will>("moveassign/will");
+		original.will = kmMqtt::kmStd::make_unique<Will>("moveassign/will");
 
 		ConnectArgs target("target");
 		target = std::move(original);
@@ -409,7 +410,7 @@ TEST_SUITE("Packet Params Tests")
 		original.userProperties["type"] = "telemetry";
 		
 		const std::uint8_t corrData[] = {0xDE, 0xAD, 0xBE, 0xEF};
-		original.correlationData = std::make_unique<BinaryData>(4, corrData);
+		original.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(4, corrData);
 
 		PublishOptions copy(original);
 
@@ -435,7 +436,7 @@ TEST_SUITE("Packet Params Tests")
 		original.qos = Qos::QOS_1;
 		
 		const std::uint8_t data[] = {0x11, 0x22};
-		original.correlationData = std::make_unique<BinaryData>(2, data);
+		original.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(2, data);
 
 		PublishOptions target;
 		target = original;
@@ -459,7 +460,7 @@ TEST_SUITE("Packet Params Tests")
 		original.retain = true;
 		
 		const std::uint8_t data[] = {0xAA, 0xBB, 0xCC};
-		original.correlationData = std::make_unique<BinaryData>(3, data);
+		original.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(3, data);
 		original.userProperties["key"] = "value";
 
 		PublishOptions moved(std::move(original));
@@ -479,7 +480,7 @@ TEST_SUITE("Packet Params Tests")
 		original.addMessageExpiryInterval = true;
 		
 		const std::uint8_t data[] = {0xFF};
-		original.correlationData = std::make_unique<BinaryData>(1, data);
+		original.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(1, data);
 		original.userProperties["priority"] = "high";
 
 		PublishOptions target;
@@ -668,7 +669,7 @@ TEST_SUITE("Packet Params Tests")
 		args.userProperties["client_type"] = "iot_device";
 		args.userProperties["version"] = "1.0";
 
-		args.will = std::make_unique<Will>("device/status/offline");
+		args.will = kmMqtt::kmStd::make_unique<Will>("device/status/offline");
 		args.will->willQos = Qos::QOS_1;
 		args.will->retainWillMessage = true;
 		args.will->willDelayInterval = 60;
@@ -678,10 +679,10 @@ TEST_SUITE("Packet Params Tests")
 		args.will->payloadFormat = PayloadFormatIndicator::UTF8;
 		
 		const std::uint8_t willPayload[] = {'{', '"', 's', 't', 'a', 't', 'u', 's', '"', ':', '"', 'o', 'f', 'f', 'l', 'i', 'n', 'e', '"', '}'};
-		args.will->payload = std::make_unique<BinaryData>(20, willPayload);
+		args.will->payload = kmMqtt::kmStd::make_unique<BinaryData>(20, willPayload);
 		
 		const std::uint8_t corrData[] = {0x12, 0x34, 0x56, 0x78};
-		args.will->correlationData = std::make_unique<BinaryData>(4, corrData);
+		args.will->correlationData = kmMqtt::kmStd::make_unique<BinaryData>(4, corrData);
 		
 		args.will->userProperties["offline_reason"] = "unexpected";
 
@@ -717,7 +718,7 @@ TEST_SUITE("Packet Params Tests")
 		options.qos = Qos::QOS_2;
 		
 		const std::uint8_t corrData[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
-		options.correlationData = std::make_unique<BinaryData>(6, corrData);
+		options.correlationData = kmMqtt::kmStd::make_unique<BinaryData>(6, corrData);
 		
 		options.userProperties["content_type"] = "application/json";
 		options.userProperties["encoding"] = "utf-8";

@@ -19,7 +19,7 @@ namespace kmMqtt
 
         Config createConfig() const noexcept override;
 
-        std::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
+        kmStd::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
 
         mutable MockWebSocket* socketPtr{ nullptr };
         Config config{};

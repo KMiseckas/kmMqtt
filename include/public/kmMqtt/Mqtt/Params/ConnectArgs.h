@@ -11,6 +11,7 @@
 #include <kmMqtt/Mqtt/Enums/MqttVersion.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <kmMqtt/Mqtt/Enums/PayloadFormatIndicator.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <string>
 #include <memory>
 #include <map>
@@ -57,13 +58,13 @@ namespace kmMqtt
 				if (other.correlationData != nullptr)
 				{
 					BinaryData copyCorrelationData = *other.correlationData.get();
-					correlationData = std::make_unique<BinaryData>(std::move(copyCorrelationData));
+					correlationData = kmStd::make_unique<BinaryData>(std::move(copyCorrelationData));
 				}
 
 				if (other.payload != nullptr)
 				{
 					BinaryData payloadData = *other.payload.get();
-					payload = std::make_unique<BinaryData>(std::move(payloadData));
+					payload = kmStd::make_unique<BinaryData>(std::move(payloadData));
 				}
 			}
 
@@ -112,10 +113,10 @@ namespace kmMqtt
 				messageExpiryInterval = other.messageExpiryInterval;
 				contentType = other.contentType;
 				responseTopic = other.responseTopic;
-				correlationData = other.correlationData == nullptr ? nullptr : std::make_unique<BinaryData>(*other.correlationData.get());
+				correlationData = other.correlationData == nullptr ? nullptr : kmStd::make_unique<BinaryData>(*other.correlationData.get());
 				willTopic = other.willTopic;
 				payloadFormat = other.payloadFormat;
-				payload = other.payload == nullptr ? nullptr : std::make_unique<BinaryData>(*other.payload.get());
+				payload = other.payload == nullptr ? nullptr : kmStd::make_unique<BinaryData>(*other.payload.get());
 				userProperties = other.userProperties;
 
 
@@ -128,10 +129,10 @@ namespace kmMqtt
 			std::uint32_t messageExpiryInterval{ 0U };
 			std::string contentType{};
 			std::string responseTopic;
-			std::unique_ptr<BinaryData> correlationData{ nullptr };
+			kmStd::unique_ptr<BinaryData> correlationData{nullptr};
 			std::string willTopic;
 			PayloadFormatIndicator payloadFormat{ PayloadFormatIndicator::BINARY };
-			std::unique_ptr<BinaryData> payload{ nullptr };
+			kmStd::unique_ptr<BinaryData> payload{nullptr};
 			std::map<std::string, std::string> userProperties;
 		};
 
@@ -167,7 +168,7 @@ namespace kmMqtt
 			ConnectArgs(const ConnectArgs& other) noexcept
 				: cleanStart{ other.cleanStart },
 				clientId{ other.clientId },
-				will{ other.will == nullptr ? nullptr : std::make_unique<Will>(*other.will.get()) },
+				  will{other.will == nullptr ? nullptr : kmStd::make_unique<Will>(*other.will.get())},
 				username{ other.username },
 				password{ other.password },
 				extendedAuthenticationMethod{ other.extendedAuthenticationMethod },
@@ -184,7 +185,7 @@ namespace kmMqtt
 				if (other.extendedAuthenticationData != nullptr)
 				{
 					auto copy = *other.extendedAuthenticationData.get();
-					extendedAuthenticationData = std::make_unique<BinaryData>(std::move(copy));
+					extendedAuthenticationData = kmStd::make_unique<BinaryData>(std::move(copy));
 				}
 			}
 
@@ -233,11 +234,11 @@ namespace kmMqtt
 
 				cleanStart = other.cleanStart;
 				clientId = other.clientId;
-				will = other.will == nullptr ? nullptr : std::make_unique<Will>(*other.will.get());
+				will = other.will == nullptr ? nullptr : kmStd::make_unique<Will>(*other.will.get());
 				username = other.username;
 				password = other.password;
 				extendedAuthenticationMethod = other.extendedAuthenticationMethod;
-				extendedAuthenticationData = other.extendedAuthenticationData != nullptr ? std::make_unique<BinaryData>(*other.extendedAuthenticationData.get()) : nullptr;
+				extendedAuthenticationData = other.extendedAuthenticationData != nullptr ? kmStd::make_unique<BinaryData>(*other.extendedAuthenticationData.get()) : nullptr;
 				version = other.version;
 				protocolName = other.protocolName;
 				keepAliveInSec = other.keepAliveInSec;
@@ -253,11 +254,11 @@ namespace kmMqtt
 
 			bool cleanStart{ true };
 			std::string clientId;
-			std::unique_ptr<Will> will{ nullptr };
+			kmStd::unique_ptr<Will> will{nullptr};
 			std::string username;
 			std::string password;
 			std::string extendedAuthenticationMethod;
-			std::unique_ptr<BinaryData> extendedAuthenticationData{nullptr};
+			kmStd::unique_ptr<BinaryData> extendedAuthenticationData{nullptr};
 			MqttVersion version{ MqttVersion::MQTT_5_0 };
 			std::string protocolName{ "MQTT" };
 			std::uint16_t keepAliveInSec{ 60U };

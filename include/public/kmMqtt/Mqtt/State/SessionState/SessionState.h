@@ -12,6 +12,7 @@
 #include "kmMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h"
 #include "kmMqtt/Mqtt/State/SessionState/MessageContainer.h"
 #include "kmMqtt/Mqtt/Enums/ClientErrorCode.h"
+#include <kmMqtt/STL/KmMemory.h>
 
 namespace kmMqtt
 {
@@ -98,7 +99,7 @@ namespace kmMqtt
 
 			const char* m_clientId;
             Milliseconds m_retryInterval;
-            std::shared_ptr<ISessionStatePersistantStore> m_persistantStore{ nullptr };
+			kmStd::shared_ptr<ISessionStatePersistantStore> m_persistantStore{nullptr};
             Milliseconds m_sessionExpiryInterval;
             MessageContainer m_messages{};
 			mutable std::mutex m_mutex{};

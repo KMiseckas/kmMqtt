@@ -3,9 +3,10 @@
 // Licensed under the Apache License, Version 2.0
 // See LICENSE file in the project root for full license information.
 
-#ifndef INCLUDE_KMMQTT_MEMORY_SDKALLOCATOR_H
-#define INCLUDE_KMMQTT_MEMORY_SDKALLOCATOR_H
+#ifndef INCLUDE_KMMQTT_MEMORY_STDALLOCATOR_H
+#define INCLUDE_KMMQTT_MEMORY_STDALLOCATOR_H
 
+#include "kmMqtt/Interfaces/IAllocator.h"
 #include <cstddef>
 #include <limits>
 #include <new>
@@ -14,7 +15,7 @@
 namespace kmMqtt
 {
 	template<class T>
-	class SdkAllocator
+	class StdAllocator
 	{
 	public:
 		using value_type = T;
@@ -26,18 +27,18 @@ namespace kmMqtt
 		template<class U>
 		struct rebind
 		{
-			using other = SdkAllocator<U>;
+			using other = StdAllocator<U>;
 		};
 
-		SdkAllocator() = delete;
+		StdAllocator() = delete;
 
-		explicit SdkAllocator(IAllocator* allocator) noexcept
+		explicit StdAllocator(IAllocator* allocator) noexcept
 			: m_allocator{ allocator }
 		{
 		}
 
-		template<class U>
-		SdkAllocator(const SdkAllocator<U>& other) noexcept
+		template <class U> 
+		StdAllocator(const StdAllocator<U>& other) noexcept
 			: m_allocator{ other.getAllocator() }
 		{
 		}
@@ -76,23 +77,23 @@ namespace kmMqtt
 		}
 
 	private:
-		template<class U>
-		friend class SdkAllocator;
+		template<class U> 
+		friend class StdAllocator;
 
 		IAllocator* m_allocator{ nullptr };
 	};
 
-	template<class T, class U>
-	bool operator==(const SdkAllocator<T>& lhs, const SdkAllocator<U>& rhs) noexcept
+	template <class T, class U> 
+	bool operator==(const StdAllocator<T>& lhs, const StdAllocator<U>& rhs) noexcept
 	{
 		return lhs.getAllocator() == rhs.getAllocator();
 	}
 
-	template<class T, class U>
-	bool operator!=(const SdkAllocator<T>& lhs, const SdkAllocator<U>& rhs) noexcept
+	template <class T, class U> 
+	bool operator!=(const StdAllocator<T>& lhs, const StdAllocator<U>& rhs) noexcept
 	{
 		return !(lhs == rhs);
 	}
 }
 
-#endif //INCLUDE_KMMQTT_MEMORY_SDKALLOCATOR_H
+#endif //INCLUDE_KMMQTT_MEMORY_STDALLOCATOR_H

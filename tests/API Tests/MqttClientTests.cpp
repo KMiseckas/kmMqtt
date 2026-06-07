@@ -5,6 +5,7 @@
 
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <memory>
 #include <string>
 #include <thread>
@@ -659,8 +660,8 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		
 		ConnectArgs args("TestClient");
-		args.will = std::make_unique<Will>("will/topic");
-		args.will->payload = std::make_unique<BinaryData>();
+		args.will = kmStd::make_unique<Will>("will/topic");
+		args.will->payload = kmStd::make_unique<BinaryData>();
 		
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
@@ -674,8 +675,8 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		
 		ConnectArgs args("TestClient");
-		args.will = std::make_unique<Will>("will/topic");
-		args.will->correlationData = std::make_unique<BinaryData>();
+		args.will = kmStd::make_unique<Will>("will/topic");
+		args.will->correlationData = kmStd::make_unique<BinaryData>();
 		
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
@@ -689,9 +690,9 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		
 		ConnectArgs args("TestClient");
-		args.will = std::make_unique<Will>("");
+		args.will = kmStd::make_unique<Will>("");
 		const std::uint8_t data[] = {0x01};
-		args.will->payload = std::make_unique<BinaryData>(1, data);
+		args.will->payload = kmStd::make_unique<BinaryData>(1, data);
 		
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
