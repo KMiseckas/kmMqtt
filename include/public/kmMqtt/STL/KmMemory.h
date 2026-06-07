@@ -38,8 +38,8 @@ namespace kmMqtt
 		template <typename T> 
         using weak_ptr = ::std::weak_ptr<T>;
 
-		template <typename T> 
-        using unique_ptr = ::std::unique_ptr<T, KmDeleter>;
+		template <typename T, typename Deleter = KmDeleter> 
+        using unique_ptr = ::std::unique_ptr<T, Deleter>;
 
         template<typename T, typename... Args> 
         kmStd::shared_ptr<T> make_shared(Args&&... args)
