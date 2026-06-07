@@ -35,11 +35,12 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 ## Features
 
 - **MQTT 5.0 protocol support** - Broad MQTT 5.0 client coverage for connect/publish/subscribe/session workflows, with known gaps documented below
-- **Cross-platform socket support** - Uses adapter pattern for platform-specific socket implementations
+- **Separated MQTT protocol and transport layers** - MQTT packet/state logic is isolated from socket and TLS/SSL implementations, so applications can provide client-driven transport adapters
   - Included: IXWebSocket-based implementation for Windows & Linux
-  - Extendable to other closed-source platforms via `IWebSocket` interface
+  - Extendable to other closed-source platforms via `IMqttEnvironment` and `IWebSocket` interfaces
 - **Flexible operation modes** - Synchronous and asynchronous tick modes
 - **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
+- **Custom memory management** - Route SDK-owned allocations and smart pointers through a custom `IAllocator`
 - **Automatic reconnection handling** - Built-in reconnection logic
 - **Full QoS support** - QoS 0, 1, and 2 message delivery
 - **Session state management** - In-memory session state tracking\*
@@ -234,6 +235,7 @@ while (running) {
 - **[Coverage](https://kmiseckas.github.io/kmMqtt/)** - Click Coverage top right corner.
 - **[API Documentation](https://kmiseckas.github.io/kmMqtt/)** - Complete API reference (generated with Doxygen - see build instructions)
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
+- **[docs/MEMORY.md](docs/MEMORY.md)** - Custom allocator setup, defaults, and SDK smart-pointer behavior
 - **[docs/CI.md](docs/CI.md)** - CI workflow overview, triggers, and quality-pipeline map
 - **[docs/INTEGRATION_TESTS.md](docs/INTEGRATION_TESTS.md)** - Integration suite structure, labels, broker overrides, and local run commands
 

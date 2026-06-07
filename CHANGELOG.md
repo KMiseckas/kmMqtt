@@ -14,6 +14,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 - [lib][api] Non-breaking: Added custom allocator foundation with per-client allocator injection through `MqttClientOptions`.
 - [lib][api][breaking]: Added `kmMqtt::std` smart-pointer wrapper aliases and helper functions in `kmMqtt/STL/Memory.h` to use SDK allocator and added tests. Some API now accepts `kmMqtt::std` smart pointers instead of std:: versions.
+- [doc] Added custom allocator documentation covering defaults, `setAllocator` injection, smart-pointer allocation behavior, allocator flow.
 
 ## [1.1.1] - 2026-05-30
 
