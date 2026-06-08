@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <limits>
 #include <new>
+#include <cstring>
 
 namespace kmMqtt
 {
@@ -49,7 +50,7 @@ namespace kmMqtt
 			throw std::bad_alloc();
 		}
 
-		void* const rawPtr = ::operator new(normalizedSize + overhead);
+		void* const rawPtr = operator new(normalizedSize + overhead);
 
 		std::uintptr_t rawAddress = reinterpret_cast<std::uintptr_t>(rawPtr);
 		std::uintptr_t alignedAddress = rawAddress + sizeof(void*);
@@ -79,6 +80,6 @@ namespace kmMqtt
 		void* stashTarget = static_cast<char*>(ptr) - sizeof(void*);
 		std::memcpy(&rawPtr, stashTarget, sizeof(void*));
 
-		::operator delete(rawPtr);
+		operator delete(rawPtr);
 	}
 } // namespace kmMqtt

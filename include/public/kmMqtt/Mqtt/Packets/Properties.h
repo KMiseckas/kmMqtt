@@ -292,7 +292,7 @@ namespace kmMqtt
 					}
 				}
 
-				m_properties.insert(std::make_pair(T, kmNew(DataT, value)));
+				m_properties.insert(std::make_pair(T, kmNewArgs(DataT, value)));
 				m_propertiesSizeInBytes += 1 + sizeof(value);
 
 				return true;
@@ -327,7 +327,7 @@ namespace kmMqtt
 				}
 
 				m_propertiesSizeInBytes += 1 + static_cast<std::uint32_t>(value.encodingSize());
-				m_properties.insert(std::make_pair(T, kmNew(DataT, std::move(value))));
+				m_properties.insert(std::make_pair(T, kmNewArgs(DataT, std::move(value))));
 
 				return true;
 			}

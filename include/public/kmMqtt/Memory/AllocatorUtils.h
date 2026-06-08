@@ -40,7 +40,7 @@ namespace kmMqtt
 
 		try
 		{
-			return ::new(memory) T(std::forward<Args>(args)...);
+			return new(memory) T(std::forward<Args>(args)...);
 		}
 		catch (...)
 		{
@@ -85,10 +85,12 @@ namespace kmMqtt
 	}
 
 // Allocator-aware construction helpers.
-#define kmNew(Type, ...) ::kmMqtt::kmNewImpl<Type>(__VA_ARGS__)
-#define kmNewWith(AllocatorRef, Type, ...) ::kmMqtt::kmNewImpl<Type>((AllocatorRef), __VA_ARGS__)
-#define kmDelete(...) ::kmMqtt::kmDeleteImpl(__VA_ARGS__)
-#define kmDeleteWith(AllocatorRef, Ptr) ::kmMqtt::kmDeleteImpl((AllocatorRef), (Ptr))
+#define kmNew(Type) kmMqtt::kmNewImpl<Type>()
+#define kmNewArgs(Type, ...) kmMqtt::kmNewImpl<Type>(__VA_ARGS__)
+#define kmNewAlloc(AllocatorRef, Type) kmMqtt::kmNewImpl<Type>((AllocatorRef))
+#define kmNewAllocArgs(AllocatorRef, Type, ...) kmMqtt::kmNewImpl<Type>((AllocatorRef), __VA_ARGS__)
+#define kmDelete(...) kmMqtt::kmDeleteImpl(__VA_ARGS__)
+#define kmDeleteAlloc(AllocatorRef, Ptr) kmMqtt::kmDeleteImpl((AllocatorRef), (Ptr))
 } // namespace kmMqtt
 
 #endif //INCLUDE_KMMQTT_MEMORY_ALLOCATORUTILS_H

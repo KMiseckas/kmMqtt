@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		Connect::Connect(ConnectVariableHeader&& variableHeader, ConnectPayloadHeader&& payloadHeader) noexcept
 			: BasePacket(FixedHeaderFlags(k_ConnectFixedHeaderFlags)),
-			m_variableHeader(kmNew(ConnectVariableHeader, std::move(variableHeader))),
-			m_payloadHeader(kmNew(ConnectPayloadHeader, std::move(payloadHeader)))
+			  m_variableHeader(kmNewArgs(ConnectVariableHeader, std::move(variableHeader))),
+			  m_payloadHeader(kmNewArgs(ConnectPayloadHeader, std::move(payloadHeader)))
 		{
 			setUpHeaders();
 		}

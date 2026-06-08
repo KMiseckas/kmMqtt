@@ -177,7 +177,7 @@ namespace kmMqtt
 			m_callable = reinterpret_cast<ICallable*>(&m_buffer);
 			m_usesBuffer = true;
 #else
-			m_callable = kmNew(TCallable, std::forward<TFunc>(func));
+			m_callable = kmNewArgs(TCallable, std::forward<TFunc>(func));
 #endif
 		}
 
@@ -190,10 +190,10 @@ namespace kmMqtt
 			using TCallable = Callable<std::decay_t<TFunc>>;
 
 #ifdef ENABLE_UNIQUEFUNCTION_SBO
-			m_callable = kmNew(TCallable, std::forward<TFunc>(func));
+			m_callable = kmNewArgs(TCallable, std::forward<TFunc>(func));
 			m_usesBuffer = false;
 #else
-			m_callable = kmNew(TCallable, std::forward<TFunc>(func));
+			m_callable = kmNewArgs(TCallable, std::forward<TFunc>(func));
 #endif
 		}
 

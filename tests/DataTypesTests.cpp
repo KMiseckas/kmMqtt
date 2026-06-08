@@ -64,10 +64,10 @@ TEST_SUITE("Data Type Tests")
 
 			static constexpr std::size_t expectedEncodingSize = 2 + 5; //2 for data size and 5 for bytes in actual data.
 
-			BinaryData* data = kmNew(BinaryData, 5, intPtr);
+			BinaryData* data = kmNewArgs(BinaryData, 5, intPtr);
 			kmMqtt::getAllocator().deallocate(intPtr, size * sizeof(std::uint8_t), alignof(std::uint8_t));
 
-			BinaryData* dataMovedTo = kmNew(BinaryData, std::move(*data));
+			BinaryData* dataMovedTo = kmNewArgs(BinaryData, std::move(*data));
 			kmDelete(data);
 
 			CHECK(dataMovedTo->encodingSize() == expectedEncodingSize);
@@ -93,7 +93,7 @@ TEST_SUITE("Data Type Tests")
 
 			static constexpr std::size_t expectedEncodingSize = 2 + 5; //2 for data size and 5 for bytes in actual data.
 
-			BinaryData* const data = kmNew(BinaryData, 5, intPtr);
+			BinaryData* const data = kmNewArgs(BinaryData, 5, intPtr);
 			kmMqtt::getAllocator().deallocate(intPtr, size * sizeof(std::uint8_t), alignof(std::uint8_t));
 
 			BinaryData* const dataMovedTo = kmNew(BinaryData);
@@ -212,7 +212,7 @@ TEST_SUITE("Data Type Tests")
 			CHECK(strFilled_0.getString().compare("Hello") == 0);
 			CHECK(strFilled_0.stringSize() == 5);
 
-			UTF8String* strFilled_1 = kmNew(UTF8String, "Hello");
+			UTF8String* strFilled_1 = kmNewArgs(UTF8String, "Hello");
 			CHECK(strFilled_1->stringBytes() != nullptr);
 			CHECK(strFilled_1->encodingSize() == 7);
 			CHECK(strFilled_1->getString().compare("Hello") == 0);
@@ -225,7 +225,7 @@ TEST_SUITE("Data Type Tests")
 			CHECK(strFilled_2.getString().compare("Hello") == 0);
 			CHECK(strFilled_2.stringSize() == 5);
 
-			strFilled_1 = kmNew(UTF8String, "Hello2");
+			strFilled_1 = kmNewArgs(UTF8String, "Hello2");
 			CHECK(strFilled_1->stringBytes() != nullptr);
 			CHECK(strFilled_1->encodingSize() == 8);
 			CHECK(strFilled_1->getString().compare("Hello2") == 0);
@@ -383,7 +383,7 @@ TEST_SUITE("Data Type Tests")
 			CHECK(strFilled_0.first().stringSize() == 5);
 			CHECK(strFilled_0.second().stringSize() == 3);
 
-			UTF8StringPair* strFilled_1 = kmNew(UTF8StringPair, "Hello" , "Bye");
+			UTF8StringPair* strFilled_1 = kmNewArgs(UTF8StringPair, "Hello", "Bye");
 			UTF8StringPair strFilled_2{ std::move(*strFilled_1) };
 			kmDelete(strFilled_1);
 			CHECK(strFilled_2.first().stringBytes() != nullptr);

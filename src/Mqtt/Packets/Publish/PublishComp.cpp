@@ -10,7 +10,8 @@ namespace kmMqtt
 	namespace mqtt
 	{
 		PublishComp::PublishComp(PubCompVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ kmNew(PubCompVariableHeader, std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(0U)),
+			  m_variableHeader{kmNewArgs(PubCompVariableHeader, std::move(variableHeader))}
 		{
 			setUpHeaders();
 		}

@@ -22,7 +22,7 @@ struct TestClientContext
         auto env{ TestEnvironment() };
         env.config = config;
 
-        client = kmNew(kmMqtt::mqtt::MqttClient, &env, options);
+        client = kmNewArgs(kmMqtt::mqtt::MqttClient, &env, options);
 
         socketPtr = env.socketPtr;
         socketPtr->connectResult = socketConnectResult;

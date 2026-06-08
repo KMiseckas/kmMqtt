@@ -11,7 +11,7 @@ namespace kmMqtt
 	{
 		Disconnect::Disconnect(DisconnectVariableHeader&& varHeader) noexcept
 			: BasePacket(FixedHeaderFlags(k_DisconnectFixedHeaderFlags)),
-			m_variableHeader(kmNew(DisconnectVariableHeader, std::move(varHeader)))
+			  m_variableHeader(kmNewArgs(DisconnectVariableHeader, std::move(varHeader)))
 		{
 			setUpHeaders();
 		}

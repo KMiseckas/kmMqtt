@@ -733,45 +733,46 @@ TEST_SUITE("Properties Tests")
 	{
 		SUBCASE("Destruct all UInt8 property types")
 		{
-			std::uint8_t* value = kmNew(std::uint8_t, 5);
+			std::uint8_t* value = kmNewArgs(std::uint8_t, 5);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::PAYLOAD_FORMAT_INDICATOR));
 		}
 
 		SUBCASE("Destruct all UInt16 property types")
 		{
-			std::uint16_t* value = kmNew(std::uint16_t, 1000);
+			std::uint16_t* value = kmNewArgs(std::uint16_t, 1000);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::SERVER_KEEP_ALIVE));
 		}
 
 		SUBCASE("Destruct all UInt32 property types")
 		{
-			std::uint32_t* value = kmNew(std::uint32_t, 123456);
+			std::uint32_t* value = kmNewArgs(std::uint32_t, 123456);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::MESSAGE_EXPIRY_INTERVAL));
 		}
 
 		SUBCASE("Destruct UTF8String property types")
 		{
-			UTF8String* value = kmNew(UTF8String, "test");
+			UTF8String* value = kmNewArgs(UTF8String, "test");
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::CONTENT_TYPE));
 		}
 
 		SUBCASE("Destruct BinaryData property types")
 		{
 			const std::uint8_t data[] = {0x01};
-			BinaryData* value = kmNew(BinaryData, 1, data);
+			BinaryData* value = kmNewArgs(BinaryData, 1, data);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::CORRELATION_DATA));
 		}
 
 		SUBCASE("Destruct UTF8StringPair property types")
 		{
-			UTF8StringPair* value = kmNew(UTF8StringPair, "k", "v");
+			UTF8StringPair* value = kmNewArgs(UTF8StringPair, "k", "v");
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::USER_PROPERTY));
 		}
 
 		SUBCASE("Destruct VariableByteInteger property types")
 		{
 			bool success;
-			VariableByteInteger* value = kmNew(VariableByteInteger, VariableByteInteger::tryCreateFromValue(100, &success));
+			VariableByteInteger* value =
+				kmNewArgs(VariableByteInteger, VariableByteInteger::tryCreateFromValue(100, &success));
 			CHECK(success);
 			CHECK_NOTHROW(propertyDestructors::destruct(value, PropertyType::SUBSCRIPTION_IDENTIFIER));
 		}

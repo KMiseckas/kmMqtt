@@ -11,7 +11,8 @@ namespace kmMqtt
 	{
 		//FixedHeaderFlags is 2 for PUBREL packets as per MQTT 5 spec (Reserved as 0010)
 		PublishRel::PublishRel(PubRelVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(2U)), m_variableHeader{ kmNew(PubRelVariableHeader, std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(2U)),
+			  m_variableHeader{kmNewArgs(PubRelVariableHeader, std::move(variableHeader))}
 		{
 			setUpHeaders();
 		}

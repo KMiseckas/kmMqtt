@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		UnSubscribe::UnSubscribe(UnSubscribeVariableHeader&& variableHeader, UnSubscribePayloadHeader&& payloadHeader) noexcept
 			: BasePacket(FixedHeaderFlags(k_UnSubscribeFixedHeaderFlags)),
-			m_variableHeader(kmNew(UnSubscribeVariableHeader, std::move(variableHeader))),
-			m_payloadHeader(kmNew(UnSubscribePayloadHeader, std::move(payloadHeader)))
+			  m_variableHeader(kmNewArgs(UnSubscribeVariableHeader, std::move(variableHeader))),
+			  m_payloadHeader(kmNewArgs(UnSubscribePayloadHeader, std::move(payloadHeader)))
 		{
 			setUpHeaders();
 		}

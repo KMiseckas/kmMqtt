@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		Publish::Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept
 			:BasePacket(flags),
-			m_payloadHeader{ kmNew(PublishPayloadHeader, std::move(payloadHeader)) },
-			m_variableHeader{ kmNew(PublishVariableHeader, std::move(variableHeader)) }
+			m_payloadHeader{ kmNewArgs(PublishPayloadHeader, std::move(payloadHeader)) },
+			m_variableHeader{kmNewArgs(PublishVariableHeader, std::move(variableHeader))}
 		{
 			setUpHeaders();
 		}

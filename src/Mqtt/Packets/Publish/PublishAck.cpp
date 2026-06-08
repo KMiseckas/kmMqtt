@@ -10,7 +10,7 @@ namespace kmMqtt
 	namespace mqtt
 	{
 		PublishAck::PublishAck(PubAckVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ kmNew(PubAckVariableHeader, std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ kmNewArgs(PubAckVariableHeader, std::move(variableHeader)) }
 		{
 			setUpHeaders();
 		}

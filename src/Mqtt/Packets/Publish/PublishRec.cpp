@@ -10,7 +10,8 @@ namespace kmMqtt
 	namespace mqtt
 	{
 		PublishRec::PublishRec(PubRecVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ kmNew(PubRecVariableHeader, std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(0U)),
+			  m_variableHeader{kmNewArgs(PubRecVariableHeader, std::move(variableHeader))}
 		{
 			setUpHeaders();
 		}

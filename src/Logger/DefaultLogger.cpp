@@ -8,8 +8,10 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <cstdio>
+//#include <cstdio>
 #endif
+
+#include <string>
 
 namespace kmMqtt
 {

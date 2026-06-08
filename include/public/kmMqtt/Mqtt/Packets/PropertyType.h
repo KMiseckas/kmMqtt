@@ -224,27 +224,27 @@ namespace kmMqtt
 			{
 				void* decodeUInt8(const ByteBuffer& buffer)
 				{
-					return kmNew(std::uint8_t, buffer.readUint8());
+					return kmNewArgs(std::uint8_t, buffer.readUint8());
 				}
 
 				void* decodeUInt16(const ByteBuffer& buffer)
 				{
-					return kmNew(std::uint16_t, buffer.readUInt16());
+					return kmNewArgs(std::uint16_t, buffer.readUInt16());
 				}
 
 				void* decodeUInt32(const ByteBuffer& buffer)
 				{
-					return kmNew(std::uint32_t, buffer.readUInt32());
+					return kmNewArgs(std::uint32_t, buffer.readUInt32());
 				}
 
 				void* decodeUTF8String(const ByteBuffer& buffer)
 				{
-					return kmNew(UTF8String, buffer);
+					return kmNewArgs(UTF8String, buffer);
 				}
 
 				void* decodeUTF8StringPair(const ByteBuffer& buffer)
 				{
-					return kmNew(UTF8StringPair, buffer);
+					return kmNewArgs(UTF8StringPair, buffer);
 				}
 
 				void* decodeVariableByteInteger(const ByteBuffer& buffer)
