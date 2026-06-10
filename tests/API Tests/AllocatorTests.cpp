@@ -108,7 +108,8 @@ TEST_SUITE("Allocator Infrastructure Tests")
 	{
 		CountingAllocator allocator;
 		bool wasDestroyed = false;
-		LifetimeType* instance = kmNewWith(allocator, LifetimeType, wasDestroyed);
+
+		LifetimeType* instance = kmNewAllocArgs(allocator, LifetimeType, wasDestroyed);
 
 		CHECK(instance != nullptr);
 		CHECK(allocator.allocateCallCount == 1U);
