@@ -14,7 +14,7 @@
 namespace kmMqtt
 {
 	DefaultWebsocket::DefaultWebsocket()
-		: m_websocket(std::make_unique<ix::WebSocket>())
+		: m_websocket(kmStd::make_unique<ix::WebSocket>())
 		, m_connected(false)
 		, m_lastError(0)
 		, m_lastCloseCode(0)

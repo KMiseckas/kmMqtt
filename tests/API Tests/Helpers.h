@@ -22,7 +22,7 @@ struct TestClientContext
         auto env{ TestEnvironment() };
         env.config = config;
 
-        client = new kmMqtt::mqtt::MqttClient(&env, options);
+        client = kmNewArgs(kmMqtt::mqtt::MqttClient, &env, options);
 
         socketPtr = env.socketPtr;
         socketPtr->connectResult = socketConnectResult;
@@ -32,7 +32,7 @@ struct TestClientContext
     {
         if (client)
         {
-            delete client;
+            kmDelete(client);
         }
 	}
 

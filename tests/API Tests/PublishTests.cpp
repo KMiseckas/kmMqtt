@@ -5,6 +5,7 @@
 
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <memory>
 #include <string>
 #include "MockWebSocket.h"
@@ -350,7 +351,7 @@ TEST_SUITE("MqttClient Publish")
 
         PublishOptions options;
         options.qos = Qos::QOS_1;
-        options.correlationData = std::make_unique<BinaryData>(std::move(data));
+		options.correlationData = kmStd::make_unique<BinaryData>(std::move(data));
 
         auto err = testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
         CHECK(err.noError());

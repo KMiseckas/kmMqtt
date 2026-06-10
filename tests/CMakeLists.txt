@@ -9,13 +9,18 @@ include(FetchContent)
 FetchContent_Declare(
 	Doctest
 	GIT_REPOSITORY https://github.com/doctest/doctest.git
-	GIT_TAG ae7a13539fb71f270b87eb2e874fbac80bc8dda2 #v2.4.11
+	GIT_TAG 6804767ee637789db8a5cb281381cae98dc36906 #v2.5.2
 )
 FetchContent_MakeAvailable(Doctest)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${doctest_SOURCE_DIR}/doctest)
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_ROOT}/include/private)
 target_link_libraries(${PROJECT_NAME} PRIVATE kmMqtt)
+
+# Include standard C++ headers (originally added to fix warnings due to specilizations of std::tuple)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    DOCTEST_CONFIG_USE_STD_HEADERS
+)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 	target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=switch)

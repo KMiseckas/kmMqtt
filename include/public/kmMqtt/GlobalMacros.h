@@ -8,8 +8,6 @@
 
 #include <type_traits>
 #include <mutex>
-#include <sstream>
-#include <iostream>
 
 namespace kmMqtt
 {

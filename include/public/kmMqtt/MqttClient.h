@@ -233,7 +233,7 @@ namespace kmMqtt
 			bool getIsTickAsync() const noexcept;
 
 		private:
-			std::unique_ptr<MqttClientImpl> m_impl{ nullptr };
+			kmStd::unique_ptr<MqttClientImpl> m_impl{nullptr};
 		};
 	}
 }

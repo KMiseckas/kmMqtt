@@ -28,8 +28,8 @@ namespace kmMqtt
 
 		SubscribeAck::~SubscribeAck()
 		{
-			delete m_variableHeader;
-			delete m_payloadHeader;
+			kmDelete(m_variableHeader);
+			kmDelete(m_payloadHeader);
 		}
 
 		PacketType SubscribeAck::getPacketType() const noexcept
@@ -51,12 +51,12 @@ namespace kmMqtt
 		{
 			if (m_variableHeader == nullptr)
 			{
-				m_variableHeader = new SubscribeAckVariableHeader();
+				m_variableHeader = kmNew(SubscribeAckVariableHeader);
 			}
 
 			if (m_payloadHeader == nullptr)
 			{
-				m_payloadHeader = new SubscribeAckPayloadHeader();
+				m_payloadHeader = kmNew(SubscribeAckPayloadHeader);
 			}
 
 			addDecodeHeader(m_variableHeader);

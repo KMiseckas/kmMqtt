@@ -10,7 +10,8 @@ namespace kmMqtt
 	namespace mqtt
 	{
 		PublishRec::PublishRec(PubRecVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ new PubRecVariableHeader(std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(0U)),
+			  m_variableHeader{kmNewArgs(PubRecVariableHeader, std::move(variableHeader))}
 		{
 			setUpHeaders();
 		}
@@ -30,7 +31,7 @@ namespace kmMqtt
 
 		PublishRec::~PublishRec()
 		{
-			delete m_variableHeader;
+			kmDelete(m_variableHeader);
 		}
 
 		PacketType PublishRec::getPacketType() const noexcept
@@ -47,7 +48,7 @@ namespace kmMqtt
 		{
 			if (m_variableHeader == nullptr)
 			{
-				m_variableHeader = new PubRecVariableHeader();
+				m_variableHeader = kmNew(PubRecVariableHeader);
 			}
 
 			addEncodeHeader(m_variableHeader);

@@ -13,9 +13,9 @@ namespace kmMqtt
         return config;
     }
 
-    std::shared_ptr<IWebSocket> TestEnvironment::createWebSocket() const noexcept
+    kmStd::shared_ptr<IWebSocket> TestEnvironment::createWebSocket() const noexcept
     {
-        auto newSocket{ std::make_shared<MockWebSocket>() };
+		auto newSocket{kmStd::make_shared<MockWebSocket>()};
         socketPtr = newSocket.get();
         return newSocket;
     }

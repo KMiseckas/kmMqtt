@@ -7,6 +7,7 @@
 #define INCLUDE_ADAPTERS_WEBSOCKETS_DEFAULTWEBSOCKET_H
 
 #include <kmMqtt/Interfaces/IWebSocket.h>
+#include <kmMqtt/STL/KmMemory.h>
 
 #include <memory>
 #include <string>
@@ -40,7 +41,7 @@ namespace kmMqtt
 
 	private:
 #ifdef BUILD_IXWEBSOCKET
-		std::unique_ptr<ix::WebSocket> m_websocket;
+		kmStd::unique_ptr<ix::WebSocket> m_websocket;
 #endif
 		bool m_connected{ false };
 		int m_lastError{ 0 };

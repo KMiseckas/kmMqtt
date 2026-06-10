@@ -21,7 +21,7 @@ namespace kmMqtt
 		{
 		}
 
-		void SendQueue::setSocket(std::shared_ptr<IWebSocket> socket) noexcept
+		void SendQueue::setSocket(kmStd::shared_ptr<IWebSocket> socket) noexcept
 		{
 			m_socket = socket;
 		}

@@ -10,6 +10,7 @@
 #include <kmMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <kmMqtt/Interfaces/IWebSocket.h>
 #include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <cstdint>
 #include <chrono>
 #include <memory>
@@ -31,7 +32,7 @@ namespace kmMqtt
 			SendResultData lastSendResult;
 		};
 
-		using PacketSendJobPtr = std::unique_ptr<IPacketComposer>;
+		using PacketSendJobPtr = kmStd::unique_ptr<IPacketComposer>;
 
 		struct ReceiveMaximumTracker;
 
@@ -56,7 +57,7 @@ namespace kmMqtt
 			SendQueue() noexcept;
 			virtual ~SendQueue();
 
-			void setSocket(std::shared_ptr<IWebSocket> socket) noexcept;
+			void setSocket(kmStd::shared_ptr<IWebSocket> socket) noexcept;
 			void setReceiveMaximumTracker(ReceiveMaximumTracker* const tracker) noexcept;
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
@@ -72,7 +73,7 @@ namespace kmMqtt
 			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
 			ClientErrorCode sendData(const ByteBuffer& data, std::size_t& outBytesSent, int& outSocketError);
 
-			std::shared_ptr<IWebSocket> m_socket;
+			kmStd::shared_ptr<IWebSocket> m_socket;
 			std::function<void()> m_onPingSentCallback;
 			std::function<void(std::uint16_t)> m_onPubCompSentCallback;
 			std::function<void(std::uint16_t)> m_onPubRelSentCallback;

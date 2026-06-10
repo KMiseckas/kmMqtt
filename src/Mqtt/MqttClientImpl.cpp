@@ -29,7 +29,7 @@ MqttClientImpl::MqttClientImpl(const IMqttEnvironment *const env,
     : m_clientOptions{clientOptions}, m_config(env->createConfig()),
       m_socket(env->createWebSocket()) {
   if (getLogger() == nullptr) {
-    setLogger(new DefaultLogger());
+	setLogger(kmNew(DefaultLogger));
   }
 
   assert(m_socket != nullptr);
@@ -190,7 +190,7 @@ ReqResult MqttClientImpl::publish(const char *topic, ByteBuffer &&payload,
     }
   }
 
-  m_sendQueue.addToQueue(std::make_unique<PublishComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PublishComposer>(
       &m_connectionInfo, &m_packetIdPool, packetId, topic, std::move(payload),
       std::move(options), &m_receiveMaximumTracker, false));
 
@@ -233,7 +233,7 @@ ReqResult MqttClientImpl::subscribe(const std::vector<Topic> &topics,
         PendingSubscription{packetId, topics});
   }
 
-  m_sendQueue.addToQueue(std::make_unique<SubscribeComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<SubscribeComposer>(
       &m_connectionInfo, &m_packetIdPool, packetId, topics,
       std::move(options)));
 
@@ -266,7 +266,7 @@ ReqResult MqttClientImpl::unSubscribe(const std::vector<Topic> &topics,
         PendingUnSubscription{packetId, topics});
   }
 
-  m_sendQueue.addToQueue(std::make_unique<UnSubscribeComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<UnSubscribeComposer>(
       &m_connectionInfo, &m_packetIdPool, packetId, topics,
       std::move(options)));
 
@@ -497,19 +497,19 @@ bool MqttClientImpl::getIsTickingAsync() const noexcept {
 
 void MqttClientImpl::pubAck(std::uint16_t packetId, PubAckReasonCode code,
                             PubAckOptions &&options) noexcept {
-  m_sendQueue.addToQueue(std::make_unique<PubAckComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubAckComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
 void MqttClientImpl::pubRec(std::uint16_t packetId, PubRecReasonCode code,
                             PubRecOptions &&options) noexcept {
-  m_sendQueue.addToQueue(std::make_unique<PubRecComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubRecComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
 void MqttClientImpl::pubRel(std::uint16_t packetId, PubRelReasonCode code,
                             PubRelOptions &&options) noexcept {
-  m_sendQueue.addToQueue(std::make_unique<PubRelComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubRelComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
@@ -518,7 +518,7 @@ void MqttClientImpl::pubComp(std::uint16_t packetId, PubCompReasonCode code,
   m_connectionInfo.sessionState.updateMessage(
       packetId, PublishMessageStatus::NeedToSendPubComp);
 
-  m_sendQueue.addToQueue(std::make_unique<PubCompComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubCompComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
@@ -644,7 +644,7 @@ void MqttClientImpl::handleInternalDisconnect(
     // queue.
     if (args.gracefulDisconnect) {
       m_gracefulDisconnectReason = reason;
-      m_sendQueue.addToQueue(std::make_unique<DisconnectComposer>(
+      m_sendQueue.addToQueue(kmStd::make_unique<DisconnectComposer>(
           &m_connectionInfo, DisconnectArgs(args), m_gracefulDisconnectReason));
       return;
     }
@@ -815,7 +815,7 @@ void MqttClientImpl::handleSocketConnectEvent(bool success) {
     m_receiveQueue.setUnSubscribeAcknowledgeCallback(unSubAckCallback);
 
     m_sendQueue.addToQueue(
-        std::make_unique<ConnectComposer>(&m_connectionInfo));
+        kmStd::make_unique<ConnectComposer>(&m_connectionInfo));
 
     LogTrace(
         "MqttClient",
@@ -1385,7 +1385,7 @@ void MqttClientImpl::tickCheckKeepAlive() {
     }
 
     if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval) {
-      m_sendQueue.addToQueue(std::make_unique<PingComposer>(&m_connectionInfo));
+      m_sendQueue.addToQueue(kmStd::make_unique<PingComposer>(&m_connectionInfo));
     }
   }
 }
@@ -1444,7 +1444,7 @@ void MqttClientImpl::tickPendingPublishMessageRetries() {
         ByteBuffer payloadCopy{msg.data.publishMsgData.payload.size()};
         payloadCopy.append(msg.data.publishMsgData.payload);
 
-        m_sendQueue.addToQueue(std::make_unique<PublishComposer>(
+        m_sendQueue.addToQueue(kmStd::make_unique<PublishComposer>(
             &m_connectionInfo, &m_packetIdPool, msg.data.packetID,
             msg.data.publishMsgData.topic, std::move(payloadCopy),
             std::move(options), &m_receiveMaximumTracker, true));

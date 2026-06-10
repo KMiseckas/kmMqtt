@@ -22,7 +22,7 @@ namespace kmMqtt
 		{
 			if (!m_events.empty())
 			{
-				std::queue<std::unique_ptr<ICallable>> empty;
+				std::queue<kmStd::unique_ptr<ICallable>> empty;
 				m_events.swap(empty);
 			}
 		}

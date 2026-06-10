@@ -9,6 +9,7 @@ if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 include(cmake/options.cmake)
+include(cmake/utils.cmake)
 
 project (
     "kmMqtt" 
@@ -130,13 +131,9 @@ if(BUILD_IXWEBSOCKET)
     )
     FetchContent_MakeAvailable(ixwebsocket)
     
-    # Disable warnings as errors for ixwebsocket to prevent third-party warnings from breaking the build
+    # Disable warnings for ixwebsocket to prevent third-party warnings from breaking the build
     if(TARGET ixwebsocket)
-        if(MSVC)
-            target_compile_options(ixwebsocket PRIVATE /WX-)
-        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-            target_compile_options(ixwebsocket PRIVATE -Wno-error)
-        endif()
+        apply_3rd_party_libs_settings(ixwebsocket)
     endif()
 
     # Link using standard CMake targets (works with vcpkg, system, and custom OpenSSL)

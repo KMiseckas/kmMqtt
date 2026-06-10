@@ -4,6 +4,7 @@
 // See LICENSE file in the project root for full license information.
 
 #include <kmMqtt/Environments/DefaultEnvironmentFactory.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <kmMqtt/Environments/DefaultWinEnv.h>
@@ -17,6 +18,11 @@ namespace kmMqtt
 {
     IMqttEnvironment* DefaultEnvironmentFactory::createEnvironment()
     {
-        return new ENV();
+		  return kmNew(ENV);
+    }
+
+    void DefaultEnvironmentFactory::deleteEnvironment(IMqttEnvironment* env)
+    {
+		  kmDelete(env);
     }
 }

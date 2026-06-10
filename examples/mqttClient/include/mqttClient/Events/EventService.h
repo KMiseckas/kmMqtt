@@ -7,6 +7,7 @@
 #define INCLUDE_MQTTCLIENT_EVENTS_EVENTSERVICE_H
 
 #include "mqttClient/Events/Event.h"
+#include "kmMqtt/GlobalMacros.h"
 #include <unordered_map>
 #include <vector>
 #include <functional>

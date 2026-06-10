@@ -55,7 +55,7 @@ void PublishModel::publish(const std::string& topic, const std::string& payload)
     
     if (strlen(uiData.correlationDataBuffer) > 0)
     {
-        opts.correlationData = std::make_unique<kmMqtt::mqtt::BinaryData>(
+        opts.correlationData = kmMqtt::kmStd::make_unique<kmMqtt::mqtt::BinaryData>(
             static_cast<std::uint16_t>(strlen(uiData.correlationDataBuffer)),
             reinterpret_cast<const std::uint8_t*>(uiData.correlationDataBuffer));
     }

@@ -5,6 +5,7 @@
 
 #include <doctest.h>
 #include <kmMqtt/Mqtt/Packets/BasePacket.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 using namespace kmMqtt::mqtt;
 
@@ -87,12 +88,12 @@ TEST_SUITE("Base Packet Tests")
     {
         FixedHeaderFlags flags(0x01);
         TestPacket packet(flags);
-        auto* header = new MockEncodeHeader();
+        auto* header = kmNew(MockEncodeHeader);
         packet.addEncodeHeader(header);
         packet.encode();
         CHECK(header->encodeCalled == 1);
         CHECK(header->sizeCalled > 0);
-        delete header;
+        kmDelete(header);
     }
 
     TEST_CASE("Add decode header and check decode is called")
@@ -104,10 +105,10 @@ TEST_SUITE("Base Packet Tests")
             buf += 0x00;
         }
         TestPacket packet(std::move(buf));
-        auto* header = new MockDecodeHeader();
+        auto* header = kmNew(MockDecodeHeader);
         packet.addDecodeHeader(header);
         auto result = packet.decode();
         CHECK(header->decodeCalled >= 1);
-        delete header;
+        kmDelete(header);
     }
 }

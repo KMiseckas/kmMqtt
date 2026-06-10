@@ -5,6 +5,8 @@
 
 #include <doctest.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
+#include <kmMqtt/Memory/AllocatorContext.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 TEST_SUITE("Data Type Tests")
 {
@@ -23,7 +25,13 @@ TEST_SUITE("Data Type Tests")
 		SUBCASE("With Args Constructor")
 		{
 			constexpr std::uint16_t size{ 5 };
-			const std::uint8_t* intPtr = new std::uint8_t[size]{ 1,2,3,4,5 };
+			std::uint8_t* intPtr = static_cast<std::uint8_t*>(kmMqtt::getAllocator().allocate(size * sizeof(std::uint8_t), alignof(std::uint8_t)));
+			intPtr[0] = 1;
+			intPtr[1] = 2;
+			intPtr[2] = 3;
+			intPtr[3] = 4;
+			intPtr[4] = 5;
+
 			static constexpr std::size_t expectedEncodingSize = 2 + 5; //2 for data size and 5 for bytes in actual data.
 
 			BinaryData data{ 5, intPtr };
@@ -35,7 +43,8 @@ TEST_SUITE("Data Type Tests")
 			CHECK(data.bytes()[4] == 5);
 			CHECK(data.size() == size);
 
-			delete[] intPtr;
+
+			kmMqtt::getAllocator().deallocate(intPtr, size * sizeof(std::uint8_t), alignof(std::uint8_t));
 			CHECK(data.bytes()[0] == 1);
 			CHECK(data.bytes()[1] == 2);
 			CHECK(data.bytes()[2] == 3);
@@ -46,14 +55,20 @@ TEST_SUITE("Data Type Tests")
 		SUBCASE("Move Constructor")
 		{
 			constexpr std::uint16_t size{ 5 };
-			const std::uint8_t* intPtr = new std::uint8_t[size]{ 1,2,3,4,5 };
+			std::uint8_t* intPtr = static_cast<std::uint8_t*>(kmMqtt::getAllocator().allocate(size * sizeof(std::uint8_t), alignof(std::uint8_t)));
+			intPtr[0] = 1;
+			intPtr[1] = 2;
+			intPtr[2] = 3;
+			intPtr[3] = 4;
+			intPtr[4] = 5;
+
 			static constexpr std::size_t expectedEncodingSize = 2 + 5; //2 for data size and 5 for bytes in actual data.
 
-			BinaryData* data = new BinaryData{ 5, intPtr };
-			delete[] intPtr;
+			BinaryData* data = kmNewArgs(BinaryData, 5, intPtr);
+			kmMqtt::getAllocator().deallocate(intPtr, size * sizeof(std::uint8_t), alignof(std::uint8_t));
 
-			BinaryData* dataMovedTo = new BinaryData(std::move(*data));
-			delete data;
+			BinaryData* dataMovedTo = kmNewArgs(BinaryData, std::move(*data));
+			kmDelete(data);
 
 			CHECK(dataMovedTo->encodingSize() == expectedEncodingSize);
 			CHECK(dataMovedTo->bytes()[0] == 1);
@@ -63,21 +78,27 @@ TEST_SUITE("Data Type Tests")
 			CHECK(dataMovedTo->bytes()[4] == 5);
 			CHECK(dataMovedTo->size() == size);
 
-			delete dataMovedTo;
+			kmDelete(dataMovedTo);
 		}
 
 		SUBCASE("Move Assignment")
 		{
 			constexpr std::uint16_t size{ 5 };
-			const std::uint8_t* intPtr = new std::uint8_t[size]{ 1,2,3,4,5 };
+			std::uint8_t* intPtr = static_cast<std::uint8_t*>(kmMqtt::getAllocator().allocate(size * sizeof(std::uint8_t), alignof(std::uint8_t)));
+			intPtr[0] = 1;
+			intPtr[1] = 2;
+			intPtr[2] = 3;
+			intPtr[3] = 4;
+			intPtr[4] = 5;
+
 			static constexpr std::size_t expectedEncodingSize = 2 + 5; //2 for data size and 5 for bytes in actual data.
 
-			BinaryData* const data = new BinaryData{ 5, intPtr };
-			delete[] intPtr;
+			BinaryData* const data = kmNewArgs(BinaryData, 5, intPtr);
+			kmMqtt::getAllocator().deallocate(intPtr, size * sizeof(std::uint8_t), alignof(std::uint8_t));
 
-			BinaryData* const dataMovedTo = new BinaryData{};
+			BinaryData* const dataMovedTo = kmNew(BinaryData);
 			*dataMovedTo = std::move(*data);
-			delete data;
+			kmDelete(data);
 
 			CHECK(dataMovedTo->encodingSize() == expectedEncodingSize);
 			CHECK(dataMovedTo->bytes()[0] == 1);
@@ -87,7 +108,7 @@ TEST_SUITE("Data Type Tests")
 			CHECK(dataMovedTo->bytes()[4] == 5);
 			CHECK(dataMovedTo->size() == size);
 
-			delete dataMovedTo;
+			kmDelete(dataMovedTo);
 		}
 	}
 
@@ -150,7 +171,7 @@ TEST_SUITE("Data Type Tests")
 
 			//Asignment to byte array for decoding.
 			VariableByteInteger varByteIntDecode;
-			std::uint8_t* encodedVarByteInt = new std::uint8_t[4]{ 0,0,0,0 };
+			std::uint8_t* encodedVarByteInt = static_cast<std::uint8_t*>(kmMqtt::getAllocator().allocate(4 * sizeof(std::uint8_t), alignof(std::uint8_t)));
 			encodedVarByteInt[0] = (expectedEncodedVal >> (3 * 8)) & 0xff;
 			encodedVarByteInt[1] = (expectedEncodedVal >> (2 * 8)) & 0xff;
 			encodedVarByteInt[2] = (expectedEncodedVal >> (1 * 8)) & 0xff;
@@ -161,7 +182,7 @@ TEST_SUITE("Data Type Tests")
 			CHECK(varByteIntDecode.encodingSize() == expectedBytesSize);
 			CHECK(varByteIntDecode.uint32EncodedBytes() == 0); //Doesnt encode into uint32_t when decoding array.
 
-			delete[] encodedVarByteInt;
+			kmMqtt::getAllocator().deallocate(encodedVarByteInt, 4 * sizeof(std::uint8_t), alignof(std::uint8_t));
 		}
 
 		SUBCASE("Assignment to Value Decoding")
@@ -191,20 +212,20 @@ TEST_SUITE("Data Type Tests")
 			CHECK(strFilled_0.getString().compare("Hello") == 0);
 			CHECK(strFilled_0.stringSize() == 5);
 
-			UTF8String* strFilled_1 = new UTF8String{ "Hello" };
+			UTF8String* strFilled_1 = kmNewArgs(UTF8String, "Hello");
 			CHECK(strFilled_1->stringBytes() != nullptr);
 			CHECK(strFilled_1->encodingSize() == 7);
 			CHECK(strFilled_1->getString().compare("Hello") == 0);
 			CHECK(strFilled_1->stringSize() == 5);
 
 			UTF8String strFilled_2{ std::move(*strFilled_1) };
-			delete strFilled_1;
+			kmDelete(strFilled_1);
 			CHECK(strFilled_2.stringBytes() != nullptr);
 			CHECK(strFilled_2.encodingSize() == 7);
 			CHECK(strFilled_2.getString().compare("Hello") == 0);
 			CHECK(strFilled_2.stringSize() == 5);
 
-			strFilled_1 = new UTF8String{ "Hello2" };
+			strFilled_1 = kmNewArgs(UTF8String, "Hello2");
 			CHECK(strFilled_1->stringBytes() != nullptr);
 			CHECK(strFilled_1->encodingSize() == 8);
 			CHECK(strFilled_1->getString().compare("Hello2") == 0);
@@ -213,7 +234,7 @@ TEST_SUITE("Data Type Tests")
 			UTF8String strFilled_Copy_1 = *strFilled_1;
 			UTF8String strFilled_Copy_2 = *strFilled_1;
 			UTF8String strFilled_Move_1 = std::move(*strFilled_1);
-			delete strFilled_1;
+			kmDelete(strFilled_1);
 
 			CHECK(strFilled_Copy_1.stringBytes() != nullptr);
 			CHECK(strFilled_Copy_1.encodingSize() == 8);
@@ -362,9 +383,9 @@ TEST_SUITE("Data Type Tests")
 			CHECK(strFilled_0.first().stringSize() == 5);
 			CHECK(strFilled_0.second().stringSize() == 3);
 
-			UTF8StringPair* strFilled_1 = new UTF8StringPair{ "Hello" , "Bye"};
+			UTF8StringPair* strFilled_1 = kmNewArgs(UTF8StringPair, "Hello", "Bye");
 			UTF8StringPair strFilled_2{ std::move(*strFilled_1) };
-			delete strFilled_1;
+			kmDelete(strFilled_1);
 			CHECK(strFilled_2.first().stringBytes() != nullptr);
 			CHECK(strFilled_2.second().stringBytes() != nullptr);
 			CHECK(strFilled_2.encodingSize() == 12);
