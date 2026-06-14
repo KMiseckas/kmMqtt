@@ -19,6 +19,7 @@ kmMqtt started as a hobby project to deepen my understanding of MQTT 5.0 and to 
 
 - [Overview](#overview)
 - [Features](#features)
+- [Platform Adaptation](#platform-adaptation)
 - [Protocol Support Notes](#protocol-support-notes)
 - [Supported Platforms](#supported-platforms)
 - [Dependencies](#dependencies)
@@ -35,12 +36,16 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 ## Features
 
 - **MQTT 5.0 protocol support** - Broad MQTT 5.0 client coverage for connect/publish/subscribe/session workflows, with known gaps documented below
+- **Platform-adaptation for cross-platform ports** - Exposed customisation points so platform specific code can stay outside the MQTT packet/state core
+  - Threading: `kmMqtt/STL/KmThread.h` wraps only the thread primitives currently used by the SDK and can be replaced with `CUSTOM_THREAD_INCLUDE`
+  - Memory: SDK owned allocations and smart pointers can be routed through a custom `IAllocator`
+  - Logging: applications can install a custom `ILogger`
+  - Transport: applications can provide their own `IMqttEnvironment` and `IWebSocket` implementations
 - **Separated MQTT protocol and transport layers** - MQTT packet/state logic is isolated from socket and TLS/SSL implementations, so applications can provide client-driven transport adapters
   - Included: IXWebSocket-based implementation for Windows & Linux
   - Extendable to other closed-source platforms via `IMqttEnvironment` and `IWebSocket` interfaces
 - **Flexible operation modes** - Synchronous and asynchronous tick modes
 - **Adaptable event dispatching** - Customize callback execution via `ICallbackDispatcher` to sync with your application's event loop
-- **Custom memory management** - Route SDK-owned allocations and smart pointers through a custom `IAllocator`
 - **Automatic reconnection handling** - Built-in reconnection logic
 - **Full QoS support** - QoS 0, 1, and 2 message delivery
 - **Session state management** - In-memory session state tracking\*
@@ -48,6 +53,15 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 - **CMake** - Uses cmake for build file generation.
 
 \*Disk saved session states currently not-included and WIP.
+
+## Platform Adaptation
+
+kmMqtt is structured so the protocol logic can stay portable while platform-facing pieces are swapped as needed.
+
+- Use `IMqttEnvironment` and `IWebSocket` to replace the default transport/environment layer.
+- Use `ILogger` and `setLogger()` to route SDK logs into your engine or platform logger.
+- Use `IAllocator` and `setAllocator()` to route SDK-owned allocations through your own memory system.
+- Use `kmMqtt/STL/KmThread.h` and `CUSTOM_THREAD_INCLUDE` when the SDK's internal thread primitives need to map to a platform-specific implementation.
 
 ## Protocol Support Notes
 
@@ -235,6 +249,7 @@ while (running) {
 - **[Coverage](https://kmiseckas.github.io/kmMqtt/)** - Click Coverage top right corner.
 - **[API Documentation](https://kmiseckas.github.io/kmMqtt/)** - Complete API reference (generated with Doxygen - see build instructions)
 - **[BUILDING.md](BUILDING.md)** - Build instructions, CMake options, and platform-specific setup
+- **[docs/ADAPTATION.md](docs/ADAPTATION.md)** - Cross-platform adaptation hooks for threading, transport, logging, and memory
 - **[docs/MEMORY.md](docs/MEMORY.md)** - Custom allocator setup, defaults, and SDK smart-pointer behavior
 - **[docs/CI.md](docs/CI.md)** - CI workflow overview, triggers, and quality-pipeline map
 - **[docs/INTEGRATION_TESTS.md](docs/INTEGRATION_TESTS.md)** - Integration suite structure, labels, broker overrides, and local run commands
