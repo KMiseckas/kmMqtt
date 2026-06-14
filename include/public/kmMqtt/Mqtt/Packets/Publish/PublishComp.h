@@ -28,6 +28,8 @@ namespace kmMqtt
 			PublishComp(PublishComp&& other) noexcept;
 			~PublishComp() override;
 
+			PublishComp& operator=(PublishComp&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const PubCompVariableHeader& getVariableHeader() const;

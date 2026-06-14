@@ -33,6 +33,17 @@ namespace kmMqtt
 		{
 		}
 
+		PublishRec& PublishRec::operator=(PublishRec&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				setUpHeaders();
+			}
+			return *this;
+		}
+
 		PacketType PublishRec::getPacketType() const noexcept
 		{
 			return PacketType::PUBLISH_RECEIVED;

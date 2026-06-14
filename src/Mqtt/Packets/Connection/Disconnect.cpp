@@ -33,6 +33,17 @@ namespace kmMqtt
 		{
 		}
 
+		Disconnect& Disconnect::operator=(Disconnect&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				setUpHeaders();
+			}
+			return *this;
+		}
+
 		PacketType Disconnect::getPacketType() const noexcept
 		{
 			return PacketType::DISCONNECT;

@@ -35,6 +35,18 @@ namespace kmMqtt
 		{
 		}
 
+		Publish& Publish::operator=(Publish&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_payloadHeader = std::move(other.m_payloadHeader);
+				m_variableHeader = std::move(other.m_variableHeader);
+				setUpHeaders();
+			}
+			return *this;
+		}
+
 		PacketType Publish::getPacketType() const noexcept
 		{
 			return PacketType::PUBLISH;

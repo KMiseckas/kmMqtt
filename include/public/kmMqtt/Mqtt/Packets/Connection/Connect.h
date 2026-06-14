@@ -26,6 +26,8 @@ namespace kmMqtt
 			Connect(ByteBuffer&& dataBuffer) noexcept;
 			Connect(Connect&& other) noexcept;
 			Connect() noexcept;
+
+			Connect& operator=(Connect&& other) noexcept;
 			~Connect() override;
 
 			PacketType getPacketType() const noexcept override;

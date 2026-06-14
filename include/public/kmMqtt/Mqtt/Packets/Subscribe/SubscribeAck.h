@@ -27,6 +27,8 @@ namespace kmMqtt
 			SubscribeAck(SubscribeAck&& other) noexcept;
 			~SubscribeAck() override;
 
+			SubscribeAck& operator=(SubscribeAck&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const SubscribeAckVariableHeader& getVariableHeader() const;

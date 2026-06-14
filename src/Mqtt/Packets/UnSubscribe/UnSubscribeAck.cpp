@@ -35,6 +35,18 @@ namespace kmMqtt
 		{
 		}
 
+		UnSubscribeAck& UnSubscribeAck::operator=(UnSubscribeAck&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				m_payloadHeader = std::move(other.m_payloadHeader);
+				setUpHeaders();
+			}
+			return *this;
+		}
+
 		PacketType UnSubscribeAck::getPacketType() const noexcept
 		{
 			return PacketType::UNSUBSCRIBE_ACKNOWLEDGE;

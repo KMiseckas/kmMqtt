@@ -21,6 +21,8 @@ namespace kmMqtt
 			PublishAck(PublishAck&& other) noexcept;
 			~PublishAck() override;
 
+			PublishAck& operator=(PublishAck&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const PubAckVariableHeader& getVariableHeader() const;

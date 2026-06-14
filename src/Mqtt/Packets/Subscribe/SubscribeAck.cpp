@@ -35,6 +35,18 @@ namespace kmMqtt
 		{
 		}
 
+		SubscribeAck& SubscribeAck::operator=(SubscribeAck&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				m_payloadHeader = std::move(other.m_payloadHeader);
+				setUpHeaders();
+			}
+			return *this;
+		}
+
 		PacketType SubscribeAck::getPacketType() const noexcept
 		{
 			return PacketType::SUBSCRIBE_ACKNOWLEDGE;

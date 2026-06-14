@@ -23,6 +23,8 @@ namespace kmMqtt
 			Publish(Publish&& other) noexcept;
 			~Publish() override;
 
+			Publish& operator=(Publish&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const PublishVariableHeader& getVariableHeader() const;
