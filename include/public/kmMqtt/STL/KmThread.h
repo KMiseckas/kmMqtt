@@ -39,6 +39,12 @@ namespace kmMqtt
                 ::std::this_thread::sleep_for(duration);
             }
         }
+
+        template<typename T, typename... Args>
+        kmStd::thread make_thread(T&& func, Args&&... args)
+        {
+            return kmStd::thread(::std::forward<T>(func), ::std::forward<Args>(args)...);
+        }
     }
 }
 #else
