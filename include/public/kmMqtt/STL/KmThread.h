@@ -6,6 +6,17 @@
 #ifndef INCLUDE_KMMQTT_STL_THREAD_H
 #define INCLUDE_KMMQTT_STL_THREAD_H
 
+/**
+ * @file KmThread.h
+ * @brief This file provides a wrapper around the C++ standard library's threading facilities, only for parts
+ * that are used in the kmMqtt project.
+ * 
+ * To use a custom thread implementation, define the CUSTOM_THREAD_INCLUDE macro with the path
+ * to the custom header file (Through CMake/Compiler flags/Preprocessor definitions).
+ * 
+ * The custom header file should provide the same interface as the standard library's threading facilities
+ * used in this file.
+ */
 #if !defined(CUSTOM_THREAD_INCLUDE)
 
 #include <atomic>
