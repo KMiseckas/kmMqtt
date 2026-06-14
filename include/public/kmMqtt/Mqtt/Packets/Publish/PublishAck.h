@@ -29,7 +29,7 @@ namespace kmMqtt
 			void setUpHeaders() noexcept;
 			void onFixedHeaderDecoded() const override;
 
-			PubAckVariableHeader* m_variableHeader{ nullptr };
+			PubAckVariableHeader m_variableHeader;
 		};
 	}
 }

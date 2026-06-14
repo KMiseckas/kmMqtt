@@ -11,7 +11,7 @@ namespace kmMqtt
 	{
 		Disconnect::Disconnect(DisconnectVariableHeader&& varHeader) noexcept
 			: BasePacket(FixedHeaderFlags(k_DisconnectFixedHeaderFlags)),
-			  m_variableHeader(kmNewArgs(DisconnectVariableHeader, std::move(varHeader)))
+			  m_variableHeader(std::move(varHeader))
 		{
 			setUpHeaders();
 		}
@@ -24,14 +24,13 @@ namespace kmMqtt
 
 		Disconnect::Disconnect(Disconnect&& other) noexcept
 			: BasePacket{ std::move(other) },
-			m_variableHeader{ other.m_variableHeader }
+			m_variableHeader{ std::move(other.m_variableHeader) }
 		{
-			other.m_variableHeader = nullptr;
+			setUpHeaders();
 		}
 
 		Disconnect::~Disconnect()
 		{
-			kmDelete(m_variableHeader);
 		}
 
 		PacketType Disconnect::getPacketType() const noexcept
@@ -41,18 +40,13 @@ namespace kmMqtt
 
 		const DisconnectVariableHeader& Disconnect::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		void Disconnect::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = kmNew(DisconnectVariableHeader);
-			}
-
-			addDecodeHeader(m_variableHeader);
-			addEncodeHeader(m_variableHeader);
+			addDecodeHeader(&m_variableHeader);
+			addEncodeHeader(&m_variableHeader);
 		}
 	}
 }

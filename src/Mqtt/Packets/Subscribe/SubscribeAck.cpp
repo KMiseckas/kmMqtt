@@ -9,6 +9,14 @@ namespace kmMqtt
 {
 	namespace mqtt
 	{
+		SubscribeAck::SubscribeAck(SubscribeAckVariableHeader&& variableHeader, SubscribeAckPayloadHeader&& payloadHeader) noexcept
+			: BasePacket(FixedHeaderFlags(k_SubscribeAckFixedHeaderFlags)),
+			  m_variableHeader(std::move(variableHeader)),
+			  m_payloadHeader(std::move(payloadHeader))
+		{
+			setUpHeaders();
+		}
+
 		SubscribeAck::SubscribeAck(ByteBuffer&& dataBuffer) noexcept
 			: BasePacket(std::move(dataBuffer))
 		{
@@ -16,20 +24,15 @@ namespace kmMqtt
 		}
 
 		SubscribeAck::SubscribeAck(SubscribeAck&& other) noexcept
-			: BasePacket(std::move(other))
+			: BasePacket(std::move(other)),
+			  m_variableHeader(std::move(other.m_variableHeader)),
+			  m_payloadHeader(std::move(other.m_payloadHeader))
 		{
-			m_variableHeader = other.m_variableHeader;
-			m_payloadHeader = other.m_payloadHeader;
-			other.m_variableHeader = nullptr;
-			other.m_payloadHeader = nullptr;
-
 			setUpHeaders();
 		}
 
 		SubscribeAck::~SubscribeAck()
 		{
-			kmDelete(m_variableHeader);
-			kmDelete(m_payloadHeader);
 		}
 
 		PacketType SubscribeAck::getPacketType() const noexcept
@@ -39,28 +42,18 @@ namespace kmMqtt
 
 		const SubscribeAckVariableHeader& SubscribeAck::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		const SubscribeAckPayloadHeader& SubscribeAck::getPayloadHeader() const
 		{
-			return *m_payloadHeader;
+			return m_payloadHeader;
 		}
 
 		void SubscribeAck::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = kmNew(SubscribeAckVariableHeader);
-			}
-
-			if (m_payloadHeader == nullptr)
-			{
-				m_payloadHeader = kmNew(SubscribeAckPayloadHeader);
-			}
-
-			addDecodeHeader(m_variableHeader);
-			addDecodeHeader(m_payloadHeader);
+			addDecodeHeader(&m_variableHeader);
+			addDecodeHeader(&m_payloadHeader);
 		}
 	}
 }

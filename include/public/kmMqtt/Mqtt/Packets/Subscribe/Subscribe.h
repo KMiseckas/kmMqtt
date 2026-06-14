@@ -35,8 +35,8 @@ namespace kmMqtt
 		private:
 			void setUpHeaders() noexcept;
 
-			SubscribeVariableHeader* m_variableHeader{ nullptr };
-			SubscribePayloadHeader* m_payloadHeader{ nullptr };
+			SubscribeVariableHeader m_variableHeader;
+			SubscribePayloadHeader m_payloadHeader;
 		};
 	}
 }

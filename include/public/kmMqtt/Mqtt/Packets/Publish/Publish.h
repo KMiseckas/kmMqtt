@@ -32,8 +32,8 @@ namespace kmMqtt
 			void setUpHeaders() noexcept;
 			void onFixedHeaderDecoded() const override;
 
-			PublishPayloadHeader* m_payloadHeader{ nullptr };
-			PublishVariableHeader* m_variableHeader{ nullptr };
+			PublishPayloadHeader m_payloadHeader;
+			mutable PublishVariableHeader m_variableHeader;
 		};
 	}
 }

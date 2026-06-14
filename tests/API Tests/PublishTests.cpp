@@ -6,6 +6,7 @@
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
 #include <kmMqtt/STL/KmMemory.h>
+#include <cstring>
 #include <memory>
 #include <string>
 #include "MockWebSocket.h"
@@ -83,6 +84,50 @@ TEST_SUITE("MqttClient Publish")
 
         CHECK(pubAckEventFired);
         CHECK(ackedPacketId == 1);
+    }
+
+    TEST_CASE("Received publish event exposes payload from deferred moved packet")
+    {
+        Config config;
+        config.pingAlways = false;
+
+        TestClientContext testContext{ config };
+        CHECK(testContext.tryConnectWithResponse().noError());
+
+        const std::string topic = "test/topic";
+        const std::uint8_t expectedPayload[] = { 0xAA, 0xBB, 0xCC };
+
+        bool publishEventFired = false;
+        bool topicMatches = false;
+        bool payloadMatches = false;
+
+        testContext.client->onPublishEvent().add(
+            [&](const PublishEventDetails& details, const Publish& packet)
+            {
+                publishEventFired = true;
+                topicMatches = details.topic == topic;
+
+                const auto& packetPayload = packet.getPayloadHeader().payload;
+                CHECK(details.payload == &packetPayload);
+
+                payloadMatches = details.payload != nullptr &&
+                    details.payload->size() == sizeof(expectedPayload) &&
+                    std::memcmp(details.payload->bytes(), expectedPayload, sizeof(expectedPayload)) == 0;
+            });
+
+        ByteBuffer publishBuffer(2 + 2 + topic.size() + 1 + sizeof(expectedPayload));
+        publishBuffer += 0x30; // PUBLISH QoS 0
+        publishBuffer += static_cast<std::uint8_t>(2 + topic.size() + 1 + sizeof(expectedPayload));
+        publishBuffer.append(static_cast<std::uint16_t>(topic.size()));
+        publishBuffer.append(reinterpret_cast<const std::uint8_t*>(topic.data()), topic.size());
+        publishBuffer += 0x00; // Properties length
+        publishBuffer.append(expectedPayload, sizeof(expectedPayload));
+
+        testContext.receiveResponse(publishBuffer);
+
+        CHECK(publishEventFired);
+        CHECK(topicMatches);
+        CHECK(payloadMatches);
     }
 
     TEST_CASE("Publish exceeding max server topic alias")

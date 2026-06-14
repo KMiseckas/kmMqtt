@@ -33,7 +33,7 @@ namespace kmMqtt
 			void setUpHeaders() noexcept;
 
 		private:
-			DisconnectVariableHeader* m_variableHeader{ nullptr };
+			DisconnectVariableHeader m_variableHeader;
 		};
 	}
 }

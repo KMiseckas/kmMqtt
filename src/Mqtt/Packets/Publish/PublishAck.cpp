@@ -10,7 +10,7 @@ namespace kmMqtt
 	namespace mqtt
 	{
 		PublishAck::PublishAck(PubAckVariableHeader&& variableHeader) noexcept
-			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ kmNewArgs(PubAckVariableHeader, std::move(variableHeader)) }
+			: BasePacket(FixedHeaderFlags(0U)), m_variableHeader{ std::move(variableHeader) }
 		{
 			setUpHeaders();
 		}
@@ -23,14 +23,13 @@ namespace kmMqtt
 
 		PublishAck::PublishAck(PublishAck&& other) noexcept
 			: BasePacket(std::move(other)),
-			m_variableHeader(other.m_variableHeader)
+			m_variableHeader(std::move(other.m_variableHeader))
 		{
-			other.m_variableHeader = nullptr;
+			setUpHeaders();
 		}
 
 		PublishAck::~PublishAck()
 		{
-			kmDelete(m_variableHeader);
 		}
 
 		PacketType PublishAck::getPacketType() const noexcept
@@ -40,18 +39,13 @@ namespace kmMqtt
 
 		const PubAckVariableHeader& PublishAck::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		void PublishAck::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = kmNew(PubAckVariableHeader);
-			}
-
-			addEncodeHeader(m_variableHeader);
-			addDecodeHeader(m_variableHeader);
+			addEncodeHeader(&m_variableHeader);
+			addDecodeHeader(&m_variableHeader);
 		}
 
 		void PublishAck::onFixedHeaderDecoded() const

@@ -85,6 +85,8 @@ namespace kmMqtt
 			ByteBuffer&& extractDataBuffer() noexcept;
 
 		protected:
+			void clearRegisteredHeaders() noexcept;
+
 			/**
 			 * @brief Calculates the remaining length for the fixed header based on other headers.
 			 * 

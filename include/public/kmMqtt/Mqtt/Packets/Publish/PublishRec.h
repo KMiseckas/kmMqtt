@@ -35,7 +35,7 @@ namespace kmMqtt
 			void onFixedHeaderDecoded() const override;
 
 		private:
-			PubRecVariableHeader* m_variableHeader{ nullptr };
+			PubRecVariableHeader m_variableHeader;
 		};
 	}
 }
