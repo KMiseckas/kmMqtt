@@ -8,7 +8,6 @@
 #include <kmMqtt/STL/KmMemory.h>
 #include <memory>
 #include <string>
-#include <thread>
 #include <chrono>
 #include "MockWebSocket.h"
 #include "Helpers.h"

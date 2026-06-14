@@ -7,9 +7,9 @@
 #include "MockWebSocket.h"
 #include <chrono>
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmThread.h>
 #include <doctest.h>
 #include <string>
-#include <thread>
 
 using namespace kmMqtt;
 using namespace kmMqtt::mqtt;
@@ -42,7 +42,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         CHECK(testContext.socketPtr->sentPackets.size() == 1);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(150));
 
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
@@ -84,7 +84,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         CHECK(firstDupFlag == false);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -135,7 +135,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(150));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -176,7 +176,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(120));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(120));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -221,7 +221,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -248,7 +248,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
         testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
         testContext.client->tick();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -301,7 +301,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -317,7 +317,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick();
 
         CHECK(testContext.socketPtr->sentPackets.size() == 0);
@@ -354,7 +354,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -384,13 +384,13 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         std::size_t initialCount = testContext.socketPtr->sentPackets.size();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(50));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
         CHECK(testContext.socketPtr->sentPackets.size() == initialCount);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(80));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(80));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 

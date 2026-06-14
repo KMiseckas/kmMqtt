@@ -9,11 +9,11 @@
 #include "mqttClient/Model/ViewModel.h"
 #include <kmMqtt/MqttClient.h>
 #include <kmMqtt/Interfaces/ILogger.h>
+#include <kmMqtt/STL/KmThread.h>
 
 #include <string>
 #include <vector>
 #include <fstream>
-#include <mutex>
 
 struct OutputMsgMetadata
 {
@@ -51,7 +51,7 @@ private:
 	OutputMsgMetadata* nextLogEntry{ m_logs };
 	std::size_t logCount{ 0 };
 	std::ofstream m_logFile;
-	std::mutex m_logMutex;
+	kmMqtt::kmStd::mutex m_logMutex;
 	bool m_fileLoggingEnabled = false;
 
 	kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };

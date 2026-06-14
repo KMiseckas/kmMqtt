@@ -11,12 +11,12 @@
 
 #include <kmMqtt/Mqtt/Params/ConnectAddress.h>
 #include <kmMqtt/Mqtt/Params/ConnectArgs.h>
+#include <kmMqtt/STL/KmThread.h>
 
 #include <atomic>
 #include <chrono>
 #include <sstream>
 #include <string>
-#include <thread>
 
 #include "BrokerConfig.h"
 #include <kmMqtt/Mqtt/Enums/MqttVersion.h>
@@ -75,7 +75,7 @@ namespace kmMqtt_it {
 		while (!flag.load()) {
 			if (std::chrono::steady_clock::now() >= deadline)
 				return false;
-			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			kmMqtt::kmStd::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 		return true;
 	}
@@ -87,7 +87,7 @@ namespace kmMqtt_it {
 		while (value.load() < expectedCount) {
 			if (std::chrono::steady_clock::now() >= deadline)
 				return false;
-			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+			kmMqtt::kmStd::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 		return true;
 	}

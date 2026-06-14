@@ -407,10 +407,10 @@ void MqttClientImpl::tickAsync() noexcept {
   }
 
   try {
-    m_mqttMainThread = std::thread([this]() {
+    m_mqttMainThread = kmStd::make_thread([this]() {
       while (true) {
         {
-          std::unique_lock<std::mutex> lock{m_tickMutex};
+          kmStd::unique_lock<kmStd::mutex> lock{m_tickMutex};
 
           m_mqttMainThreadCondition.wait_for(
               lock, std::chrono::milliseconds(m_config.tickAsyncWaitForMS),
