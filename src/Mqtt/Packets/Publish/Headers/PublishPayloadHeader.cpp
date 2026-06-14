@@ -22,9 +22,11 @@ namespace kmMqtt
 		{
 			DecodeResult result;
 
-			payload.expand(buffer.readHeadroom());
-			payload.append(buffer.bytes() + buffer.readCursor(), payload.capacity());
-			buffer.incrementReadCursor(buffer.readHeadroom());
+			const std::size_t payloadSize = buffer.readHeadroom();
+			payload.clear();
+			payload.expand(payloadSize);
+			payload.append(buffer.bytes() + buffer.readCursor(), payloadSize);
+			buffer.incrementReadCursor(payloadSize);
 
 			return result;
 		}

@@ -25,7 +25,9 @@ namespace kmMqtt
 			Connect(ConnectVariableHeader&& variableHeader, ConnectPayloadHeader&& payloadHeader) noexcept;
 			Connect(ByteBuffer&& dataBuffer) noexcept;
 			Connect(Connect&& other) noexcept;
-			Connect() noexcept = default;
+			Connect() noexcept;
+
+			Connect& operator=(Connect&& other) noexcept;
 			~Connect() override;
 
 			PacketType getPacketType() const noexcept override;
@@ -36,8 +38,8 @@ namespace kmMqtt
 		private:
 			void setUpHeaders() noexcept;
 
-			ConnectVariableHeader* m_variableHeader{ nullptr };
-			ConnectPayloadHeader* m_payloadHeader{ nullptr };
+			ConnectVariableHeader m_variableHeader;
+			ConnectPayloadHeader m_payloadHeader;
 		};
 	}
 }

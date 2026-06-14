@@ -451,6 +451,23 @@ TEST_SUITE("Header Tests")
 			CHECK(header.payload.bytes()[3] == 0x22);
 			CHECK(header.payload.bytes()[4] == 0x33);
 		}
+
+		SUBCASE("Decoding copies remaining bytes, not destination capacity")
+		{
+			const std::uint8_t data[] = { 0x11, 0x22, 0x33 };
+			ByteBuffer buffer{ 3 };
+			buffer.append(data, 3);
+
+			PublishPayloadHeader header;
+			header.payload = ByteBuffer{ 32 };
+
+			auto result = header.decode(buffer);
+			CHECK(result.isSuccess());
+			CHECK(header.payload.size() == 3);
+			CHECK(header.payload.bytes()[0] == 0x11);
+			CHECK(header.payload.bytes()[1] == 0x22);
+			CHECK(header.payload.bytes()[2] == 0x33);
+		}
 	}
 
 	TEST_CASE("Publish Variable Header")

@@ -27,6 +27,8 @@ namespace kmMqtt
 			UnSubscribeAck(UnSubscribeAck&& other) noexcept;
 			~UnSubscribeAck() override;
 
+			UnSubscribeAck& operator=(UnSubscribeAck&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const UnSubscribeAckVariableHeader& getVariableHeader() const;
@@ -35,8 +37,8 @@ namespace kmMqtt
 		private:
 			void setUpHeaders() noexcept;
 
-			UnSubscribeAckVariableHeader* m_variableHeader{ nullptr };
-			UnSubscribeAckPayloadHeader* m_payloadHeader{ nullptr };
+			UnSubscribeAckVariableHeader m_variableHeader;
+			UnSubscribeAckPayloadHeader m_payloadHeader;
 		};
 	}
 }
