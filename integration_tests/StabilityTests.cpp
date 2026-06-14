@@ -31,7 +31,6 @@
 #include <cstring>
 #include <memory>
 #include <string>
-#include <thread>
 #include <vector>
 
 #include "BrokerConfig.h"
@@ -344,7 +343,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		// After the negotiated keepalive period the client must send PINGREQ
 		// proactively. Wait 2.5x the keepalive (7.5s) to allow at least two
 		// ping cycles and confirm the broker has not closed the session.
-		std::this_thread::sleep_for(std::chrono::seconds(8));
+		kmStd::this_thread::sleep_for(std::chrono::seconds(8));
 
 		CHECK(client.getConnectionStatus() == ConnectionStatus::CONNECTED);
 		CHECK(!disconnectFired.load());
@@ -496,7 +495,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		while (!connectFired.load() &&
 			std::chrono::steady_clock::now() < connectDeadline) {
 			client.tick();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			kmStd::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 		REQUIRE_MESSAGE(connectFired.load(),
 			"Timed out waiting for CONNACK in SYNC tick mode "
@@ -521,7 +520,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		// Tick briefly to give the library a chance to send the packet.
 		for (int i = 0; i < 20; ++i) {
 			client.tick();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			kmStd::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 
 		// Graceful disconnect.
@@ -532,7 +531,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		while (!disconnectFired.load() &&
 			std::chrono::steady_clock::now() < disconnectDeadline) {
 			client.tick();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			kmStd::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 		REQUIRE_MESSAGE(disconnectFired.load(),
 			"Timed out waiting for disconnect event in SYNC tick "

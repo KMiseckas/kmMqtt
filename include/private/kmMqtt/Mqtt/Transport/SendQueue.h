@@ -11,6 +11,7 @@
 #include <kmMqtt/Interfaces/IWebSocket.h>
 #include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
 #include <kmMqtt/STL/KmMemory.h>
+#include <kmMqtt/STL/KmThread.h>
 #include <cstdint>
 #include <chrono>
 #include <memory>
@@ -94,7 +95,7 @@ namespace kmMqtt
 
 			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
 
-			std::mutex m_mutex;
+			kmStd::mutex m_mutex;
 			bool m_startGracefulClear{ false };
 		};
 	}

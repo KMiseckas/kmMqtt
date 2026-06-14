@@ -12,6 +12,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 
 ### Added
 
+- [lib][api] Non-breaking: Added minimal `kmStd` thread aliases for project-used threading primitives and `this_thread::sleep_for` so custom thread includes only need to provide the required surface.
+- [tests] Updated test waits to use the `kmStd` thread sleep wrapper.
+- [examples] Updated example client locking to use the `kmStd` thread aliases.
 - [lib][api] Non-breaking: Added custom allocator foundation with per-client allocator injection through `MqttClientOptions`.
 - [lib][api][breaking]: Added `kmMqtt::std` smart-pointer wrapper aliases and helper functions in `kmMqtt/STL/Memory.h` to use SDK allocator and added tests. Some API now accepts `kmMqtt::std` smart pointers instead of std:: versions.
 - [doc] Added custom allocator documentation covering defaults, `setAllocator` injection, smart-pointer allocation behavior, allocator flow.

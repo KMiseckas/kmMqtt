@@ -15,7 +15,7 @@ static void BM_SBO_ByteBuffer(benchmark::State& state)
 
     for (auto _ : state)
     {
-		for (std::size_t i = 0; i < 1000; ++i);
+		for (std::size_t i = 0; i < 1000; ++i)
         {
             ByteBuffer buf(bufferSize);
             for (std::size_t i = 0; i < bufferSize; ++i)

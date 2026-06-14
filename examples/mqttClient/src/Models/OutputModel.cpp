@@ -11,7 +11,6 @@
 #include <chrono>
 #include <ctime>
 #include <iomanip>
-#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -32,7 +31,7 @@ void OutputModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
 
 void OutputModel::AddOutput(kmMqtt::LogLevel logLevel, const std::string category, const std::string msg)
 {
-	std::lock_guard<std::mutex> lock(m_logMutex);
+	kmMqtt::kmStd::lock_guard<kmMqtt::kmStd::mutex> lock(m_logMutex);
 
 	std::string logEntry;
 
@@ -113,7 +112,7 @@ const OutputMsgMetadata* const OutputModel::GetAllLogs() const noexcept
 
 void OutputModel::clearLogs() noexcept
 {
-	std::lock_guard<std::mutex> lock(m_logMutex);
+	kmMqtt::kmStd::lock_guard<kmMqtt::kmStd::mutex> lock(m_logMutex);
 	
 	for (size_t i = 0; i < sizeof(m_logs) / sizeof(m_logs[0]); ++i)
 	{
@@ -126,7 +125,7 @@ void OutputModel::clearLogs() noexcept
 
 void OutputModel::enableFileLogging(const std::string& filepath)
 {
-	std::lock_guard<std::mutex> lock(m_logMutex);
+	kmMqtt::kmStd::lock_guard<kmMqtt::kmStd::mutex> lock(m_logMutex);
 	
 	if (m_fileLoggingEnabled)
 	{
@@ -155,7 +154,7 @@ void OutputModel::enableFileLogging(const std::string& filepath)
 
 void OutputModel::disableFileLogging()
 {
-	std::lock_guard<std::mutex> lock(m_logMutex);
+	kmMqtt::kmStd::lock_guard<kmMqtt::kmStd::mutex> lock(m_logMutex);
 	
 	if (m_fileLoggingEnabled && m_logFile.is_open())
 	{

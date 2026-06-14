@@ -19,9 +19,9 @@
 #include "kmMqtt/Mqtt/Packets/Publish/PublishComp.h"
 #include "kmMqtt/Mqtt/Packets/Publish/PublishRec.h"
 #include "kmMqtt/Mqtt/Packets/Publish/PublishRel.h"
+#include "kmMqtt/STL/KmThread.h"
 
 #include <queue>
-#include <mutex>
 #include <functional>
 
 namespace kmMqtt
@@ -94,7 +94,7 @@ namespace kmMqtt
 
 			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
 
-			std::mutex m_mutex;
+			kmStd::mutex m_mutex;
 		};
 	}
 }
