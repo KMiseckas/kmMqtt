@@ -94,7 +94,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext{ config };
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        const std::string topic = "test/topic";
+        const kmMqtt::kmStd::string topic = "test/topic";
         const std::uint8_t expectedPayload[] = { 0xAA, 0xBB, 0xCC };
 
         bool publishEventFired = false;

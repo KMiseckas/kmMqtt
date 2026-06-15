@@ -251,7 +251,7 @@ TEST_SUITE("PacketHelper Tests")
 		}
 
 		{
-			std::vector<Topic> topics;
+			kmMqtt::kmStd::vector<Topic> topics;
 			topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_1));
 			SubscribeOptions options;
 
@@ -263,7 +263,7 @@ TEST_SUITE("PacketHelper Tests")
 		}
 
 		{
-			std::vector<Topic> topics;
+			kmMqtt::kmStd::vector<Topic> topics;
 			topics.emplace_back("test/topic");
 			UnSubscribeOptions options;
 
