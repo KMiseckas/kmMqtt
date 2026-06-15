@@ -16,7 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <sstream>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 #include "BrokerConfig.h"
 #include <kmMqtt/Mqtt/Enums/MqttVersion.h>
@@ -31,7 +31,7 @@ namespace kmMqtt_it {
 	struct EndpointSelection {
 		bool found{ false };
 		BrokerEndpoint endpoint{ "", "", "", "", 1 };
-		std::string diagnostics;
+		kmMqtt::kmStd::string diagnostics;
 	};
 
 	// ---------------------------------------------------------------------------
@@ -46,7 +46,7 @@ namespace kmMqtt_it {
 	}
 
 	/// Builds minimal MQTT 5.0 connect args with a transport-tagged client id.
-	inline kmMqtt::mqtt::ConnectArgs makeConnectArgs(const std::string& tag) {
+	inline kmMqtt::mqtt::ConnectArgs makeConnectArgs(const kmMqtt::kmStd::string& tag) {
 		// Keep IDs unique across concurrent CI jobs on shared public brokers.
 		static const auto runSeed =
 			std::chrono::high_resolution_clock::now().time_since_epoch().count();
@@ -56,7 +56,8 @@ namespace kmMqtt_it {
 		clientId << "kmMqtt_it_" << tag << "_" << runSeed << "_"
 			<< connectCounter.fetch_add(1UL);
 
-		kmMqtt::mqtt::ConnectArgs args{ clientId.str() };
+		const auto clientIdText = clientId.str();
+		kmMqtt::mqtt::ConnectArgs args{ clientIdText.c_str() };
 		args.protocolName = "MQTT";
 		args.version = kmMqtt::mqtt::MqttVersion::MQTT_5_0;
 		args.cleanStart = true;
@@ -96,7 +97,7 @@ namespace kmMqtt_it {
 	// Topic utilities
 	// ---------------------------------------------------------------------------
 
-	inline std::string makeUniqueTopic(const char* base) {
+	inline kmMqtt::kmStd::string makeUniqueTopic(const char* base) {
 		// Static local in an inline function has a single shared instance across
 		// all translation units (C++14 [dcl.inline]).
 		static std::atomic<unsigned long> counter{ 0UL };
@@ -105,7 +106,8 @@ namespace kmMqtt_it {
 			.count();
 		std::ostringstream stream;
 		stream << base << "/" << nowMs << "_" << counter.fetch_add(1UL);
-		return stream.str();
+		const auto topic = stream.str();
+		return kmMqtt::kmStd::string{ topic.c_str() };
 	}
 
 	// ---------------------------------------------------------------------------

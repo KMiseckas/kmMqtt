@@ -6,9 +6,9 @@
 #ifndef INCLUDE_KMMQTT_MQTT_TOPIC_ALIASES_H
 #define INCLUDE_KMMQTT_MQTT_TOPIC_ALIASES_H
 
-#include <unordered_map>
+#include <kmMqtt/STL/KmUnorderedMap.h>
 #include <cstdint>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -21,7 +21,7 @@ namespace kmMqtt
 			bool tryFindTopicName(std::uint16_t topicAlias, const char*& outTopicName) const;
 
 		protected:
-			std::unordered_multimap<std::uint16_t, std::string> m_topicAliasToNameMap;
+			kmStd::unordered_multimap<std::uint16_t, kmStd::string> m_topicAliasToNameMap;
 		};
 	}
 

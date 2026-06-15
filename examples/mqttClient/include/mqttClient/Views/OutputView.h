@@ -8,7 +8,7 @@
 
 #include <mqttClient/Views/View.h>
 #include <mqttClient/Model/OutputModel.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 class OutputView : public View<OutputModel>
 {

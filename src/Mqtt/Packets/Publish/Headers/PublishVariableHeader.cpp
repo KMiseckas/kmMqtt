@@ -40,7 +40,7 @@ namespace kmMqtt
 
 		void PublishVariableHeader::encode(ByteBuffer& buffer) const
 		{
-			std::string topicNameStr{ topicName.getString() };
+			kmStd::string topicNameStr{ topicName.getString() };
 
 			assert(!topicNameStr.empty());
 			assert(topicNameStr.find("*", 0) == topicNameStr.npos);

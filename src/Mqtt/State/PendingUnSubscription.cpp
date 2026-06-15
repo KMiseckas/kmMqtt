@@ -10,7 +10,7 @@ namespace kmMqtt
 {
 	namespace mqtt
 	{
-		PendingUnSubscription::PendingUnSubscription(std::uint16_t packetId, std::vector<Topic> topics) noexcept
+		PendingUnSubscription::PendingUnSubscription(std::uint16_t packetId, kmStd::vector<Topic> topics) noexcept
 			: packetId(packetId)
 		{
 			unSubscriptionResults.setTopics(std::move(topics));

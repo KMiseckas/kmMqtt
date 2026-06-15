@@ -10,7 +10,7 @@
 #include "mqttClient/Model/SessionModel.h"
 #include "mqttClient/Events/DirectEvent.h"
 
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <functional>
 
 using SessionModelPtr = std::shared_ptr<SessionModel>;
@@ -38,7 +38,7 @@ public:
 
 	OpenSessionChangedEvent onOpenSessionChangedEvent;
 private:
-	std::vector<SessionModelPtr> m_sessions;
+	kmMqtt::kmStd::vector<SessionModelPtr> m_sessions;
 	std::uint8_t m_openSessionIndex{ 0 };
 };
 

@@ -8,6 +8,7 @@
 
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Memory/AllocatorContext.h>
+#include "STL/KmString.h"
 #include <stdexcept>
 #include <exception>
 #include <bitset>
@@ -444,13 +445,13 @@ namespace kmMqtt
 		/**
 		 * @brief Converts the buffer contents to a string of bits for debugging.
 		 */
-		std::string toString() const noexcept
+		kmStd::string toString() const noexcept
 		{
-			std::string result{ "" };
+			kmStd::string result{ "" };
 
 			for (size_t i = 0; i < m_size; ++i)
 			{
-				result += std::bitset<8>(m_bytes[i]).to_string();
+				result += std::bitset<8>(m_bytes[i]).to_string().c_str();
 				result += " ";
 			}
 

@@ -8,7 +8,7 @@
 
 #include "mqttClient/Views/View.h"
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <ctime>
 #include <imgui.h>
 #include <iomanip>
@@ -43,8 +43,8 @@ private:
     void drawClearConfirmation();
 
     // Helper functions
-    std::string truncatePayload(const std::string& payload, size_t maxLength = 100);
-    std::string formatTimestamp(const std::chrono::system_clock::time_point& timestamp);
+    kmMqtt::kmStd::string truncatePayload(const kmMqtt::kmStd::string& payload, size_t maxLength = 100);
+    kmMqtt::kmStd::string formatTimestamp(const std::chrono::system_clock::time_point& timestamp);
 
     bool m_showWindow{ true };
 };

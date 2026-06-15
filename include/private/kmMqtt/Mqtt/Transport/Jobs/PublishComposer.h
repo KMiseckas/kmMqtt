@@ -21,7 +21,7 @@ namespace kmMqtt
 			PublishComposer(MqttConnectionInfo* connectionInfo,
 				PacketIdPool* packetIdPool,
 				const std::uint16_t packetId,
-				std::string topic,
+				kmStd::string topic,
 				ByteBuffer&& payload,
 				PublishOptions&& pubOptions,
 				ReceiveMaximumTracker* recMaxTracker,
@@ -35,7 +35,7 @@ namespace kmMqtt
 		private:
 			PacketIdPool* m_packetIdPool{ nullptr };
 			std::uint16_t m_packetId{ 0 };
-			std::string m_topic{ nullptr };
+			kmStd::string m_topic{ "" };
 			ByteBuffer m_payload;
 			PublishOptions m_publishOptions;
 			ReceiveMaximumTracker* m_recMaxTracker;

@@ -12,7 +12,7 @@
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <kmMqtt/Memory/AllocatorUtils.h>
 #include <cstdint>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
 
 namespace kmMqtt
 {

@@ -7,8 +7,8 @@
 #define INCLUDE_KMMQTT_MQTT_SESSIONSTATE_MESSAGECONTAINER_H
 
 #include "kmMqtt/Mqtt/State/SessionState/MessageContainerData.h"
-#include <list>
-#include <unordered_map>
+#include <kmMqtt/STL/KmList.h>
+#include <kmMqtt/STL/KmUnorderedMap.h>
 #include <cstdint>
 
 namespace kmMqtt
@@ -24,8 +24,8 @@ namespace kmMqtt
 		 */
 		class MessageContainer
 		{
-			using MsgIter = std::list<MessageContainerData>::iterator;
-			using ConstMsgIter = std::list<MessageContainerData>::const_iterator;
+			using MsgIter = kmStd::list<MessageContainerData>::iterator;
+			using ConstMsgIter = kmStd::list<MessageContainerData>::const_iterator;
 
 		public:
 			/**
@@ -119,10 +119,10 @@ namespace kmMqtt
 
 		private:
 			//Ordered list of messages maintaining insertion/move order.
-			std::list<MessageContainerData> m_messageList;
+			kmStd::list<MessageContainerData> m_messageList;
 
 			//Map from packet ID to list iterator for O(1) lookups.
-			std::unordered_map<std::uint16_t, MsgIter> m_packetIDToMessageMap;
+			kmStd::unordered_map<std::uint16_t, MsgIter> m_packetIDToMessageMap;
 		};
 	}
 }

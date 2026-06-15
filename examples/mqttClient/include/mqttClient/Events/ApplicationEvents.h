@@ -24,12 +24,12 @@ namespace events
 		struct Result
 		{
 			bool success;
-			std::string errorMessage;
+			kmMqtt::kmStd::string errorMessage;
 		};
 
 		Result result;
-		std::string topic;
-		std::string message;
+		kmMqtt::kmStd::string topic;
+		kmMqtt::kmStd::string message;
 		kmMqtt::mqtt::PublishOptions options;
 	};
 }

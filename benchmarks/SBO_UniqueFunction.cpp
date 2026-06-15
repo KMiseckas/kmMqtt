@@ -6,7 +6,7 @@
 #include <benchmark/benchmark.h>
 #include "Functor.h"
 #include <kmMqtt/Utils/UniqueFunction.h>
-#include <queue>
+#include <kmMqtt/STL/KmQueue.h>
 
 using namespace kmMqtt;
 

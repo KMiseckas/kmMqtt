@@ -10,8 +10,8 @@
 #include <kmMqtt/Mqtt/Params/PublishOptions.h>
 #include <kmMqtt/ByteBuffer.h>
 #include <kmMqtt/Mqtt/MqttClientEvents.h>
-#include <string>
-#include <vector>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 #include <memory>
 #include <chrono>
 
@@ -33,15 +33,15 @@ enum class PublishMessageStatus
 
 struct PublishedMessage
 {
-    std::string topic;
-    std::string payload;
+    kmMqtt::kmStd::string topic;
+    kmMqtt::kmStd::string payload;
     kmMqtt::mqtt::PublishOptions options;
     PublishMessageStatus status{ PublishMessageStatus::PENDING };
-    std::string lastError{ "" };
+    kmMqtt::kmStd::string lastError{ "" };
     std::chrono::system_clock::time_point timestamp;
     
     PublishedMessage() noexcept = default;
-    PublishedMessage(const std::string& topic_, const std::string& payload_, const kmMqtt::mqtt::PublishOptions& opts = {}) noexcept
+    PublishedMessage(const kmMqtt::kmStd::string& topic_, const kmMqtt::kmStd::string& payload_, const kmMqtt::mqtt::PublishOptions& opts = {}) noexcept
         : topic(topic_), payload(payload_), options(opts), timestamp(std::chrono::system_clock::now()) {}
 };
 
@@ -53,11 +53,11 @@ public:
 
     void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
     
-    void publish(const std::string& topic, const std::string& payload);
+    void publish(const kmMqtt::kmStd::string& topic, const kmMqtt::kmStd::string& payload);
     void clearAllMessages();
     void removeMessage(size_t index);
     
-    const std::vector<PublishedMessage>& getPublishedMessages() const noexcept;
+    const kmMqtt::kmStd::vector<PublishedMessage>& getPublishedMessages() const noexcept;
     size_t getPendingCount() const noexcept;
     size_t getSuccessCount() const noexcept;
     size_t getFailedCount() const noexcept;
@@ -91,9 +91,9 @@ public:
 private:
     void setupEventHandlers();
     void onPublishCompleted(const kmMqtt::mqtt::PublishCompleteEventDetails& details);
-    void updateMessageStatus(std::uint16_t packetId, PublishMessageStatus status, const std::string& error = "");
+    void updateMessageStatus(std::uint16_t packetId, PublishMessageStatus status, const kmMqtt::kmStd::string& error = "");
     
-    std::vector<PublishedMessage> m_publishedMessages;
+    kmMqtt::kmStd::vector<PublishedMessage> m_publishedMessages;
     kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
     
     // Store event handler IDs to properly unregister them

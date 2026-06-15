@@ -10,6 +10,7 @@
 #include <kmMqtt/Memory/DefaultAllocator.h>
 #include <kmMqtt/Memory/StdAllocator.h>
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmContainers.h>
 
 #include <cstdint>
 #include <stdexcept>
@@ -149,16 +150,129 @@ TEST_SUITE("Allocator Infrastructure Tests")
 		setAllocator(nullptr);
 	}
 
-	TEST_CASE("SdkAllocator uses STD allocator for std containers")
+	TEST_CASE("StdAllocator can be used explicitly with standard containers")
 	{
 		CountingAllocator allocator;
 		{
-			std::vector<int, StdAllocator<int>> values{ StdAllocator<int>(&allocator) };
+			kmMqtt::kmStd::vector<int, StdAllocator<int>> values{ StdAllocator<int>(&allocator) };
 			values.push_back(1);
 			values.push_back(2);
 			values.push_back(3);
 			CHECK(values.size() == 3U);
 		}
+
+		CHECK(allocator.allocateCallCount > 0U);
+		CHECK(allocator.deallocateCallCount > 0U);
+	}
+
+	TEST_CASE("kmStd container aliases use assigned allocator by default")
+	{
+		CountingAllocator allocator;
+		setAllocator(&allocator);
+
+		{
+			kmMqtt::kmStd::string text(128U, 'x');
+
+			kmMqtt::kmStd::vector<int> vectorValues;
+			vectorValues.push_back(1);
+			vectorValues.push_back(2);
+
+			kmMqtt::kmStd::deque<int> dequeValues;
+			dequeValues.push_back(3);
+
+			kmMqtt::kmStd::list<int> listValues;
+			listValues.push_back(4);
+
+			kmMqtt::kmStd::map<int, kmMqtt::kmStd::string> mapValues;
+			mapValues.emplace(5, "five");
+
+			kmMqtt::kmStd::multimap<int, kmMqtt::kmStd::string> multimapValues;
+			multimapValues.emplace(6, "six");
+
+			kmMqtt::kmStd::unordered_map<int, int> unorderedMapValues;
+			unorderedMapValues.emplace(7, 7);
+
+			kmMqtt::kmStd::unordered_multimap<int, int> unorderedMultimapValues;
+			unorderedMultimapValues.emplace(8, 8);
+
+			kmMqtt::kmStd::set<int> setValues;
+			setValues.insert(9);
+
+			kmMqtt::kmStd::multiset<int> multisetValues;
+			multisetValues.insert(10);
+
+			kmMqtt::kmStd::unordered_set<int> unorderedSetValues;
+			unorderedSetValues.insert(11);
+
+			kmMqtt::kmStd::unordered_multiset<int> unorderedMultisetValues;
+			unorderedMultisetValues.insert(12);
+
+			kmMqtt::kmStd::queue<int> queueValues;
+			queueValues.push(13);
+
+			kmMqtt::kmStd::stack<int> stackValues;
+			stackValues.push(14);
+
+			kmMqtt::kmStd::priority_queue<int> priorityQueueValues;
+			priorityQueueValues.push(15);
+
+			kmMqtt::kmStd::array<int, 2U> arrayValues{ { 16, 17 } };
+
+			CHECK(text.size() == 128U);
+			CHECK(vectorValues.size() == 2U);
+			CHECK(dequeValues.size() == 1U);
+			CHECK(listValues.size() == 1U);
+			CHECK(mapValues.size() == 1U);
+			CHECK(multimapValues.size() == 1U);
+			CHECK(unorderedMapValues.size() == 1U);
+			CHECK(unorderedMultimapValues.size() == 1U);
+			CHECK(setValues.size() == 1U);
+			CHECK(multisetValues.size() == 1U);
+			CHECK(unorderedSetValues.size() == 1U);
+			CHECK(unorderedMultisetValues.size() == 1U);
+			CHECK(queueValues.size() == 1U);
+			CHECK(stackValues.size() == 1U);
+			CHECK(priorityQueueValues.size() == 1U);
+			CHECK(arrayValues[0] == 16);
+		}
+
+		setAllocator(nullptr);
+
+		CHECK(allocator.allocateCallCount > 0U);
+		CHECK(allocator.deallocateCallCount > 0U);
+	}
+
+	TEST_CASE("kmStd containers keep their construction allocator for destruction")
+	{
+		CountingAllocator allocator;
+
+		{
+			setAllocator(&allocator);
+			kmMqtt::kmStd::vector<int> values;
+			values.reserve(8U);
+			values.push_back(1);
+
+			setAllocator(nullptr);
+		}
+
+		CHECK(allocator.allocateCallCount > 0U);
+		CHECK(allocator.deallocateCallCount > 0U);
+	}
+
+	TEST_CASE("kmStd string supports literal prefix concatenation")
+	{
+		CountingAllocator allocator;
+		setAllocator(&allocator);
+
+		{
+			kmMqtt::kmStd::string value(128U, 'x');
+			kmMqtt::kmStd::string text = "prefix:" + value;
+
+			CHECK(text.find("prefix:") == 0U);
+			CHECK(text.size() == value.size() + 7U);
+		}
+
+		setAllocator(nullptr);
 
 		CHECK(allocator.allocateCallCount > 0U);
 		CHECK(allocator.deallocateCallCount > 0U);

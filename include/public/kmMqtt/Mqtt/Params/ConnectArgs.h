@@ -12,9 +12,9 @@
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <kmMqtt/Mqtt/Enums/PayloadFormatIndicator.h>
 #include <kmMqtt/STL/KmMemory.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <memory>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
 
 namespace kmMqtt
 {
@@ -22,7 +22,7 @@ namespace kmMqtt
 	{
 		struct PUBLIC_API Will
 		{
-			Will(const std::string& topic) noexcept
+			Will(const kmStd::string& topic) noexcept
 				:willTopic{ topic }
 			{
 			}
@@ -127,18 +127,18 @@ namespace kmMqtt
 			bool retainWillMessage{ false };
 			std::uint32_t willDelayInterval{ 0U };
 			std::uint32_t messageExpiryInterval{ 0U };
-			std::string contentType{};
-			std::string responseTopic;
+			kmStd::string contentType{};
+			kmStd::string responseTopic;
 			kmStd::unique_ptr<BinaryData> correlationData{nullptr};
-			std::string willTopic;
+			kmStd::string willTopic;
 			PayloadFormatIndicator payloadFormat{ PayloadFormatIndicator::BINARY };
 			kmStd::unique_ptr<BinaryData> payload{nullptr};
-			std::map<std::string, std::string> userProperties;
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 
 		struct PUBLIC_API ConnectArgs
 		{
-			ConnectArgs(const std::string& clientId) noexcept
+			ConnectArgs(const kmStd::string& clientId) noexcept
 				:clientId{clientId}
 			{
 			}
@@ -253,14 +253,14 @@ namespace kmMqtt
 			}
 
 			bool cleanStart{ true };
-			std::string clientId;
+			kmStd::string clientId;
 			kmStd::unique_ptr<Will> will{nullptr};
-			std::string username;
-			std::string password;
-			std::string extendedAuthenticationMethod;
+			kmStd::string username;
+			kmStd::string password;
+			kmStd::string extendedAuthenticationMethod;
 			kmStd::unique_ptr<BinaryData> extendedAuthenticationData{nullptr};
 			MqttVersion version{ MqttVersion::MQTT_5_0 };
-			std::string protocolName{ "MQTT" };
+			kmStd::string protocolName{ "MQTT" };
 			std::uint16_t keepAliveInSec{ 60U };
 			std::uint32_t sessionExpiryInterval{ 0U };
 			std::uint16_t receiveMaximum{ 0U };
@@ -269,7 +269,7 @@ namespace kmMqtt
 			bool requestResponseInformation{ false };
 			bool requestProblemInformation{ true };
 
-			std::map<std::string, std::string> userProperties;
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 	}
 }

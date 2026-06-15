@@ -13,7 +13,7 @@ namespace kmMqtt
 		PublishComposer::PublishComposer(MqttConnectionInfo* connectionInfo,
 			PacketIdPool* packetIdPool,
 			const std::uint16_t packetId,
-			std::string topic,
+			kmStd::string topic,
 			ByteBuffer&& payload,
 			PublishOptions&& pubOptions,
 			ReceiveMaximumTracker* recMaxTracker,

@@ -6,7 +6,7 @@
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 
@@ -104,7 +104,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         pub += 0x05;
         pub += 0x06;
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(pub, packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -151,7 +151,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         CHECK(info.receiveMaximumAsServer == 2);
 
         // Publish first message QOS 1
-        std::string topic1 = "test/1";
+        kmMqtt::kmStd::string topic1 = "test/1";
         ByteBuffer payload1(2);
         payload1 += 0x01; payload1 += 0x02;
         PublishOptions options1;
@@ -165,7 +165,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         CHECK(testContext.socketPtr->sentPackets.size() == 1);
 
         // Publish second message QOS 1
-        std::string topic2 = "test/2";
+        kmMqtt::kmStd::string topic2 = "test/2";
         ByteBuffer payload2(2);
         payload2 += 0x03; payload2 += 0x04;
         PublishOptions options2;
@@ -181,7 +181,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         testContext.socketPtr->sentPackets.clear();
 
         // Publish third message QOS 1 - Should be queued but not sent yet
-        std::string topic3 = "test/3";
+        kmMqtt::kmStd::string topic3 = "test/3";
         ByteBuffer payload3(2);
         payload3 += 0x05; payload3 += 0x06;
         PublishOptions options3;
@@ -330,7 +330,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         pub += 0x04;
         pub += 0x05;
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(pub, packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -461,7 +461,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         CHECK(testContext.client->getConnectionStatus() == ConnectionStatus::CONNECTED);
 
         // Publish QOS 2 message
-        std::string topic = "test";
+        kmMqtt::kmStd::string topic = "test";
         ByteBuffer payload(2);
         payload += 0x01; payload += 0x02;
         PublishOptions options;
@@ -544,7 +544,7 @@ TEST_SUITE("MqttClient Receive Maximum")
         //Publish multiple QOS 0 messages - all should be sent
         for (int i = 0; i < 3; i++)
         {
-            std::string topic = "test";
+            kmMqtt::kmStd::string topic = "test";
             ByteBuffer payload(2);
             payload += static_cast<std::uint8_t>(i);
             payload += static_cast<std::uint8_t>(i + 1);

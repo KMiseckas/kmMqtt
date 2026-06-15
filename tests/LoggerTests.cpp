@@ -10,7 +10,7 @@
 #include <kmMqtt/Memory/AllocatorUtils.h>
 
 #include <stdexcept>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 namespace
 {
@@ -35,8 +35,8 @@ namespace
 		mutable int simpleCalls{ 0 };
 		mutable int categoryCalls{ 0 };
 		mutable kmMqtt::LogLevel lastLevel{ kmMqtt::LogLevel::Info };
-		mutable std::string lastCategory{};
-		mutable std::string lastMessage{};
+		mutable kmMqtt::kmStd::string lastCategory{};
+		mutable kmMqtt::kmStd::string lastMessage{};
 	};
 }
 

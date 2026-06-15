@@ -30,18 +30,18 @@ if (callback != nullptr)\
 
 		struct InProgressDataGuard
 		{
-			InProgressDataGuard(std::queue<ByteBuffer>& inProgressData) noexcept
+			InProgressDataGuard(kmStd::queue<ByteBuffer>& inProgressData) noexcept
 				: container{ inProgressData }
 			{
 			}
 
 			~InProgressDataGuard() noexcept
 			{
-				std::queue<ByteBuffer> emptyContainer;
+				kmStd::queue<ByteBuffer> emptyContainer;
 				container.swap(emptyContainer);
 			}
 
-			std::queue<ByteBuffer>& container;
+			kmStd::queue<ByteBuffer>& container;
 		};
 
 		ReceiveQueue::ReceiveQueue() noexcept
@@ -249,8 +249,8 @@ if (callback != nullptr)\
 
 		void ReceiveQueue::clear() noexcept
 		{
-			std::queue<ByteBuffer> emptyQueueData;
-			std::queue<ByteBuffer> emptyProcessData;
+			kmStd::queue<ByteBuffer> emptyQueueData;
+			kmStd::queue<ByteBuffer> emptyProcessData;
 			m_inQueueData.swap(emptyQueueData);
 			m_inProgressData.swap(emptyProcessData);
 

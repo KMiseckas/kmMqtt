@@ -109,6 +109,7 @@ See [BUILDING.md](BUILDING.md) for detailed build instructions and configuration
 
 ```cpp
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmString.h>
 
 using namespace kmMqtt::mqtt;
 
@@ -119,7 +120,7 @@ MqttClient client;
 client.onConnectEvent().add([&client](const ConnectEventDetails& details) {
     if (details.isSuccessful) {
         // Connection successful, now we can publish
-        std::string payloadStr{"Hello MQTT"};
+        kmMqtt::kmStd::string payloadStr{"Hello MQTT"};
         ByteBuffer payload(payloadStr.length());
         payload.append(payloadStr.data(), payloadStr.length());
 
@@ -153,6 +154,7 @@ if (result.isError())
 
 ```cpp
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmString.h>
 #include <atomic>
 #include <chrono>
 #include <thread>
@@ -196,7 +198,7 @@ while (!connected && !connectionFailed) {
 
 if (connected) {
     // Now we can publish
-    std::string payloadStr{"Hello MQTT"};
+    kmMqtt::kmStd::string payloadStr{"Hello MQTT"};
     ByteBuffer payload(payloadStr.length());
     payload.append(payloadStr.data(), payloadStr.length());
 
@@ -210,6 +212,8 @@ if (connected) {
 ### Subscribing and receiving messages
 
 ```cpp
+#include <kmMqtt/STL/KmVector.h>
+
 // Register callback for received messages
 client.onPublishEvent().add([](const Publish& message) {
     // Process received message
@@ -219,7 +223,7 @@ client.onPublishEvent().add([](const Publish& message) {
 });
 
 // Subscribe to topics
-std::vector<Topic> topics = {
+kmMqtt::kmStd::vector<Topic> topics = {
     Topic("sensor/temperature", TopicSubscriptionOptions(Qos::QOS_1)),
     Topic("sensor/humidity", TopicSubscriptionOptions(Qos::QOS_1))
 };

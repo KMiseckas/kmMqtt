@@ -7,7 +7,7 @@
 #include <mqttClient/Model/PublishModel.h>
 #include <mqttClient/Text.h>
 #include <imgui.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <ctime>
 #include <iomanip>
 #include <sstream>
@@ -245,7 +245,7 @@ void PublishView::drawMessageItem(size_t index, const PublishedMessage& message)
     ImGui::SameLine();
     
     // Topic name (truncated if too long)
-    std::string displayTopic = message.topic;
+    kmMqtt::kmStd::string displayTopic = message.topic;
     if (displayTopic.length() > 30)
     {
         displayTopic = displayTopic.substr(0, 27) + "...";
@@ -292,7 +292,7 @@ void PublishView::drawMessageDetails(const PublishedMessage& message)
     
     // Payload preview
     ImGui::Text(text::publish_details_payload_label, message.payload.length());
-    std::string displayPayload = message.payload;
+    kmMqtt::kmStd::string displayPayload = message.payload;
     if (displayPayload.length() > 200)
     {
         displayPayload = displayPayload.substr(0, 197) + "...";

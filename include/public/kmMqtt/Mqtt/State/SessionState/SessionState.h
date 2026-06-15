@@ -88,7 +88,7 @@ namespace kmMqtt
             * 
             * @return The client identifier.
 			*/
-			std::string getClientId() const noexcept { return std::string{ m_clientId }; }
+			kmStd::string getClientId() const noexcept { return kmStd::string{ m_clientId }; }
 
         protected:
 

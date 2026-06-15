@@ -21,14 +21,14 @@
 #include "kmMqtt/Mqtt/Packets/Publish/PublishRel.h"
 #include "kmMqtt/STL/KmThread.h"
 
-#include <queue>
+#include <kmMqtt/STL/KmQueue.h>
 #include <functional>
 
 namespace kmMqtt
 {
 	namespace mqtt
 	{
-		using FailedDecodeResults = std::vector<DecodeResult>;
+		using FailedDecodeResults = kmStd::vector<DecodeResult>;
 
 		using ConAckCallback = std::function<void(ConnectAck&&)>;
 		using DisconnectCallback = std::function<void(Disconnect&&)>;
@@ -77,8 +77,8 @@ namespace kmMqtt
 
 			void setReceiveMaximumTracker(ReceiveMaximumTracker* const tracker) noexcept;
 		private:
-			std::queue<ByteBuffer> m_inQueueData;
-			std::queue<ByteBuffer> m_inProgressData;
+			kmStd::queue<ByteBuffer> m_inQueueData;
+			kmStd::queue<ByteBuffer> m_inProgressData;
 
 			//Callbacks
 			ConAckCallback m_conAckCallback;

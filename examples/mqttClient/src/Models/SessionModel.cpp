@@ -39,7 +39,7 @@ std::uint8_t SessionModel::getIndex() const noexcept
 	return m_index;
 }
 
-const std::string& SessionModel::getName() const noexcept
+const kmMqtt::kmStd::string& SessionModel::getName() const noexcept
 {
 	return m_name;
 }
@@ -90,7 +90,7 @@ void SessionModel::connect()
 
 			if (details.isSuccessful)
 			{
-				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<kmMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)) };
+				const kmMqtt::kmStd::string reasonCode{ "MQTT Reason Code: " + kmMqtt::kmStd::to_string(static_cast<std::underlying_type_t<kmMqtt::mqtt::ConnectReasonCode>>(ack.getVariableHeader().reasonCode)) };
 				connectionFailureReason = details.hasReceivedAck ? reasonCode.c_str() : details.error.errorMsg;
 			}
 			else
@@ -108,7 +108,7 @@ void SessionModel::connect()
 
 			if(details.isBrokerInduced)
 			{
-				const std::string reasonCode{ "MQTT Reason Code: " + std::to_string(static_cast<std::underlying_type_t<kmMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)) };
+				const kmMqtt::kmStd::string reasonCode{ "MQTT Reason Code: " + kmMqtt::kmStd::to_string(static_cast<std::underlying_type_t<kmMqtt::mqtt::DisconnectReasonCode>>(details.reasonCode)) };
 				disconnectioReason = reasonCode.c_str();
 			}
 			else

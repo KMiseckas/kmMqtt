@@ -799,7 +799,7 @@ TEST_SUITE("Header Tests")
 
 		SUBCASE("Constructor with Topics")
 		{
-			std::vector<UTF8String> topics;
+			kmMqtt::kmStd::vector<UTF8String> topics;
 			topics.emplace_back("topic1");
 			topics.emplace_back("topic2");
 			topics.emplace_back("topic3");
@@ -814,7 +814,7 @@ TEST_SUITE("Header Tests")
 
 		SUBCASE("Encoding")
 		{
-			std::vector<UTF8String> topics;
+			kmMqtt::kmStd::vector<UTF8String> topics;
 			topics.emplace_back("test/topic");
 
 			UnSubscribePayloadHeader header{ std::move(topics) };
@@ -840,7 +840,7 @@ TEST_SUITE("Header Tests")
 
 		SUBCASE("Size Calculation")
 		{
-			std::vector<UTF8String> topics;
+			kmMqtt::kmStd::vector<UTF8String> topics;
 			topics.emplace_back("a");
 			topics.emplace_back("bc");
 			topics.emplace_back("def");
@@ -914,7 +914,7 @@ TEST_SUITE("Header Tests")
 
 			CHECK_FALSE(result.isSuccess());
 			CHECK(result.code == DecodeErrorCode::PROTOCOL_ERROR);
-			CHECK(std::string(result.reason).find("Packet ID cannot be zero") != std::string::npos);
+			CHECK(kmMqtt::kmStd::string(result.reason).find("Packet ID cannot be zero") != kmMqtt::kmStd::string::npos);
 		}
 	}
 }

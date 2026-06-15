@@ -7,7 +7,7 @@
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Utils/UniqueFunction.h>
 #include <iostream>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 TEST_SUITE("UniqueFunction Tests")
 {

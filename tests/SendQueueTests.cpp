@@ -7,7 +7,7 @@
 #include <kmMqtt/Mqtt/Transport/SendQueue.h>
 #include <kmMqtt/STL/KmMemory.h>
 #include <algorithm>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 namespace
 {
@@ -50,7 +50,7 @@ namespace
 		int sendReturnValue{ -1 };
 		int lastErrorValue{ 10054 };
 		int sendCalls{ 0 };
-		std::vector<int> sendScript;
+		kmMqtt::kmStd::vector<int> sendScript;
 		std::size_t sendScriptIndex{ 0U };
 	};
 

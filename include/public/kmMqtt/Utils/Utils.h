@@ -11,32 +11,45 @@
 #include "kmMqtt/Logger/Log.h"
 
 #include <cstring>
-#include <vector>
-#include <regex>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 #include <cassert>
 
 namespace kmMqtt
 {
 	/**
-	 * Splits a string by a given delimiter using regex.
+	 * Splits a string by a literal delimiter.
 	 * 
 	 * @param target The string to be split.
 	 * @param delimiter The delimiter used for splitting the string.
 	 * 
 	 * @return A vector containing the split parts of the string.
 	 */
-	inline std::vector<std::string> splitByDelimiter(const std::string& target, const char* delimiter)
+	inline kmStd::vector<kmStd::string> splitByDelimiter(const kmStd::string& target, const char* delimiter)
 	{
-		std::vector<std::string> tokens;
+		kmStd::vector<kmStd::string> tokens;
 
-		std::regex del{ delimiter };
-		std::sregex_token_iterator iter{ target.begin(), target.end(), del, -1 };
-		std::sregex_token_iterator end;
-
-		while (iter != end)
+		if (delimiter == nullptr || delimiter[0] == '\0')
 		{
-			tokens.push_back(*iter);
-			++iter;
+			tokens.push_back(target);
+			return tokens;
+		}
+
+		const kmStd::string delimiterStr{ delimiter };
+		std::size_t tokenStart{ 0U };
+
+		while (tokenStart <= target.size())
+		{
+			const std::size_t tokenEnd{ target.find(delimiterStr, tokenStart) };
+
+			if (tokenEnd == kmStd::string::npos)
+			{
+				tokens.push_back(target.substr(tokenStart));
+				break;
+			}
+
+			tokens.push_back(target.substr(tokenStart, tokenEnd - tokenStart));
+			tokenStart = tokenEnd + delimiterStr.size();
 		}
 
 		return tokens;
@@ -51,7 +64,7 @@ namespace kmMqtt
 	 * 
 	 * @return Returns true if the separation was successful, false if the buffer does not contain complete packets or failed separation.
 	 */
-	inline bool separateMqttPacketByteBuffers(const ByteBuffer& buffer, std::vector<ByteBuffer>& packets, std::size_t& leftOverPosition)
+	inline bool separateMqttPacketByteBuffers(const ByteBuffer& buffer, kmStd::vector<ByteBuffer>& packets, std::size_t& leftOverPosition)
 	{
 		packets.clear();
 		leftOverPosition = 0;
@@ -102,4 +115,4 @@ namespace kmMqtt
 	}
 }
 
-#endif //INCLUDE_KMMQTT_UTILS_UTILS_H 
+#endif //INCLUDE_KMMQTT_UTILS_UTILS_H

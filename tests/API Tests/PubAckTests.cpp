@@ -5,7 +5,7 @@
 
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 
@@ -19,7 +19,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext{  };
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/puback";
+        kmMqtt::kmStd::string topic = "test/puback";
         ByteBuffer payload(2);
         payload += 0xAA;
         payload += 0xBB;
@@ -66,7 +66,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/no_subscribers";
+        kmMqtt::kmStd::string topic = "test/no_subscribers";
         ByteBuffer payload(1);
         payload += 0xFF;
 
@@ -105,7 +105,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<std::uint16_t> receivedPacketIds;
+        kmMqtt::kmStd::vector<std::uint16_t> receivedPacketIds;
 
         testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
@@ -113,7 +113,7 @@ TEST_SUITE("MqttClient PubAck")
         });
 
         //First publish
-        std::string topic1 = "test/first";
+        kmMqtt::kmStd::string topic1 = "test/first";
         ByteBuffer payload1(1);
         payload1 += 0x01;
         PublishOptions options1;
@@ -134,7 +134,7 @@ TEST_SUITE("MqttClient PubAck")
         testContext.receiveResponse(pubAck1);
 
         //Second publish (should reuse packet ID 1 after it's released)
-        std::string topic2 = "test/second";
+        kmMqtt::kmStd::string topic2 = "test/second";
         ByteBuffer payload2(1);
         payload2 += 0x02;
         PublishOptions options2;
@@ -164,7 +164,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<std::uint16_t> ackedPacketIds;
+        kmMqtt::kmStd::vector<std::uint16_t> ackedPacketIds;
 
         testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
@@ -174,7 +174,7 @@ TEST_SUITE("MqttClient PubAck")
         //Publish three messages
         for (int i = 0; i < 3; ++i)
         {
-            std::string topic = "test/multi/" + std::to_string(i);
+            kmMqtt::kmStd::string topic = "test/multi/" + kmMqtt::kmStd::to_string(i);
             ByteBuffer payload(1);
             payload += static_cast<std::uint8_t>(i);
             PublishOptions options;
@@ -216,7 +216,7 @@ TEST_SUITE("MqttClient PubAck")
             pubAckEventFired = true;
         });
 
-        std::string topic = "test/qos0";
+        kmMqtt::kmStd::string topic = "test/qos0";
         ByteBuffer payload(1);
         payload += 0xAA;
         PublishOptions options;
@@ -236,7 +236,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/quota";
+        kmMqtt::kmStd::string topic = "test/quota";
         ByteBuffer payload(1);
         payload += 0x42;
 
@@ -275,7 +275,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/format";
+        kmMqtt::kmStd::string topic = "test/format";
         ByteBuffer payload(3);
         payload += 0x01;
         payload += 0x02;
@@ -316,7 +316,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/session";
+        kmMqtt::kmStd::string topic = "test/session";
         ByteBuffer payload(2);
         payload += 0xDE;
         payload += 0xAD;
@@ -351,7 +351,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/invalid";
+        kmMqtt::kmStd::string topic = "test/invalid";
         ByteBuffer payload(1);
         payload += 0xFF;
 
@@ -390,7 +390,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/id_in_use";
+        kmMqtt::kmStd::string topic = "test/id_in_use";
         ByteBuffer payload(1);
         payload += 0x88;
 
@@ -429,7 +429,7 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/impl_error";
+        kmMqtt::kmStd::string topic = "test/impl_error";
         ByteBuffer payload(4);
         payload += 0x11;
         payload += 0x22;
@@ -471,8 +471,8 @@ TEST_SUITE("MqttClient PubAck")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<std::uint16_t> expectedOrder = { 1, 2, 3 };
-        std::vector<std::uint16_t> actualOrder;
+        kmMqtt::kmStd::vector<std::uint16_t> expectedOrder = { 1, 2, 3 };
+        kmMqtt::kmStd::vector<std::uint16_t> actualOrder;
 
         testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
@@ -482,7 +482,7 @@ TEST_SUITE("MqttClient PubAck")
         //Publish three messages
         for (int i = 0; i < 3; ++i)
         {
-            std::string topic = "test/order/" + std::to_string(i);
+            kmMqtt::kmStd::string topic = "test/order/" + kmMqtt::kmStd::to_string(i);
             ByteBuffer payload(1);
             payload += static_cast<std::uint8_t>(i);
             PublishOptions options;

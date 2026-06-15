@@ -44,8 +44,8 @@ namespace kmMqtt
 		PublishRec createPubRecPacket(std::uint16_t packetId, PubRecReasonCode reasonCode, const PubRecOptions& options) noexcept;
 		PublishRel createPubRelPacket(std::uint16_t packetId, PubRelReasonCode reasonCode, const PubRelOptions& options) noexcept;
 		PublishComp createPubCompPacket(std::uint16_t packetId, PubCompReasonCode reasonCode, const PubCompOptions& options) noexcept;
-		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept;
-		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept;
+		Subscribe createSubscribePacket(std::uint16_t packetId, const kmStd::vector<Topic>& topics, const SubscribeOptions& options) noexcept;
+		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const kmStd::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept;
 	}
 }
 

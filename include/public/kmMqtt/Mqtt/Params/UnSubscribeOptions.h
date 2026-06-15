@@ -59,7 +59,7 @@ namespace kmMqtt
 				return *this;
 			}
 
-			std::map<std::string, std::string> userProperties;
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 	}
 }

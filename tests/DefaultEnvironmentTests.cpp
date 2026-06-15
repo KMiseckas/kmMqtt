@@ -12,7 +12,7 @@
 #include <kmMqtt/Memory/AllocatorUtils.h>
 #include <kmMqtt/Config.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 TEST_SUITE("Environment Tests")
 {
@@ -213,7 +213,7 @@ TEST_SUITE("Environment Tests")
 		CHECK(socket->close() == false);
 
 		CHECK(socket->getLastCloseReason() != nullptr);
-		CHECK(std::string(socket->getLastCloseReason()).find("BUILD_IXWEBSOCKET=OFF") != std::string::npos);
+		CHECK(kmMqtt::kmStd::string(socket->getLastCloseReason()).find("BUILD_IXWEBSOCKET=OFF") != kmMqtt::kmStd::string::npos);
 
 		kmDelete(env);
 	}
