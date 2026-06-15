@@ -23,8 +23,6 @@ namespace kmMqtt
 
 		BasePacket::BasePacket(BasePacket&& other) noexcept
 			: m_fixedHeader{ std::move(other.m_fixedHeader) },
-			m_otherDecodeHeaders{ std::move(other.m_otherDecodeHeaders) },
-			m_otherEncodeHeaders{ std::move(other.m_otherEncodeHeaders) },
 			m_dataBuffer{ std::move(other.m_dataBuffer) }
 		{
 			other.m_dataBuffer.clear();
@@ -35,8 +33,7 @@ namespace kmMqtt
 			if (this != &other)
 			{
 				m_fixedHeader = std::move(other.m_fixedHeader);
-				m_otherEncodeHeaders = std::move(other.m_otherEncodeHeaders);
-				m_otherDecodeHeaders = std::move(other.m_otherDecodeHeaders);
+				clearRegisteredHeaders();
 
 				m_dataBuffer = std::move(other.m_dataBuffer);
 				other.m_dataBuffer.clear();
@@ -167,6 +164,12 @@ namespace kmMqtt
 		void BasePacket::onFixedHeaderDecoded() const
 		{
 			//Do nothing by default.
+		}
+
+		void BasePacket::clearRegisteredHeaders() noexcept
+		{
+			m_otherDecodeHeaders.clear();
+			m_otherEncodeHeaders.clear();
 		}
 
 		void BasePacket::addEncodeHeader(const IEncodeHeader* header)

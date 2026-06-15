@@ -9,6 +9,14 @@ namespace kmMqtt
 {
 	namespace mqtt
 	{
+		UnSubscribeAck::UnSubscribeAck(UnSubscribeAckVariableHeader&& variableHeader, UnSubscribeAckPayloadHeader&& payloadHeader) noexcept
+			: BasePacket(FixedHeaderFlags(k_UnSubscribeAckFixedHeaderFlags)),
+			  m_variableHeader(std::move(variableHeader)),
+			  m_payloadHeader(std::move(payloadHeader))
+		{
+			setUpHeaders();
+		}
+
 		UnSubscribeAck::UnSubscribeAck(ByteBuffer&& dataBuffer) noexcept
 			: BasePacket(std::move(dataBuffer))
 		{
@@ -16,20 +24,27 @@ namespace kmMqtt
 		}
 
 		UnSubscribeAck::UnSubscribeAck(UnSubscribeAck&& other) noexcept
-			: BasePacket(std::move(other))
+			: BasePacket(std::move(other)),
+			  m_variableHeader(std::move(other.m_variableHeader)),
+			  m_payloadHeader(std::move(other.m_payloadHeader))
 		{
-			m_variableHeader = other.m_variableHeader;
-			m_payloadHeader = other.m_payloadHeader;
-			other.m_variableHeader = nullptr;
-			other.m_payloadHeader = nullptr;
-
 			setUpHeaders();
 		}
 
 		UnSubscribeAck::~UnSubscribeAck()
 		{
-			kmDelete(m_variableHeader);
-			kmDelete(m_payloadHeader);
+		}
+
+		UnSubscribeAck& UnSubscribeAck::operator=(UnSubscribeAck&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				m_payloadHeader = std::move(other.m_payloadHeader);
+				setUpHeaders();
+			}
+			return *this;
 		}
 
 		PacketType UnSubscribeAck::getPacketType() const noexcept
@@ -39,28 +54,18 @@ namespace kmMqtt
 
 		const UnSubscribeAckVariableHeader& UnSubscribeAck::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		const UnSubscribeAckPayloadHeader& UnSubscribeAck::getPayloadHeader() const
 		{
-			return *m_payloadHeader;
+			return m_payloadHeader;
 		}
 
 		void UnSubscribeAck::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = kmNew(UnSubscribeAckVariableHeader);
-			}
-
-			if (m_payloadHeader == nullptr)
-			{
-				m_payloadHeader = kmNew(UnSubscribeAckPayloadHeader);
-			}
-
-			addDecodeHeader(m_variableHeader);
-			addDecodeHeader(m_payloadHeader);
+			addDecodeHeader(&m_variableHeader);
+			addDecodeHeader(&m_payloadHeader);
 		}
 	}
 }

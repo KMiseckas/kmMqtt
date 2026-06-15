@@ -26,6 +26,8 @@ namespace kmMqtt
 			Disconnect(Disconnect&& other) noexcept;
 			~Disconnect() override;
 
+			Disconnect& operator=(Disconnect&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const DisconnectVariableHeader& getVariableHeader() const;
@@ -33,7 +35,7 @@ namespace kmMqtt
 			void setUpHeaders() noexcept;
 
 		private:
-			DisconnectVariableHeader* m_variableHeader{ nullptr };
+			DisconnectVariableHeader m_variableHeader;
 		};
 	}
 }

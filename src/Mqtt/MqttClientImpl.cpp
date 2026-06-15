@@ -1308,9 +1308,8 @@ void MqttClientImpl::firePublishReceivedEvent(Publish &&packet) noexcept {
   const auto qos{packet.getVariableHeader().qos};
   const auto id{packet.getVariableHeader().packetIdentifier};
 
-  DISPATCH_EVENT_TO_CONSUMER([&, tName = topicName,
-                              pload = &packet.getPayloadHeader().payload,
-                              p = std::move(packet)]() {
+  DISPATCH_EVENT_TO_CONSUMER([&, tName = topicName, p = std::move(packet)]() {
+    const auto *pload = &p.getPayloadHeader().payload;
     m_publishEvent({std::move(tName), pload}, p);
   });
 

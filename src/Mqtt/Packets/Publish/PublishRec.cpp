@@ -11,7 +11,7 @@ namespace kmMqtt
 	{
 		PublishRec::PublishRec(PubRecVariableHeader&& variableHeader) noexcept
 			: BasePacket(FixedHeaderFlags(0U)),
-			  m_variableHeader{kmNewArgs(PubRecVariableHeader, std::move(variableHeader))}
+			  m_variableHeader{ std::move(variableHeader) }
 		{
 			setUpHeaders();
 		}
@@ -24,14 +24,24 @@ namespace kmMqtt
 
 		PublishRec::PublishRec(PublishRec&& other) noexcept
 			: BasePacket(std::move(other)),
-			m_variableHeader(other.m_variableHeader)
+			m_variableHeader(std::move(other.m_variableHeader))
 		{
-			other.m_variableHeader = nullptr;
+			setUpHeaders();
 		}
 
 		PublishRec::~PublishRec()
 		{
-			kmDelete(m_variableHeader);
+		}
+
+		PublishRec& PublishRec::operator=(PublishRec&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				setUpHeaders();
+			}
+			return *this;
 		}
 
 		PacketType PublishRec::getPacketType() const noexcept
@@ -41,18 +51,13 @@ namespace kmMqtt
 
 		const PubRecVariableHeader& PublishRec::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		void PublishRec::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = kmNew(PubRecVariableHeader);
-			}
-
-			addEncodeHeader(m_variableHeader);
-			addDecodeHeader(m_variableHeader);
+			addEncodeHeader(&m_variableHeader);
+			addDecodeHeader(&m_variableHeader);
 		}
 
 		void PublishRec::onFixedHeaderDecoded() const

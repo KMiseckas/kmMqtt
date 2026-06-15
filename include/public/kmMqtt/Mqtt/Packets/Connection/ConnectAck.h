@@ -35,7 +35,7 @@ namespace kmMqtt
 		protected:
 			void setUpHeaders() noexcept;
 
-			ConnectAckVariableHeader* m_variableHeader{ nullptr };
+			ConnectAckVariableHeader m_variableHeader;
 		};
 	}
 }
