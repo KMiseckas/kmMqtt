@@ -72,7 +72,7 @@ namespace kmMqtt
 
 		std::size_t max_size() const noexcept
 		{
-			return std::numeric_limits<std::size_t>::max() / sizeof(T);
+			return (std::numeric_limits<std::size_t>::max)() / sizeof(T);
 		}
 
 		IAllocator* getAllocator() const noexcept
