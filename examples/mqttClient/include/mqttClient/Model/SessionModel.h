@@ -11,7 +11,7 @@
 #include <kmMqtt/Mqtt/Params/ConnectArgs.h>
 #include <kmMqtt/Mqtt/Params/ConnectAddress.h>
 #include <kmMqtt/Mqtt/Params/DisconnectArgs.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <kmMqtt/MqttClient.h>
 #include <kmMqtt/Mqtt/Enums/ConnectionStatus.h>
 #include "TopicsModel.h"
@@ -29,7 +29,7 @@ public:
 	void setName(const char* name) noexcept;
 
 	std::uint8_t getIndex() const noexcept;
-	const std::string& getName() const noexcept;
+	const kmMqtt::kmStd::string& getName() const noexcept;
 
 	void connect();
 	void disconnect();
@@ -54,8 +54,8 @@ public:
 	bool useTickAsync{ false };
 
 	bool isMqttConnected{ false };
-	std::string connectionFailureReason{ "" };
-	std::string disconnectioReason{ "" };
+	kmMqtt::kmStd::string connectionFailureReason{ "" };
+	kmMqtt::kmStd::string disconnectioReason{ "" };
 
 	std::shared_ptr<TopicsModel> topicModel;
 	std::shared_ptr<PublishModel> publishModel;
@@ -93,7 +93,7 @@ public:
 
 private:
 	std::uint8_t m_index{ 0 };
-	std::string m_name{ "New Session" };
+	kmMqtt::kmStd::string m_name{ "New Session" };
 
 	kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
 };

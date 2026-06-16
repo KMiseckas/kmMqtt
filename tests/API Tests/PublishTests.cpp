@@ -8,7 +8,7 @@
 #include <kmMqtt/STL/KmMemory.h>
 #include <cstring>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 
@@ -22,7 +22,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic{ "test/topic" };
+        kmMqtt::kmStd::string topic{ "test/topic" };
         ByteBuffer payload(3);
         payload += 0x01;
         payload += 0x02;
@@ -38,7 +38,7 @@ TEST_SUITE("MqttClient Publish")
     TEST_CASE("Publish fails when not connected")
     {
         TestClientContext testContext;
-        std::string topic{ "test/topic" };
+        kmMqtt::kmStd::string topic{ "test/topic" };
         ByteBuffer payload(1);
         payload += 0x01;
         PublishOptions options;
@@ -53,7 +53,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/qos1";
+        kmMqtt::kmStd::string topic = "test/qos1";
         ByteBuffer payload(2);
         payload += 0xAA;
         payload += 0xBB;
@@ -94,7 +94,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext{ config };
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        const std::string topic = "test/topic";
+        const kmMqtt::kmStd::string topic = "test/topic";
         const std::uint8_t expectedPayload[] = { 0xAA, 0xBB, 0xCC };
 
         bool publishEventFired = false;
@@ -138,7 +138,7 @@ TEST_SUITE("MqttClient Publish")
         MqttConnectionInfo& info = const_cast<MqttConnectionInfo&>(testContext.client->getConnectionInfo());
         info.maxServerTopicAlias = 1;
 
-        std::string topic{ "test/alias" };
+        kmMqtt::kmStd::string topic{ "test/alias" };
         ByteBuffer payload(1);
         payload += 0x01;
         PublishOptions options;
@@ -156,7 +156,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/qos2";
+        kmMqtt::kmStd::string topic = "test/qos2";
         ByteBuffer payload(4);
         payload += 0x01;
         payload += 0x02;
@@ -177,7 +177,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/retain";
+        kmMqtt::kmStd::string topic = "test/retain";
         ByteBuffer payload(2);
         payload += 0xFF;
         payload += 0xFE;
@@ -197,7 +197,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/empty";
+        kmMqtt::kmStd::string topic = "test/empty";
         ByteBuffer payload(0);
 
         PublishOptions options;
@@ -214,7 +214,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/large";
+        kmMqtt::kmStd::string topic = "test/large";
         ByteBuffer payload(1024);
         for (int i = 0; i < 1024; ++i) 
         {
@@ -235,7 +235,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/alias/topic";
+        kmMqtt::kmStd::string topic = "test/alias/topic";
         ByteBuffer payload(3);
         payload += 0x11;
         payload += 0x22;
@@ -256,7 +256,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<std::uint16_t> packetIds;
+        kmMqtt::kmStd::vector<std::uint16_t> packetIds;
         
         testContext.client->onPublishCompletedEvent().add([&](const PublishCompleteEventDetails& details)
         {
@@ -264,7 +264,7 @@ TEST_SUITE("MqttClient Publish")
         });
 
         //Publish first message
-        std::string topic1 = "test/qos1/first";
+        kmMqtt::kmStd::string topic1 = "test/qos1/first";
         ByteBuffer payload1(1);
         payload1 += 0x01;
         PublishOptions options1;
@@ -274,7 +274,7 @@ TEST_SUITE("MqttClient Publish")
         CHECK(err1.noError());
 
         //Publish second message
-        std::string topic2 = "test/qos1/second";
+        kmMqtt::kmStd::string topic2 = "test/qos1/second";
         ByteBuffer payload2(1);
         payload2 += 0x02;
         PublishOptions options2;
@@ -313,7 +313,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/expiry";
+        kmMqtt::kmStd::string topic = "test/expiry";
         ByteBuffer payload(2);
         payload += 0xAB;
         payload += 0xCD;
@@ -333,7 +333,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/content-type";
+        kmMqtt::kmStd::string topic = "test/content-type";
         ByteBuffer payload(10);
         for (int i = 0; i < 10; ++i) 
         {
@@ -355,7 +355,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/request";
+        kmMqtt::kmStd::string topic = "test/request";
         ByteBuffer payload(7);
         payload += 0x52; // 'R'
         payload += 0x45; // 'E'
@@ -380,7 +380,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/correlation";
+        kmMqtt::kmStd::string topic = "test/correlation";
         ByteBuffer payload(3);
         payload += 0x01;
         payload += 0x02;
@@ -410,13 +410,13 @@ TEST_SUITE("MqttClient Publish")
         CHECK(testContext.tryConnectWithResponse().noError());
 
         const int messageCount = 10;
-        std::vector<ClientError> results;
+        kmMqtt::kmStd::vector<ClientError> results;
 
         testContext.socketPtr->sentPackets.clear(); //Clear any previous packets from connect
 
         for (int i = 0; i < messageCount; ++i) 
         {
-            std::string topic = "test/rapid/" + std::to_string(i);
+            kmMqtt::kmStd::string topic = "test/rapid/" + kmMqtt::kmStd::to_string(i);
             ByteBuffer payload(4);
             payload += static_cast<std::uint8_t>((i >> 24) & 0xFF);
             payload += static_cast<std::uint8_t>((i >> 16) & 0xFF);
@@ -444,7 +444,7 @@ TEST_SUITE("MqttClient Publish")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/user-props";
+        kmMqtt::kmStd::string topic = "test/user-props";
         ByteBuffer payload(1);
         payload += 0x42;
 
@@ -463,7 +463,7 @@ TEST_SUITE("MqttClient Publish")
     {
         TestClientContext testContext(kmMqtt::Config{}, false); //Socket connect will fail
         
-        std::string topic = "test/disconnected";
+        kmMqtt::kmStd::string topic = "test/disconnected";
         ByteBuffer payload(1);
         payload += 0x01;
         PublishOptions options;
@@ -485,7 +485,7 @@ TEST_SUITE("MqttClient Publish")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test";
+        kmMqtt::kmStd::string topic = "test";
         ByteBuffer payload(2);
         payload += 0x12;
         payload += 0x34;

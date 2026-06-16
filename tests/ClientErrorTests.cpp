@@ -6,8 +6,8 @@
 #include <doctest.h>
 #include <kmMqtt/Mqtt/ClientError.h>
 
-#include <array>
-#include <set>
+#include <kmMqtt/STL/KmArray.h>
+#include <kmMqtt/STL/KmSet.h>
 
 using namespace kmMqtt::mqtt;
 
@@ -18,7 +18,7 @@ TEST_SUITE("ClientError Tests")
 		ClientError error;
 		
 		CHECK(error.errorCode == ClientErrorCode::No_Error);
-		CHECK(error.errorMsg == std::string(""));
+		CHECK(error.errorMsg == kmMqtt::kmStd::string(""));
 		CHECK(error.noError());
 	}
 
@@ -27,7 +27,7 @@ TEST_SUITE("ClientError Tests")
 		ClientError error(ClientErrorCode::Invalid_Argument);
 		
 		CHECK(error.errorCode == ClientErrorCode::Invalid_Argument);
-		CHECK(error.errorMsg == std::string(""));
+		CHECK(error.errorMsg == kmMqtt::kmStd::string(""));
 		CHECK_FALSE(error.noError());
 	}
 
@@ -118,7 +118,7 @@ TEST_SUITE("ClientError Tests")
 
 	TEST_CASE("Base ClientErrorCode numeric values are unique")
 	{
-		const std::array<std::uint16_t, 12> baseCodes{
+		const kmMqtt::kmStd::array<std::uint16_t, 12> baseCodes{
 			static_cast<std::uint16_t>(ClientErrorCode::No_Error),
 			static_cast<std::uint16_t>(ClientErrorCode::Unknown),
 			static_cast<std::uint16_t>(ClientErrorCode::Invalid_Argument),
@@ -133,7 +133,7 @@ TEST_SUITE("ClientError Tests")
 			static_cast<std::uint16_t>(ClientErrorCode::Using_Tick_Async)
 		};
 
-		const std::set<std::uint16_t> uniqueCodes(baseCodes.begin(), baseCodes.end());
+		const kmMqtt::kmStd::set<std::uint16_t> uniqueCodes(baseCodes.begin(), baseCodes.end());
 		CHECK(uniqueCodes.size() == baseCodes.size());
 	}
 }

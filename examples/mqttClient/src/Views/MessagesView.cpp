@@ -173,7 +173,7 @@ void MessagesView::drawMessageItem(const MqttMessage& message, size_t globalInde
     ImVec2 payloadPos(itemMin.x + 20, itemMin.y + 18);
     ImVec2 sentStatusPos(itemMin.x + 5, itemMin.y + 34);
     
-    std::string displayTopic = message.topic;
+    kmMqtt::kmStd::string displayTopic = message.topic;
     if (displayTopic.length() > 25) 
     {
         displayTopic = displayTopic.substr(0, 22) + "...";
@@ -181,13 +181,13 @@ void MessagesView::drawMessageItem(const MqttMessage& message, size_t globalInde
     drawList->AddText(topicPos, IM_COL32(60, 60, 60, 255), displayTopic.c_str());
     
     //Draw timestamp (right-aligned)
-    std::string timeStr{ formatTimestamp(message.timestamp) };
+    kmMqtt::kmStd::string timeStr{ formatTimestamp(message.timestamp) };
     float timeWidth{ ImGui::CalcTextSize(timeStr.c_str()).x };
     ImVec2 timePos(itemMax.x - timeWidth - 10, topicPos.y);
     drawList->AddText(timePos, ImGui::ColorConvertFloat4ToU32(ui::colors::k_grey), timeStr.c_str());
     
     //Draw payload preview
-    std::string payloadPreview{ truncatePayload(message.payload, 60) };
+    kmMqtt::kmStd::string payloadPreview{ truncatePayload(message.payload, 60) };
     drawList->AddText(payloadPos, IM_COL32(120, 120, 120, 255), payloadPreview.c_str());
     
     //Status text for sent messages
@@ -404,14 +404,14 @@ void MessagesView::drawClearConfirmation()
     }
 }
 
-std::string MessagesView::truncatePayload(const std::string& payload, size_t maxLength)
+kmMqtt::kmStd::string MessagesView::truncatePayload(const kmMqtt::kmStd::string& payload, size_t maxLength)
 {
     if (payload.length() <= maxLength)
     {
         return payload;
     }
 
-    std::string truncated = payload.substr(0, maxLength - 3);
+    kmMqtt::kmStd::string truncated = payload.substr(0, maxLength - 3);
 
     //Replace newlines with spaces for preview
     for (char& c : truncated)
@@ -425,12 +425,12 @@ std::string MessagesView::truncatePayload(const std::string& payload, size_t max
     return truncated + "...";
 }
 
-std::string MessagesView::formatTimestamp(const std::chrono::system_clock::time_point& timestamp)
+kmMqtt::kmStd::string MessagesView::formatTimestamp(const std::chrono::system_clock::time_point& timestamp)
 {
     auto time_t = std::chrono::system_clock::to_time_t(timestamp);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&time_t), "%H:%M:%S");
-    return ss.str();
+	return ss.str().c_str();
 }
 
 void MessagesView::handleAppliedModel(ModelPtr oldModel, ModelPtr newModel)

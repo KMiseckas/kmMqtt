@@ -251,7 +251,7 @@ TEST_SUITE("PacketHelper Tests")
 		}
 
 		{
-			std::vector<Topic> topics;
+			kmMqtt::kmStd::vector<Topic> topics;
 			topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_1));
 			SubscribeOptions options;
 
@@ -263,7 +263,7 @@ TEST_SUITE("PacketHelper Tests")
 		}
 
 		{
-			std::vector<Topic> topics;
+			kmMqtt::kmStd::vector<Topic> topics;
 			topics.emplace_back("test/topic");
 			UnSubscribeOptions options;
 
@@ -459,7 +459,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createSubscribePacket single topic")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_1));
 		SubscribeOptions options;
 
@@ -472,7 +472,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createSubscribePacket multiple topics")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("topic/1", TopicSubscriptionOptions(Qos::QOS_0));
 		topics.emplace_back("topic/2", TopicSubscriptionOptions(Qos::QOS_1));
 		topics.emplace_back("topic/3", TopicSubscriptionOptions(Qos::QOS_2));
@@ -486,7 +486,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createSubscribePacket with subscription options")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		TopicSubscriptionOptions topicOpts(Qos::QOS_1, true, true, RetainHandling::DoNotSend);
 		topics.emplace_back("test/topic", topicOpts);
 		SubscribeOptions options;
@@ -498,7 +498,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createSubscribePacket with subscription identifier")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_0));
 		SubscribeOptions options;
 		options.subscribeIdentifier = VariableByteInteger::tryCreateFromValue(42);
@@ -510,7 +510,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createSubscribePacket with user properties")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_0));
 		SubscribeOptions options;
 		options.userProperties["client"] = "test";
@@ -522,7 +522,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createUnSubscribePacket single topic")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic");
 		UnSubscribeOptions options;
 
@@ -535,7 +535,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createUnSubscribePacket multiple topics")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("topic/1");
 		topics.emplace_back("topic/2");
 		topics.emplace_back("topic/3");
@@ -549,7 +549,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createUnSubscribePacket with user properties")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic");
 		UnSubscribeOptions options;
 		options.userProperties["reason"] = "cleanup";
@@ -561,7 +561,7 @@ TEST_SUITE("PacketHelper Tests")
 
 	TEST_CASE("createUnSubscribePacket empty topics list")
 	{
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		UnSubscribeOptions options;
 
 		UnSubscribe packet = createUnSubscribePacket(900, topics, options);

@@ -8,7 +8,7 @@
 
 #include <kmMqtt/Interfaces/IEncodeHeader.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 namespace kmMqtt
 {
@@ -17,12 +17,12 @@ namespace kmMqtt
 		struct UnSubscribePayloadHeader : IEncodeHeader
 		{
 			UnSubscribePayloadHeader() noexcept = default;
-			UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept;
+			UnSubscribePayloadHeader(kmStd::vector<UTF8String>&& topics) noexcept;
 
 			void encode(ByteBuffer& buffer) const override;
 			std::size_t getEncodedBytesSize() const noexcept override;
 
-			std::vector<UTF8String> topics;
+			kmStd::vector<UTF8String> topics;
 		};
 	}
 }

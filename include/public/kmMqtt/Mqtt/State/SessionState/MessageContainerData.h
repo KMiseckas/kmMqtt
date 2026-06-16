@@ -32,7 +32,7 @@ namespace kmMqtt
 
 		struct PUBLIC_API PublishMessageData
 		{
-			std::string topic;
+			kmStd::string topic;
 			ByteBuffer payload;
 			PublishOptions options;
 		};

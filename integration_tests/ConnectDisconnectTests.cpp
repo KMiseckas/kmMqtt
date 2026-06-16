@@ -19,7 +19,7 @@
 #include <kmMqtt/MqttClient.h>
 
 #include <atomic>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 #include "BrokerConfig.h"
 #include "Helpers.h"
@@ -34,7 +34,7 @@ using namespace kmMqtt_it;
 
 namespace {
 
-	void testConnect(const BrokerEndpoint& ep, const std::string& tag) {
+	void testConnect(const BrokerEndpoint& ep, const kmMqtt::kmStd::string& tag) {
 		MqttClient client;
 
 		std::atomic<bool> connectFired{ false };
@@ -66,7 +66,7 @@ namespace {
 		client.shutdown();
 	}
 
-	void testGracefulDisconnect(const BrokerEndpoint& ep, const std::string& tag) {
+	void testGracefulDisconnect(const BrokerEndpoint& ep, const kmMqtt::kmStd::string& tag) {
 		MqttClient client;
 
 		std::atomic<bool> connectFired{ false };
@@ -114,7 +114,7 @@ namespace {
 	}
 
 	void testNonGracefulDisconnect(const BrokerEndpoint& ep,
-		const std::string& tag) {
+		const kmMqtt::kmStd::string& tag) {
 		MqttClient client;
 
 		std::atomic<bool> connectFired{ false };
@@ -214,8 +214,8 @@ TEST_SUITE("Integration - Smoke - API") {
 		CHECK(client.getIsTickAsync());
 		CHECK(client.getConnectionStatus() == ConnectionStatus::DISCONNECTED);
 
-		const std::string clientTag = "api_state";
-		const std::string expectedClientIdPrefix = "kmMqtt_it_" + clientTag + "_";
+		const kmMqtt::kmStd::string clientTag = "api_state";
+		const kmMqtt::kmStd::string expectedClientIdPrefix = "kmMqtt_it_" + clientTag + "_";
 
 		std::atomic<bool> connectFired{ false };
 		std::atomic<bool> connectOk{ false };

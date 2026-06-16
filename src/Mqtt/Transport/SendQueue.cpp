@@ -183,12 +183,12 @@ namespace kmMqtt
 
 			LogTrace("SendQueue", "Processing queue of %d outgoing packets.", m_nextPacketComposersBatch.size());
 
-			std::vector<ByteBuffer> encodedDataQueue; //Encoded data ready to send through socket.
+			kmStd::vector<ByteBuffer> encodedDataQueue; //Encoded data ready to send through socket.
 			std::size_t fullOutgoingDataSize{ m_sendBuffer.size() }; //Data size to send, init with any left over data in send buffer.
 			bool hasPingPacket{ false }; //Track if there is a ping packet in the batch.
 			std::size_t pingPacketLastByte{ 0 }; //Byte index in buffer where ping packet ends.
 
-			std::vector<PacketSendJobPtr> delayedPackets; //Packets delayed due to no being allowed to send yet.
+			kmStd::vector<PacketSendJobPtr> delayedPackets; //Packets delayed due to no being allowed to send yet.
 
 			/**
 			 * First step: Compose all packets in batch into encoded data.

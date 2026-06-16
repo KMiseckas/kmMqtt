@@ -6,7 +6,7 @@
 #include <mqttClient/Views/TopicsView.h>
 #include <mqttClient/Model/TopicsModel.h>
 #include <imgui.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 void TopicsView::draw()
 {
@@ -111,7 +111,7 @@ void TopicsView::drawAddTopicSection()
 		//Handle subscription
 		if ((subscribeClicked || enterPressed) && canSubscribe)
 		{
-			std::string topicFilter(m_model->uiData.newTopicBuffer);
+			kmMqtt::kmStd::string topicFilter(m_model->uiData.newTopicBuffer);
 			m_model->subscribe(topicFilter);
 			m_model->uiData.addingNewTopic = false;
 		}

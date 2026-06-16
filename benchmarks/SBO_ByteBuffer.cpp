@@ -5,7 +5,7 @@
 
 #include <benchmark/benchmark.h>
 #include <kmMqtt/ByteBuffer.h>
-#include <queue>
+#include <kmMqtt/STL/KmQueue.h>
 
 using namespace kmMqtt;
 

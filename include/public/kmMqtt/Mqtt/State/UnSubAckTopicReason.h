@@ -9,7 +9,7 @@
 #include <kmMqtt/Mqtt/Params/Topic.h>
 #include <kmMqtt/Mqtt/Packets/UnSubscribe/Codes/UnSubAckReasonCode.h>
 
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <cassert>
 
 namespace kmMqtt
@@ -29,7 +29,7 @@ namespace kmMqtt
 				return m_allUnSubscribedSuccesfully;
 			}
 
-			void setTopicReasons(const std::vector<UnSubAckReasonCode> reasonCodes)
+			void setTopicReasons(const kmStd::vector<UnSubAckReasonCode> reasonCodes)
 			{
 				assert(reasonCodes.size() == m_topicReasonList.size() && "Reason codes size must match topic list size.");
 
@@ -48,7 +48,7 @@ namespace kmMqtt
 				}
 			}
 
-			void setTopics(std::vector<Topic> topics)
+			void setTopics(kmStd::vector<Topic> topics)
 			{
 				m_topicReasonList.clear();
 				m_topicReasonList.reserve(topics.size());
@@ -58,13 +58,13 @@ namespace kmMqtt
 				}
 			}
 
-			const std::vector<UnSubAckTopicReason>& getTopicReasons() const
+			const kmStd::vector<UnSubAckTopicReason>& getTopicReasons() const
 			{
 				return m_topicReasonList;
 			}
 
 		private:
-			std::vector<UnSubAckTopicReason> m_topicReasonList;
+			kmStd::vector<UnSubAckTopicReason> m_topicReasonList;
 			bool m_allUnSubscribedSuccesfully{ false };
 		};
 	}

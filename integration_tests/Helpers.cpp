@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <sstream>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <kmMqtt/MqttClient.h>
 
 using namespace kmMqtt;
@@ -48,8 +48,8 @@ namespace kmMqtt_it {
 				});
 
 			const auto connectResult = probeClient.connect(
-				makeConnectArgs(std::string("probe_") + transportTag + "_" +
-					std::to_string(i)),
+				makeConnectArgs(kmMqtt::kmStd::string("probe_") + transportTag + "_" +
+					kmMqtt::kmStd::to_string(i)),
 				makeAddress(candidate));
 
 			if (!connectResult.noError()) {
@@ -83,11 +83,13 @@ namespace kmMqtt_it {
 
 			selection.found = true;
 			selection.endpoint = candidate;
-			selection.diagnostics = diagnostics.str();
+			const auto diagnosticsText = diagnostics.str();
+			selection.diagnostics = diagnosticsText.c_str();
 			return selection;
 		}
 
-		selection.diagnostics = diagnostics.str();
+		const auto diagnosticsText = diagnostics.str();
+		selection.diagnostics = diagnosticsText.c_str();
 		return selection;
 	}
 

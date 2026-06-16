@@ -4,8 +4,9 @@
 // See LICENSE file in the project root for full license information.
 
 #include <benchmark/benchmark.h>
-#include <unordered_map>
-#include <vector>
+#include <kmMqtt/STL/KmUnorderedMap.h>
+#include <kmMqtt/STL/KmVector.h>
+#include <kmMqtt/STL/KmString.h>
 #include <memory>
 #include <random>
 #include <algorithm>
@@ -14,9 +15,9 @@ struct TestData
 {
     int id;
     double value;
-    std::string description;
+    kmMqtt::kmStd::string description;
     
-    TestData(int i, double v, const std::string& desc) 
+    TestData(int i, double v, const kmMqtt::kmStd::string& desc)
         : id(i), value(v), description(desc) {}
 };
 
@@ -41,7 +42,7 @@ public:
         {
             int key = key_dist(gen);
             double val = value_dist(gen);
-            std::string desc = "Item_" + std::to_string(i);
+            kmMqtt::kmStd::string desc = "Item_" + kmMqtt::kmStd::to_string(i);
             
             auto data = std::make_shared<TestData>(static_cast<int>(i), val, desc);
             
@@ -67,9 +68,9 @@ public:
     }
 
 protected:
-    std::unordered_multimap<int, std::shared_ptr<TestData>> multimap_data;
-    std::vector<std::pair<int, std::shared_ptr<TestData>>> vector_data;
-    std::vector<int> search_keys;
+    kmMqtt::kmStd::unordered_multimap<int, std::shared_ptr<TestData>> multimap_data;
+    kmMqtt::kmStd::vector<std::pair<int, std::shared_ptr<TestData>>> vector_data;
+    kmMqtt::kmStd::vector<int> search_keys;
 };
 
 BENCHMARK_DEFINE_F(CacheBenchmarkFixture, UnorderedMultimapSearch)(benchmark::State& state) 

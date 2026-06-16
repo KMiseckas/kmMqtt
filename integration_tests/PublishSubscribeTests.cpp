@@ -26,8 +26,8 @@
 
 #include <atomic>
 #include <cstring>
-#include <string>
-#include <vector>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 
 #include "BrokerConfig.h"
 #include "Helpers.h"
@@ -82,8 +82,8 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
           publisherConnected.store(d.isSuccessful && d.hasReceivedAck);
         });
 
-    const std::string topic = makeUniqueTopic("kmMqtt/it/smoke/pubsub");
-    const std::string payloadText = "smoke_payload_qos1";
+    const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/smoke/pubsub");
+    const kmMqtt::kmStd::string payloadText = "smoke_payload_qos1";
 
     subscriber.onSubscribeAckEvent().add(
         [&](const SubscribeAckEventDetails &details, const SubscribeAck &) {
@@ -131,7 +131,7 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
             .noError());
     REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-    std::vector<Topic> topics{Topic{topic}};
+    kmMqtt::kmStd::vector<Topic> topics{Topic{topic}};
     REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
     CHECK(allSubscribedOk.load());
@@ -187,7 +187,7 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
           publisherConnected.store(d.isSuccessful && d.hasReceivedAck);
         });
 
-    const std::string topic = makeUniqueTopic("kmMqtt/it/smoke/qos0");
+    const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/smoke/qos0");
 
     subscriber.onSubscribeAckEvent().add(
         [&](const SubscribeAckEventDetails &, const SubscribeAck &) {
@@ -216,12 +216,12 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
             .noError());
     REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-    std::vector<Topic> topics{
+    kmMqtt::kmStd::vector<Topic> topics{
         Topic{topic, TopicSubscriptionOptions{Qos::QOS_0}}};
     REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
 
-    const std::string payloadText = "qos0_payload";
+    const kmMqtt::kmStd::string payloadText = "qos0_payload";
     ByteBuffer payload(payloadText.size());
     payload.append(reinterpret_cast<const std::uint8_t *>(payloadText.data()),
                    payloadText.size());
@@ -250,10 +250,10 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
 
     const auto connectTagSeed =
         std::chrono::high_resolution_clock::now().time_since_epoch().count();
-    const std::string subscriberTag =
-        "sub_smoke_empty_" + std::to_string(connectTagSeed);
-    const std::string publisherTag =
-        "pub_smoke_empty_" + std::to_string(connectTagSeed);
+    const kmMqtt::kmStd::string subscriberTag =
+        "sub_smoke_empty_" + kmMqtt::kmStd::to_string(connectTagSeed);
+    const kmMqtt::kmStd::string publisherTag =
+        "pub_smoke_empty_" + kmMqtt::kmStd::to_string(connectTagSeed);
 
     MqttClient subscriber;
     MqttClient publisher;
@@ -274,7 +274,7 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
           publisherConnected.store(d.isSuccessful && d.hasReceivedAck);
         });
 
-    const std::string topic = makeUniqueTopic("kmMqtt/it/smoke/empty");
+    const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/smoke/empty");
 
     subscriber.onSubscribeAckEvent().add(
         [&](const SubscribeAckEventDetails &, const SubscribeAck &) {
@@ -302,7 +302,7 @@ TEST_SUITE("Integration - Smoke - Publish / Subscribe") {
             .noError());
     REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-    std::vector<Topic> topics{Topic{topic}};
+    kmMqtt::kmStd::vector<Topic> topics{Topic{topic}};
     REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
 
@@ -397,8 +397,8 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
           publisherConnected.store(d.isSuccessful && d.hasReceivedAck);
         });
 
-    const std::string topic1 = makeUniqueTopic("kmMqtt/it/full/multi/a");
-    const std::string topic2 = makeUniqueTopic("kmMqtt/it/full/multi/b");
+    const kmMqtt::kmStd::string topic1 = makeUniqueTopic("kmMqtt/it/full/multi/a");
+    const kmMqtt::kmStd::string topic2 = makeUniqueTopic("kmMqtt/it/full/multi/b");
 
     subscriber.onSubscribeAckEvent().add(
         [&](const SubscribeAckEventDetails &details, const SubscribeAck &) {
@@ -426,12 +426,12 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
             .noError());
     REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-    std::vector<Topic> topics{Topic{topic1}, Topic{topic2}};
+    kmMqtt::kmStd::vector<Topic> topics{Topic{topic1}, Topic{topic2}};
     REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
     CHECK(allSubscribedOk.load());
 
-    const std::string payloadText = "multi_payload";
+    const kmMqtt::kmStd::string payloadText = "multi_payload";
     auto buildPayload = [&]() {
       ByteBuffer p(payloadText.size());
       p.append(reinterpret_cast<const std::uint8_t *>(payloadText.data()),
@@ -483,10 +483,10 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
     const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();
-    const std::string base =
-        "kmMqtt/it/full/wild_plus/" + std::to_string(nowMs);
-    const std::string pattern = base + "/+/test";
-    const std::string pubTopic = base + "/foo/test";
+    const kmMqtt::kmStd::string base =
+        "kmMqtt/it/full/wild_plus/" + kmMqtt::kmStd::to_string(nowMs);
+    const kmMqtt::kmStd::string pattern = base + "/+/test";
+    const kmMqtt::kmStd::string pubTopic = base + "/foo/test";
 
     subscriber.onSubscribeAckEvent().add(
         [&](const SubscribeAckEventDetails &details, const SubscribeAck &) {
@@ -511,12 +511,12 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
             .noError());
     REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-    std::vector<Topic> topics{Topic{pattern}};
+    kmMqtt::kmStd::vector<Topic> topics{Topic{pattern}};
     REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
     CHECK(allSubscribedOk.load());
 
-    const std::string payloadText = "wildcard_plus";
+    const kmMqtt::kmStd::string payloadText = "wildcard_plus";
     ByteBuffer payload(payloadText.size());
     payload.append(reinterpret_cast<const std::uint8_t *>(payloadText.data()),
                    payloadText.size());
@@ -559,10 +559,10 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
     const auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();
-    const std::string base =
-        "kmMqtt/it/full/wild_hash/" + std::to_string(nowMs);
-    const std::string pattern = base + "/#";
-    const std::string pubTopic = base + "/a/b/c";
+    const kmMqtt::kmStd::string base =
+        "kmMqtt/it/full/wild_hash/" + kmMqtt::kmStd::to_string(nowMs);
+    const kmMqtt::kmStd::string pattern = base + "/#";
+    const kmMqtt::kmStd::string pubTopic = base + "/a/b/c";
 
     subscriber.onSubscribeAckEvent().add(
         [&](const SubscribeAckEventDetails &details, const SubscribeAck &) {
@@ -587,12 +587,12 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
             .noError());
     REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-    std::vector<Topic> topics{Topic{pattern}};
+    kmMqtt::kmStd::vector<Topic> topics{Topic{pattern}};
     REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
     CHECK(allSubscribedOk.load());
 
-    const std::string payloadText = "wildcard_hash";
+    const kmMqtt::kmStd::string payloadText = "wildcard_hash";
     ByteBuffer payload(payloadText.size());
     payload.append(reinterpret_cast<const std::uint8_t *>(payloadText.data()),
                    payloadText.size());
@@ -634,8 +634,8 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
     REQUIRE(waitFor(connected, endpoint.timeoutSec));
     REQUIRE(connected.load());
 
-    const std::string topic = makeUniqueTopic("kmMqtt/it/full/dup");
-    std::vector<Topic> topics{Topic{topic}};
+    const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/full/dup");
+    kmMqtt::kmStd::vector<Topic> topics{Topic{topic}};
 
     REQUIRE(client.subscribe(topics, SubscribeOptions{}).noError());
     REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
@@ -679,8 +679,8 @@ TEST_SUITE("Integration - Full - Publish / Subscribe") {
     REQUIRE(waitFor(connected, endpoint.timeoutSec));
     REQUIRE(connected.load());
 
-    const std::string topic = makeUniqueTopic("kmMqtt/it/full/unsub_unk");
-    std::vector<Topic> topics{Topic{topic}};
+    const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/full/unsub_unk");
+    kmMqtt::kmStd::vector<Topic> topics{Topic{topic}};
 
     // Unsubscribe from a topic that was never subscribed to.
     REQUIRE(client.unSubscribe(topics, UnSubscribeOptions{}).noError());

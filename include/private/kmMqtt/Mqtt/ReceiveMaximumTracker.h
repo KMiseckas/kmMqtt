@@ -7,7 +7,7 @@
 #define INCLUDE_PRIVATE_KMMQTT_MQTT_RECEIVEMAXIMUMTRACKER_H
 
 #include "kmMqtt/GlobalMacros.h"
-#include <unordered_set>
+#include <kmMqtt/STL/KmUnorderedSet.h>
 
 namespace kmMqtt
 {
@@ -147,8 +147,8 @@ namespace kmMqtt
 			std::uint32_t m_maxReceiveAllowance{ RECEIVE_MAXIMUM_DEFAULT }; //Maximum allowance of PUBLISH packets that can be received.
 			std::uint32_t m_maxSendAllowance{ RECEIVE_MAXIMUM_DEFAULT }; //Maximum allowance of PUBLISH packets that can be sent.
 
-			std::unordered_set<std::uint16_t> m_sentPublishIDs; //Track sent publish packet IDs to avoid double decrementing send allowance.
-			std::unordered_set<std::uint16_t> m_receivedPublishIDs; //Track received publish packet IDs to avoid double decrementing receive allowance.
+			kmStd::unordered_set<std::uint16_t> m_sentPublishIDs; //Track sent publish packet IDs to avoid double decrementing send allowance.
+			kmStd::unordered_set<std::uint16_t> m_receivedPublishIDs; //Track received publish packet IDs to avoid double decrementing receive allowance.
 		};
 	}
 }

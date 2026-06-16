@@ -15,7 +15,7 @@ namespace kmMqtt
 	{
 		struct PUBLIC_API PendingUnSubscription
 		{
-			PendingUnSubscription(std::uint16_t packetId, std::vector<Topic> topics) noexcept;
+			PendingUnSubscription(std::uint16_t packetId, kmStd::vector<Topic> topics) noexcept;
 
 			std::uint16_t packetId;
 			UnSubAckResults unSubscriptionResults{};

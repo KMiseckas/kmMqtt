@@ -12,7 +12,7 @@
 
 #include <cstdint>
 #include <exception>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <stdexcept>
 #include <cassert>
 
@@ -373,7 +373,7 @@ namespace kmMqtt
 				decode(buffer);
 			}
 
-			explicit UTF8String(const std::string& val)
+			explicit UTF8String(const kmStd::string& val)
 			{
 				if (val.size() > 65535)
 				{
@@ -443,7 +443,7 @@ namespace kmMqtt
 				return *this;
 			}
 
-			UTF8String& operator=(const std::string& other)
+			UTF8String& operator=(const kmStd::string& other)
 			{
 				if (other.size() > 65535)
 				{
@@ -510,9 +510,9 @@ namespace kmMqtt
 				return m_bytes;
 			}
 
-			std::string getString() const noexcept
+			kmStd::string getString() const noexcept
 			{
-				return std::string(reinterpret_cast<const char*>(m_bytes), m_size);
+				return kmStd::string(reinterpret_cast<const char*>(m_bytes), m_size);
 			}
 
 		private:
@@ -531,7 +531,7 @@ namespace kmMqtt
 			{
 			}
 
-			UTF8StringPair(const std::string& firstVal, const std::string& secondVal)
+			UTF8StringPair(const kmStd::string& firstVal, const kmStd::string& secondVal)
 				: m_first(firstVal), m_second(secondVal)
 			{
 			}

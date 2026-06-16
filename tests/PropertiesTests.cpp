@@ -32,7 +32,7 @@ TEST_SUITE("Properties Tests")
 		const UTF8String* valueUtf8String;
 		const bool* valueBool;
 		const std::uint32_t* valueUint32;
-		std::vector<const BinaryData*> dataVec;
+		kmMqtt::kmStd::vector<const BinaryData*> dataVec;
 
 		CHECK(properties.tryGetProperty<UTF8String>(PropertyType::ASSIGNED_CLIENT_IDENTIFIER, valueUtf8String));
 		CHECK(valueUtf8String->getString() == "Client_123");
@@ -59,7 +59,7 @@ TEST_SUITE("Properties Tests")
 		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key1", "value1")));
 		CHECK(properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair("key2", "value2")));
 
-		std::vector<const UTF8StringPair*> userProperties;
+		kmMqtt::kmStd::vector<const UTF8StringPair*> userProperties;
 		CHECK(properties.tryGetProperty<UTF8StringPair>(PropertyType::USER_PROPERTY, userProperties));
 		CHECK(userProperties.size() == 2);
 		

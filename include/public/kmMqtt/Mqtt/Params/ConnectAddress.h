@@ -8,10 +8,11 @@
 
 #include "kmMqtt/Utils/Utils.h"
 #include <kmMqtt/Mqtt/Enums/LocatorType.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <cstdint>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <memory>
+#include <regex>
 
 namespace kmMqtt
 {
@@ -69,28 +70,28 @@ namespace kmMqtt
 			 * 
 			 * @return vector of address objects.
 			 */
-			static std::vector<Address> toAddress(const char* urls)
+			static kmStd::vector<Address> toAddress(const char* urls)
 			{
 				if (urls == nullptr || urls[0] == '\0')
 				{
-					return std::vector<Address>();
+					return kmStd::vector<Address>();
 				}
 
-				std::vector<Address> addresses;
-				std::vector<std::string> tokens = splitByDelimiter(urls, " ");
+				kmStd::vector<Address> addresses;
+				kmStd::vector<kmStd::string> tokens = splitByDelimiter(urls, " ");
 
-				for (const std::string& token : tokens)
+				for (const kmStd::string& token : tokens)
 				{
 					//Check if token has a scheme
-					std::string scheme;
-					std::string addressPart = token;
-					std::string path;
+					kmStd::string scheme;
+					kmStd::string addressPart = token;
+					kmStd::string path;
 
 					static constexpr const char* schemeSeperator{ "://" };
 					static constexpr std::size_t schemeSeperatorLen{ 3 };
 					
 					std::size_t schemeEnd{ token.find(schemeSeperator) };
-					if (schemeEnd != std::string::npos)
+					if (schemeEnd != kmStd::string::npos)
 					{
 						scheme = token.substr(0, schemeEnd);
 						addressPart = token.substr(schemeEnd + schemeSeperatorLen);
@@ -98,7 +99,7 @@ namespace kmMqtt
 
 					//Get path
 					std::size_t pathStart = addressPart.find('/');
-					if (pathStart != std::string::npos)
+					if (pathStart != kmStd::string::npos)
 					{
 						path = addressPart.substr(pathStart + 1); //Skip the first '/' character
 						addressPart = addressPart.substr(0, pathStart);
@@ -107,7 +108,7 @@ namespace kmMqtt
 					const std::regex ipv4Regex(R"((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d{1,5}))?)");
 					const std::regex ipv6Regex(R"(\[([a-fA-F0-9:]+)\](?::(\d{1,5}))?)");
 
-					std::smatch result;
+					std::match_results<kmStd::string::const_iterator> result;
 
 					if (std::regex_match(addressPart, result, ipv4Regex))
 					{
@@ -131,8 +132,8 @@ namespace kmMqtt
 					}
 					else
 					{
-						std::string hostname;
-						std::string port;
+						kmStd::string hostname;
+						kmStd::string port;
 
 						if (tryParseHostnameAddress(token, hostname, port))
 						{
@@ -153,7 +154,7 @@ namespace kmMqtt
 			 * 
 			 * @return true if parsing was successful, false otherwise.
 			 */
-			static bool tryParseHostnameAddress(const std::string& url, std::string& hostname, std::string& port)
+			static bool tryParseHostnameAddress(const kmStd::string& url, kmStd::string& hostname, kmStd::string& port)
 			{
 				static constexpr const char* schemeSeperator{ "://" };
 				static constexpr std::size_t schemeSeperatorLen{ 3 };
@@ -162,7 +163,7 @@ namespace kmMqtt
 				port = "";
 
 				std::size_t schemeEnd = url.find(schemeSeperator);
-				if (schemeEnd == std::string::npos)
+				if (schemeEnd == kmStd::string::npos)
 				{
 					//No scheme
 					schemeEnd = 0;
@@ -172,10 +173,10 @@ namespace kmMqtt
 				std::size_t portStart = url.find(':', hostStart);
 				std::size_t pathStart = url.find('/', hostStart);
 
-				if (portStart != std::string::npos && (pathStart == std::string::npos || portStart < pathStart))
+				if (portStart != kmStd::string::npos && (pathStart == kmStd::string::npos || portStart < pathStart))
 				{
 					hostname = url.substr(hostStart, portStart - hostStart);
-					std::size_t portEnd = (pathStart != std::string::npos) ? pathStart : url.size();
+					std::size_t portEnd = (pathStart != kmStd::string::npos) ? pathStart : url.size();
 
 					port = url.substr(portStart + 1, portEnd - portStart - 1);
 				}
@@ -192,29 +193,29 @@ namespace kmMqtt
 				return m_locatorType;
 			}
 
-			inline const std::string& hostname() const noexcept
+			inline const kmStd::string& hostname() const noexcept
 			{
 				return m_hostname;
 			}
 
-			inline const std::string& port() const noexcept
+			inline const kmStd::string& port() const noexcept
 			{
 				return m_port;
 			}
 
-			inline const std::string& scheme() const noexcept
+			inline const kmStd::string& scheme() const noexcept
 			{
 				return m_scheme;
 			}
 
-			inline const std::string& path() const noexcept
+			inline const kmStd::string& path() const noexcept
 			{
 				return m_path;
 			}
 
-			inline std::string url() const noexcept
+			inline kmStd::string url() const noexcept
 			{
-				std::string urlStr;
+				kmStd::string urlStr;
 				if (!m_scheme.empty())
 				{
 					urlStr += m_scheme + "://";
@@ -256,10 +257,10 @@ namespace kmMqtt
 			{
 			}
 
-			std::string m_hostname{ "" };
-			std::string m_port{ "" };
-			std::string m_scheme{ "" };
-			std::string m_path{ "" };
+			kmStd::string m_hostname{ "" };
+			kmStd::string m_port{ "" };
+			kmStd::string m_scheme{ "" };
+			kmStd::string m_path{ "" };
 			LocatorType m_locatorType{ LocatorType::UNKNOWN };
 		};
 
@@ -279,13 +280,13 @@ namespace kmMqtt
 			{
 			}
 
-			ConnectAddress(Address primary, std::vector<Address> other) noexcept
+			ConnectAddress(Address primary, kmStd::vector<Address> other) noexcept
 				: primaryAddress{std::move(primary)}, otherAddresses{std::move(other)}
 			{
 			}
 
 			Address primaryAddress;
-			std::vector<Address> otherAddresses;
+			kmStd::vector<Address> otherAddresses;
 		};
 
 		/**
@@ -309,7 +310,7 @@ namespace kmMqtt
 				return true;
 			}
 
-			void addAddresses(const std::vector<Address>& addresses) noexcept
+			void addAddresses(const kmStd::vector<Address>& addresses) noexcept
 			{
 				for (const Address& address : addresses)
 				{
@@ -355,9 +356,9 @@ namespace kmMqtt
 				usedAddresses.clear();
 			}
 
-			std::vector<Address> usedAddresses;
+			kmStd::vector<Address> usedAddresses;
 		};
 	}
 }
 
-#endif //INTERFACE_KMMQTT_MQTT_PARAMS_CONNECTADRESS_H 
+#endif //INTERFACE_KMMQTT_MQTT_PARAMS_CONNECTADRESS_H

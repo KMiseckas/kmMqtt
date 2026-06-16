@@ -260,9 +260,9 @@ TEST_SUITE("Data Type Tests")
 			CHECK(str.stringSize() == 5);
 		}
 
-		SUBCASE("Constructor with std::string")
+		SUBCASE("Constructor with kmMqtt::kmStd::string")
 		{
-			std::string text = "Test";
+			kmMqtt::kmStd::string text = "Test";
 			UTF8String str(text);
 			CHECK(str.stringBytes() != nullptr);
 			CHECK(str.encodingSize() == 6);
@@ -312,10 +312,10 @@ TEST_SUITE("Data Type Tests")
 			CHECK(b.stringSize() == 2);
 		}
 
-		SUBCASE("Assignment from std::string")
+		SUBCASE("Assignment from kmMqtt::kmStd::string")
 		{
 			UTF8String str;
-			std::string s = "assign";
+			kmMqtt::kmStd::string s = "assign";
 			str = s;
 			CHECK(str.stringBytes() != nullptr);
 			CHECK(str.encodingSize() == 8);
@@ -325,7 +325,7 @@ TEST_SUITE("Data Type Tests")
 
 		SUBCASE("Max Size String")
 		{
-			std::string maxStr(65535, 'x');
+			kmMqtt::kmStd::string maxStr(65535, 'x');
 			UTF8String str(maxStr);
 			CHECK(str.stringBytes() != nullptr);
 			CHECK(str.encodingSize() == 65537);
@@ -335,7 +335,7 @@ TEST_SUITE("Data Type Tests")
 
 		SUBCASE("Encode/Decode Roundtrip")
 		{
-			std::string text = "roundtrip";
+			kmMqtt::kmStd::string text = "roundtrip";
 			UTF8String str(text);
 			kmMqtt::ByteBuffer buf{ str.encodingSize()};
 			str.encode(buf);
@@ -348,7 +348,7 @@ TEST_SUITE("Data Type Tests")
 		SUBCASE("Encode/Decode with special UTF-8 characters")
 		{
 			// "Héłłø 🌍" contains multi-byte UTF-8 characters.
-			std::string special = u8"Héłłø 🌍";
+			kmMqtt::kmStd::string special = u8"Héłłø 🌍";
 			UTF8String str(special);
 			kmMqtt::ByteBuffer buf{ str.encodingSize() };
 			str.encode(buf);

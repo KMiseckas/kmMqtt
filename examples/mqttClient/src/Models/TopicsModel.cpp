@@ -25,7 +25,7 @@ void TopicsModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
     }
 }
 
-void TopicsModel::subscribe(const std::string& topicFilter)
+void TopicsModel::subscribe(const kmMqtt::kmStd::string& topicFilter)
 {
     if (m_mqttClient == nullptr || topicFilter.empty())
     {
@@ -66,7 +66,7 @@ void TopicsModel::subscribe(const std::string& topicFilter)
     it->options = opts;
 
     // Create Topic and subscribe
-    std::vector<kmMqtt::mqtt::Topic> topics;
+    kmMqtt::kmStd::vector<kmMqtt::mqtt::Topic> topics;
     topics.emplace_back(topicFilter, opts);
 
     auto result = m_mqttClient->subscribe(topics, {});
@@ -76,7 +76,7 @@ void TopicsModel::subscribe(const std::string& topicFilter)
     }
 }
 
-void TopicsModel::unsubscribe(const std::string& topicFilter)
+void TopicsModel::unsubscribe(const kmMqtt::kmStd::string& topicFilter)
 {
     if (topicFilter.empty())
     {
@@ -101,7 +101,7 @@ void TopicsModel::unsubscribe(const std::string& topicFilter)
         return;
     }
 
-    std::vector<kmMqtt::mqtt::Topic> topics;
+    kmMqtt::kmStd::vector<kmMqtt::mqtt::Topic> topics;
     topics.emplace_back(topicFilter);
 
     kmMqtt::mqtt::UnSubscribeOptions unsubscribeOptions;
@@ -123,12 +123,12 @@ void TopicsModel::unsubscribe(size_t index)
     unsubscribe(m_subscribedTopics[index].topicFilter);
 }
 
-const std::vector<SubscribedTopic>& TopicsModel::getSubscribedTopics() const noexcept
+const kmMqtt::kmStd::vector<SubscribedTopic>& TopicsModel::getSubscribedTopics() const noexcept
 {
     return m_subscribedTopics;
 }
 
-bool TopicsModel::isSubscribed(const std::string& topicFilter) const noexcept
+bool TopicsModel::isSubscribed(const kmMqtt::kmStd::string& topicFilter) const noexcept
 {
     auto it = std::find_if(m_subscribedTopics.begin(), m_subscribedTopics.end(),
         [&topicFilter](const SubscribedTopic& topic) {
@@ -204,7 +204,7 @@ void TopicsModel::onSubscribeAck(const kmMqtt::mqtt::SubscribeAckEventDetails& d
                 if (!topic.isSubscribed)
                 {
                     topic.isSubscribed = false;
-					topic.lastError = "Subscription failed with reason code: " + std::to_string(static_cast<int>(details.results.getTopicReasons()[0].reasonCode));
+					topic.lastError = "Subscription failed with reason code: " + kmMqtt::kmStd::to_string(static_cast<int>(details.results.getTopicReasons()[0].reasonCode));
                     break;
                 }
             }

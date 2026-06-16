@@ -27,7 +27,7 @@ void CustomLogger::Log(const kmMqtt::LogLevel logLvl, const char* const msg) con
 
 void CustomLogger::Log(const kmMqtt::LogLevel logLvl, const char* const category, const char* const msg) const noexcept
 {
-	std::string logOutput{ "[kmMqtt]" };
+	kmMqtt::kmStd::string logOutput{ "[kmMqtt]" };
 
 	switch (logLvl)
 	{

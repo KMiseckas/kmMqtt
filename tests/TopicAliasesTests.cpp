@@ -5,8 +5,7 @@
 
 #include <doctest.h>
 #include <kmMqtt/Mqtt/TopicAliases.h>
-#include <cstring>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 TEST_SUITE("Topic Aliases")
 {
@@ -22,12 +21,12 @@ TEST_SUITE("Topic Aliases")
 		CHECK(aliases.tryAddTopicAlias(topic1, 1));
 		CHECK(aliases.tryFindTopicName(1, out));
 		CHECK(out != nullptr);
-		CHECK(std::strcmp(out, topic1) == 0);
+		CHECK(kmMqtt::kmStd::strcmp(out, topic1) == 0);
 
 		CHECK(aliases.tryAddTopicAlias(topic2, 2));
 		CHECK(aliases.tryFindTopicName(2, out));
 		CHECK(out != nullptr);
-		CHECK(std::strcmp(out, topic2) == 0);
+		CHECK(kmMqtt::kmStd::strcmp(out, topic2) == 0);
 	}
 
 	TEST_CASE("Overwrite topic alias with new topic")
@@ -39,12 +38,12 @@ TEST_SUITE("Topic Aliases")
 
 		CHECK(aliases.tryAddTopicAlias(topic1, 5));
 		CHECK(aliases.tryFindTopicName(5, out));
-		CHECK(std::strcmp(out, topic1) == 0);
+		CHECK(kmMqtt::kmStd::strcmp(out, topic1) == 0);
 
 		// Overwrite alias 5 with a new topic
 		CHECK(aliases.tryAddTopicAlias(topic2, 5));
 		CHECK(aliases.tryFindTopicName(5, out));
-		CHECK(std::strcmp(out, topic2) == 0);
+		CHECK(kmMqtt::kmStd::strcmp(out, topic2) == 0);
 	}
 
 	TEST_CASE("Add same topic/alias again")
@@ -56,13 +55,13 @@ TEST_SUITE("Topic Aliases")
 		CHECK(aliases.tryAddTopicAlias(topic, 7));
 		CHECK(aliases.tryAddTopicAlias(topic, 7)); // Should return true, no change
 		CHECK(aliases.tryFindTopicName(7, out));
-		CHECK(std::strcmp(out, topic) == 0);
+		CHECK(kmMqtt::kmStd::strcmp(out, topic) == 0);
 	}
 
 	TEST_CASE("Stored alias does not depend on caller topic buffer")
 	{
 		TopicAliases aliases;
-		std::string mutableTopic{ "topic/original/path" };
+		kmMqtt::kmStd::string mutableTopic{ "topic/original/path" };
 		const char* out = nullptr;
 
 		CHECK(aliases.tryAddTopicAlias(mutableTopic.c_str(), 9));
@@ -72,7 +71,7 @@ TEST_SUITE("Topic Aliases")
 
 		CHECK(aliases.tryFindTopicName(9, out));
 		CHECK(out != nullptr);
-		CHECK(std::strcmp(out, "topic/original/path") == 0);
+		CHECK(kmMqtt::kmStd::strcmp(out, "topic/original/path") == 0);
 	}
 
 	TEST_CASE("Invalid topic name")

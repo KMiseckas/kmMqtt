@@ -9,7 +9,7 @@
 #include "kmMqtt/Utils/Event.h"
 #include "kmMqtt/GlobalMacros.h"
 #include "kmMqtt/STL/KmMemory.h"
-#include <queue>
+#include <kmMqtt/STL/KmQueue.h>
 #include <mutex>
 #include <type_traits>
 #include <memory>
@@ -68,7 +68,7 @@ namespace kmMqtt
 			}
 
 		private:
-			std::queue<kmStd::unique_ptr<ICallable>> m_events;
+			kmStd::queue<kmStd::unique_ptr<ICallable>> m_events;
 		};
 	}
 }

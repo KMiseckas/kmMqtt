@@ -7,7 +7,7 @@
 #define MOCKWEBSOCKET_H
 
 #include <kmMqtt/Interfaces/IWebSocket.h>
-#include <queue>
+#include <kmMqtt/STL/KmQueue.h>
 
 using namespace kmMqtt;
 
@@ -15,21 +15,21 @@ class MockWebSocket : public IWebSocket
 {
 public:
     bool connectCalled = false;
-    std::string lastHost, lastPort;
+    kmMqtt::kmStd::string lastHost, lastPort;
     bool connectResult = true;
     bool closeCalled = false;
     bool isConnectedResult = false;
     int lastError = 0;
     int lastCloseCode = 0;
-    std::string lastCloseReason = "none";
+    kmMqtt::kmStd::string lastCloseReason = "none";
     OnConnectCallback onConnectCb;
     OnDisconnectCallback onDisconnectCb;
     OnRecvdCallback onPacketCb;
     OnErrorCallback onErrorCb;
 
     // Internal state for simulating send/receive
-    std::vector<ByteBuffer> sentPackets;
-    std::queue<ByteBuffer> pendingResponses;
+    kmMqtt::kmStd::vector<ByteBuffer> sentPackets;
+    kmMqtt::kmStd::queue<ByteBuffer> pendingResponses;
     bool connected = false;
 
     bool connect(const mqtt::Address& address) noexcept override
