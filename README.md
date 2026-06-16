@@ -38,7 +38,7 @@ kmMqtt provides an MQTT 5.0 client implementation with game development and game
 - **MQTT 5.0 protocol support** - Broad MQTT 5.0 client coverage for connect/publish/subscribe/session workflows, with known gaps documented below
 - **Platform-adaptation for cross-platform ports** - Exposed customisation points so platform specific code can stay outside the MQTT packet/state core
   - Threading: `kmMqtt/STL/KmThread.h` wraps only the thread primitives currently used by the SDK and can be replaced with `CUSTOM_THREAD_INCLUDE`
-  - Memory: SDK owned allocations, smart pointers, and allocator-aware `kmMqtt::kmStd` standard-type wrappers are routed through a custom `IAllocator` where possible
+  - Memory: SDK owned allocations and smart pointers can be routed through a custom `IAllocator`
   - Logging: applications can install a custom `ILogger`
   - Transport: applications can provide their own `IMqttEnvironment` and `IWebSocket` implementations
 - **Separated MQTT protocol and transport layers** - MQTT packet/state logic is isolated from socket and TLS/SSL implementations, so applications can provide client-driven transport adapters
@@ -62,6 +62,7 @@ kmMqtt is structured so the protocol logic can stay portable while platform-faci
 - Use `ILogger` and `setLogger()` to route SDK logs into your engine or platform logger.
 - Use `IAllocator` and `setAllocator()` to route SDK-owned allocations through your own memory system. Where the standard library type supports allocator injection, kmMqtt exposes an allocator-aware wrapper under `kmMqtt::kmStd` and uses that surface in SDK code.
 - Use `kmMqtt/STL/KmThread.h` and `CUSTOM_THREAD_INCLUDE` when the SDK's internal thread primitives need to map to a platform-specific implementation.
+- Use `kmMqtt/STL/KmChrono.h` and `CUSTOM_CHRONO_INCLUDE` when the SDK's internal clock/duration primitives need to map to a platform-specific implementation.
 
 ## Protocol Support Notes
 

@@ -151,7 +151,7 @@ ReqResult MqttClientImpl::connect(ConnectArgs &&args,
       return ReqResult{ClientErrorCode::Socket_Connect_Failed};
     }
 
-    m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
+    m_connectionInfo.connectionStartTime = kmStd::chrono::steady_clock::now();
   }
 
   m_mqttMainThreadCondition.notify_all();
@@ -413,7 +413,7 @@ void MqttClientImpl::tickAsync() noexcept {
           kmStd::unique_lock<kmStd::mutex> lock{m_tickMutex};
 
           m_mqttMainThreadCondition.wait_for(
-              lock, std::chrono::milliseconds(m_config.tickAsyncWaitForMS),
+              lock, kmStd::chrono::milliseconds(m_config.tickAsyncWaitForMS),
               [this] { return !m_isRunningAsync; });
         }
 
@@ -623,7 +623,7 @@ void MqttClientImpl::reconnect() {
   LogInfo("MqttClient", "Socket attempting to connect.");
   m_socket->connect(m_connectionInfo.reconnectAddress.primaryAddress);
 
-  m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
+  m_connectionInfo.connectionStartTime = kmStd::chrono::steady_clock::now();
 }
 
 void MqttClientImpl::handleInternalDisconnect(
@@ -882,7 +882,7 @@ void MqttClientImpl::handleSocketErrorEvent(int error) {
 void MqttClientImpl::handlePingSentEvent() {
   // Record time ping was sent and set awaiting ping ack response back from
   // broker.
-  m_connectionInfo.lastPingReqSentTime = std::chrono::steady_clock::now();
+  m_connectionInfo.lastPingReqSentTime = kmStd::chrono::steady_clock::now();
   m_connectionInfo.awaitingPingResponse = true;
 }
 
@@ -948,8 +948,8 @@ void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck &&packet) {
     }
 
     // Set-up ping interval
-    m_connectionInfo.pingInterval = std::chrono::duration_cast<Milliseconds>(
-        std::chrono::seconds{m_connectionInfo.serverKeepAlive});
+    m_connectionInfo.pingInterval = kmStd::chrono::duration_cast<Milliseconds>(
+        kmStd::chrono::seconds{m_connectionInfo.serverKeepAlive});
     if (m_config.pingAlways && m_connectionInfo.serverKeepAlive == 0) {
       m_connectionInfo.pingInterval =
           Milliseconds{m_config.defaultPingInterval};
@@ -1330,8 +1330,8 @@ void MqttClientImpl::firePublishReceivedEvent(Publish &&packet) noexcept {
 void MqttClientImpl::tickCheckTimeOut() {
   if (m_connectionStatus == ConnectionStatus::CONNECTING ||
       m_connectionStatus == ConnectionStatus::RECONNECTING) {
-    const auto elapsed{std::chrono::duration_cast<Milliseconds>(
-                           std::chrono::steady_clock::now() -
+    const auto elapsed{kmStd::chrono::duration_cast<Milliseconds>(
+                           kmStd::chrono::steady_clock::now() -
                            m_connectionInfo.connectionStartTime)
                            .count()};
 
@@ -1353,8 +1353,8 @@ void MqttClientImpl::tickCheckKeepAlive() {
 
     if (m_connectionInfo.awaitingPingResponse) {
       const auto elapsedTimeSincePingReq{
-          std::chrono::duration_cast<Milliseconds>(
-              std::chrono::steady_clock::now() -
+          kmStd::chrono::duration_cast<Milliseconds>(
+              kmStd::chrono::steady_clock::now() -
               m_connectionInfo.lastPingReqSentTime)
               .count()};
 
@@ -1374,12 +1374,12 @@ void MqttClientImpl::tickCheckKeepAlive() {
     Milliseconds elapsedTimeSinceControlPacket;
 
     if (m_config.pingAlways) {
-      elapsedTimeSinceControlPacket = std::chrono::duration_cast<Milliseconds>(
-          std::chrono::steady_clock::now() -
+      elapsedTimeSinceControlPacket = kmStd::chrono::duration_cast<Milliseconds>(
+          kmStd::chrono::steady_clock::now() -
           m_connectionInfo.lastPingReqSentTime);
     } else {
-      elapsedTimeSinceControlPacket = std::chrono::duration_cast<Milliseconds>(
-          std::chrono::steady_clock::now() -
+      elapsedTimeSinceControlPacket = kmStd::chrono::duration_cast<Milliseconds>(
+          kmStd::chrono::steady_clock::now() -
           m_connectionInfo.lastControlPacketTime);
     }
 
@@ -1394,7 +1394,7 @@ void MqttClientImpl::tickSendPackets() {
   m_sendQueue.sendNextBatch(m_batchResultData);
 
   if (m_batchResultData.controlPacketSent) {
-    m_connectionInfo.lastControlPacketTime = std::chrono::steady_clock::now();
+    m_connectionInfo.lastControlPacketTime = kmStd::chrono::steady_clock::now();
   }
 
   // If result from sending action was specified as unrecoverable, then log
@@ -1430,7 +1430,7 @@ void MqttClientImpl::tickPendingPublishMessageRetries() {
   const auto &msgs{m_connectionInfo.sessionState.messages()};
 
   for (const auto &msg : msgs) {
-    if (msg.nextRetryTime < std::chrono::steady_clock::now()) {
+    if (msg.nextRetryTime < kmStd::chrono::steady_clock::now()) {
       PacketType type{msg.getRetryPacketType()};
 
       LogTrace("MqttClient",

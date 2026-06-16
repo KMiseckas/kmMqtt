@@ -7,11 +7,10 @@ kmMqtt is designed so the MQTT protocol core can stay portable while platform-fa
 | Area | Primary hook | Typical use |
 | --- | --- | --- |
 | Thread primitives | `kmMqtt/STL/KmThread.h` | Map SDK thread usage to a platform thread implementation |
+| Chrono primitives | `kmMqtt/STL/KmChrono.h` | Map SDK clock and duration usage to a platform time implementation |
 | Memory | `IAllocator`, `setAllocator()`, `kmMqtt::kmStd` | Route SDK-owned allocations into custom heaps, pools, or tracking systems |
 | Logging | `ILogger`, `setLogger()` | Forward SDK logs into an engine logger, telemetry pipeline, or platform console |
 | Transport / environment | `IMqttEnvironment`, `IWebSocket` | Replace the default socket/runtime layer for custom or closed-source platforms |
-
-Chrono types are still standard-library based today. The thread wrapper currently covers only the thread primitives that kmMqtt itself uses.
 
 ## Threading
 
@@ -57,7 +56,48 @@ GCC / Clang: -DCUSTOM_THREAD_INCLUDE=\"platform/KmThreadPlatform.h\"
 MSVC: /DCUSTOM_THREAD_INCLUDE=\"platform/KmThreadPlatform.h\"
 ```
 
-The wrapper exists for the SDK seam. Application code can still use `std::thread`, `std::this_thread`, and `std::chrono` directly if that fits the host project better.
+## Chrono
+
+`include/public/kmMqtt/STL/KmChrono.h` is the SDK wrapper for clock and duration primitives used by kmMqtt internals and public headers. By default it aliases `std::chrono` as `kmMqtt::kmStd::chrono`.
+
+To replace it:
+
+1. Create a header that defines the `kmMqtt::kmStd::chrono` surface used by the SDK.
+2. Make that header available on the compiler include path for both the kmMqtt build and any consuming code that includes kmMqtt public headers.
+3. Define `CUSTOM_CHRONO_INCLUDE` to that header path before kmMqtt is compiled.
+
+The current contract expected from the custom header is:
+
+- `kmMqtt::kmStd::chrono::steady_clock`
+- `kmMqtt::kmStd::chrono::steady_clock::time_point`
+- `kmMqtt::kmStd::chrono::seconds`
+- `kmMqtt::kmStd::chrono::milliseconds`
+- `kmMqtt::kmStd::chrono::duration_cast<Duration>(...)`
+
+Preferred CMake integration:
+
+```cmake
+add_compile_definitions(
+  CUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+)
+```
+
+Or, when the `kmMqtt` target is already available:
+
+```cmake
+target_compile_definitions(kmMqtt PUBLIC
+  CUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+)
+```
+
+Compiler-definition form:
+
+```text
+GCC / Clang: -DCUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+MSVC: /DCUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+```
+
+The wrappers exist for the SDK seam. Application code can still use `std::thread`, `std::this_thread`, and `std::chrono` directly if that fits the host project better.
 
 ## Memory
 

@@ -45,7 +45,7 @@ namespace kmMqtt
 
 			if (m_sendBatchRetryCount != 0)
 			{
-				if ((std::chrono::steady_clock::now() - m_lastRetryTime) < k_retryDelayMs)
+				if ((kmStd::chrono::steady_clock::now() - m_lastRetryTime) < k_retryDelayMs)
 				{
 					return;
 				}
@@ -79,7 +79,7 @@ namespace kmMqtt
 						{
 							outResult.socketError = m_lastSendData.socketError;
 							++m_sendBatchRetryCount;
-							m_lastRetryTime = std::chrono::steady_clock::now();
+							m_lastRetryTime = kmStd::chrono::steady_clock::now();
 						}
 
 						continue;
