@@ -9,7 +9,7 @@ namespace kmMqtt
 {
 	namespace mqtt
 	{
-		SubscribePayloadHeader::SubscribePayloadHeader(std::vector<Subscription>&& subscriptions) noexcept
+		SubscribePayloadHeader::SubscribePayloadHeader(kmStd::vector<Subscription>&& subscriptions) noexcept
 			: subscriptions(std::move(subscriptions)) {
 		}
 

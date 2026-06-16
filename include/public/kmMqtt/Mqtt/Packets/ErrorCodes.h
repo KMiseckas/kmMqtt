@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <kmMqtt/Mqtt/Packets/Connection/Codes/DisconnectReasonCode.h>
 #include <kmMqtt/Mqtt/Packets/PacketType.h>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -33,14 +34,14 @@ namespace kmMqtt
 		struct DecodeResult
 		{
 			DecodeResult() = default;
-			DecodeResult(DecodeErrorCode errorCode, std::string errorReason = "") noexcept
+			DecodeResult(DecodeErrorCode errorCode, kmStd::string errorReason = "") noexcept
 				: code{ errorCode }, reason{ errorReason }
 			{
 			}
 
 			PacketType packetType{ PacketType::RESERVED };
 			DecodeErrorCode code{ DecodeErrorCode::NO_ERROR };
-			std::string reason;
+			kmStd::string reason;
 
 			inline bool isSuccess() const noexcept
 			{
@@ -71,14 +72,14 @@ namespace kmMqtt
 		struct EncodeResult
 		{
 			EncodeResult() = default;
-			EncodeResult(EncodeErrorCode errorCode, std::string errorReason = "") noexcept
+			EncodeResult(EncodeErrorCode errorCode, kmStd::string errorReason = "") noexcept
 				: code{ errorCode }, reason{ errorReason }
 			{
 			}
 
 			PacketType packetType{ PacketType::RESERVED };
 			EncodeErrorCode code{ EncodeErrorCode::NO_ERROR };
-			std::string reason;
+			kmStd::string reason;
 			std::uint16_t packetId{ 0U };
 
 			inline bool isSuccess() const noexcept

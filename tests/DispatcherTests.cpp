@@ -10,9 +10,10 @@
 #include <kmMqtt/Interfaces/ICallbackDispatcher.h>
 #include <atomic>
 #include <chrono>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <cstring>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
+#include <kmMqtt/STL/KmString.h>
 
 using namespace kmMqtt;
 
@@ -89,7 +90,7 @@ TEST_SUITE("Dispatcher Tests")
 	TEST_CASE("ImmediateDispatcher - Callback Execution Order")
 	{
 		ImmediateDispatcher dispatcher;
-		std::vector<int> executionOrder;
+		kmMqtt::kmStd::vector<int> executionOrder;
 
 		for (int i = 0; i < 10; ++i)
 		{
@@ -112,7 +113,7 @@ TEST_SUITE("Dispatcher Tests")
 	{
 		ImmediateDispatcher dispatcher;
 		
-		std::string text = "Hello";
+		kmMqtt::kmStd::string text = "Hello";
 		int number = 42;
 		bool flag = false;
 
@@ -129,7 +130,7 @@ TEST_SUITE("Dispatcher Tests")
 	{
 		ImmediateDispatcher dispatcher;
 		
-		std::map<std::string, std::vector<int>> data;
+		kmMqtt::kmStd::map<kmMqtt::kmStd::string, kmMqtt::kmStd::vector<int>> data;
 		
 		UniqueFunction callback([&data]() {
 			data["first"] = {1, 2, 3};

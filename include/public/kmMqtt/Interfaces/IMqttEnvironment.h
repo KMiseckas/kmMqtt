@@ -13,7 +13,7 @@
 #include <kmMqtt/STL/KmMemory.h>
 
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {

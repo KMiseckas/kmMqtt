@@ -46,12 +46,12 @@ namespace kmMqtt
 			return m_impl->publish(topic, std::move(payload), std::move(options));
 		}
 
-		ReqResult MqttClient::subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept
+		ReqResult MqttClient::subscribe(const kmStd::vector<Topic>& topics, SubscribeOptions&& options) noexcept
 		{
 			return m_impl->subscribe(topics, std::move(options));
 		}
 
-		ReqResult MqttClient::unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
+		ReqResult MqttClient::unSubscribe(const kmStd::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept
 		{
 			return m_impl->unSubscribe(topics, std::move(options));
 		}

@@ -11,9 +11,9 @@
 #include <kmMqtt/Mqtt/Enums/Qos.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <kmMqtt/STL/KmMemory.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <memory>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
 
 namespace kmMqtt
 {
@@ -108,14 +108,14 @@ namespace kmMqtt
 			}
 
 			kmStd::unique_ptr<BinaryData> correlationData{nullptr};
-			std::string responseTopic{ "" };
+			kmStd::string responseTopic{ "" };
 			std::uint16_t topicAlias{ 0U };
 			std::uint32_t messageExpiryInterval{ 0U };
 			bool addMessageExpiryInterval{ false };
 			PayloadFormatIndicator payloadFormatIndicator{ PayloadFormatIndicator::UTF8 };
 			bool retain{ false };
 			Qos qos{ Qos::QOS_0 };
-			std::map<std::string, std::string> userProperties;
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 	}
 }

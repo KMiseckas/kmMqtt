@@ -71,7 +71,7 @@ TEST_SUITE("Utils Tests")
 		using namespace kmMqtt;
 
 		//Helper to create a simple MQTT packet: [fixed header][remaining length][payload]
-		auto makePacket = [](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer
+		auto makePacket = [](std::uint8_t type, const kmMqtt::kmStd::vector<std::uint8_t>& payload) -> ByteBuffer
 			{
 				ByteBuffer buf(1 + 1 + payload.size()); // type + remLen + payload
 				buf.append(&type, 1);
@@ -92,7 +92,7 @@ TEST_SUITE("Utils Tests")
 		combined.append(packet1.bytes(), packet1.size());
 		combined.append(packet2.bytes(), packet2.size());
 
-		std::vector<ByteBuffer> packets;
+		kmMqtt::kmStd::vector<ByteBuffer> packets;
 		std::size_t leftOverPos{ 0 };
 
 		bool result = separateMqttPacketByteBuffers(combined, packets, leftOverPos);
@@ -135,7 +135,7 @@ TEST_SUITE("Utils Tests")
 		using namespace kmMqtt;
 
 		//Helper to create MQTT packet with proper variable length encoding
-		auto makeLargePacket = [&](std::uint8_t type, const std::vector<std::uint8_t>& payload) -> ByteBuffer
+		auto makeLargePacket = [&](std::uint8_t type, const kmMqtt::kmStd::vector<std::uint8_t>& payload) -> ByteBuffer
 			{
 				mqtt::VariableByteInteger remainingLength{ mqtt::VariableByteInteger::tryCreateFromValue(static_cast<std::uint32_t>(payload.size()))};
 				ByteBuffer buf(1 + remainingLength.uint32Value() + payload.size());
@@ -149,8 +149,8 @@ TEST_SUITE("Utils Tests")
 			};
 
 		//Create large payload (300 bytes) - requires 2-byte variable length field
-		std::vector<std::uint8_t> largePayload1(300, 0xAB);
-		std::vector<std::uint8_t> largePayload2(200, 0xCD);
+		kmMqtt::kmStd::vector<std::uint8_t> largePayload1(300, 0xAB);
+		kmMqtt::kmStd::vector<std::uint8_t> largePayload2(200, 0xCD);
 
 		ByteBuffer packet1 = makeLargePacket(0x30, largePayload1);
 		ByteBuffer packet2 = makeLargePacket(0x32, largePayload2);
@@ -159,7 +159,7 @@ TEST_SUITE("Utils Tests")
 		combined.append(packet1.bytes(), packet1.size());
 		combined.append(packet2.bytes(), packet2.size());
 
-		std::vector<ByteBuffer> packets;
+		kmMqtt::kmStd::vector<ByteBuffer> packets;
 		std::size_t leftOverPos{ 0 };
 
 		bool result = separateMqttPacketByteBuffers(combined, packets, leftOverPos);

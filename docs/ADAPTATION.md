@@ -8,7 +8,7 @@ kmMqtt is designed so the MQTT protocol core can stay portable while platform-fa
 | --- | --- | --- |
 | Thread primitives | `kmMqtt/STL/KmThread.h` | Map SDK thread usage to a platform thread implementation |
 | Chrono primitives | `kmMqtt/STL/KmChrono.h` | Map SDK clock and duration usage to a platform time implementation |
-| Memory | `IAllocator`, `setAllocator()` | Route SDK-owned allocations into custom heaps, pools, or tracking systems |
+| Memory | `IAllocator`, `setAllocator()`, `kmMqtt::kmStd` | Route SDK-owned allocations into custom heaps, pools, or tracking systems |
 | Logging | `ILogger`, `setLogger()` | Forward SDK logs into an engine logger, telemetry pipeline, or platform console |
 | Transport / environment | `IMqttEnvironment`, `IWebSocket` | Replace the default socket/runtime layer for custom or closed-source platforms |
 
@@ -104,6 +104,7 @@ The wrappers exist for the SDK seam. Application code can still use `std::thread
 kmMqtt routes SDK-owned allocations through `IAllocator` and `setAllocator()`.
 
 - Use this when the host project has a custom heap, pool allocator, or memory tracking system.
+- Where a standard-library type supports allocator injection, kmMqtt uses an allocator-aware wrapper under `kmMqtt::kmStd` so SDK-owned standard-type allocations follow the currently installed allocator.
 - `kmMqtt::kmStd::make_shared` and `kmMqtt::kmStd::make_unique` follow the currently installed allocator.
 
 The full allocator guide is in [MEMORY.md](MEMORY.md).

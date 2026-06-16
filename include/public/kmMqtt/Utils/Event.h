@@ -6,7 +6,7 @@
 #pragma once
 
 #include "kmMqtt/GlobalMacros.h"
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <functional>
 
 namespace kmMqtt
@@ -75,7 +75,7 @@ namespace kmMqtt
 			void operator-=(const Callback& callback) { remove(callback); }
 
 		private:
-			std::vector<Callback> m_callbacks;
+			kmStd::vector<Callback> m_callbacks;
 			kmStd::mutex m_mutex;
 		};
 	}

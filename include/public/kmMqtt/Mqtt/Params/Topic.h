@@ -7,9 +7,9 @@
 #define INCLUDE_KMMQTT_MQTT_PARAMS_TOPICS_H
 
 #include "kmMqtt/GlobalMacros.h"
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <cstdint>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <kmMqtt/Mqtt/Enums/Qos.h>
 
 namespace kmMqtt
@@ -37,16 +37,16 @@ namespace kmMqtt
         struct PUBLIC_API Topic
         {
             Topic() noexcept = default;
-            Topic(std::string filter, TopicSubscriptionOptions opts = {}) noexcept
+            Topic(kmStd::string filter, TopicSubscriptionOptions opts = {}) noexcept
                 : topicFilter(std::move(filter)), options(std::move(opts)) {}
 
-            std::string topicFilter;
+            kmStd::string topicFilter;
             TopicSubscriptionOptions options;
         };
 
-        inline std::string allTopicsToStr(std::vector<Topic> topics) noexcept
+        inline kmStd::string allTopicsToStr(kmStd::vector<Topic> topics) noexcept
         {
-            std::string topicsAsStringList;
+            kmStd::string topicsAsStringList;
 
             for (const auto& c : topics)
             {

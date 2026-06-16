@@ -7,7 +7,7 @@
 #include <kmMqtt/Mqtt/Packets/Properties.h>
 #include <kmMqtt/Mqtt/Packets/PropertyType.h>
 #include <kmMqtt/ByteBuffer.h>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <memory>
 
 using namespace kmMqtt;

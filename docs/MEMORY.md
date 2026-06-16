@@ -2,6 +2,8 @@
 
 kmMqtt routes SDK-owned allocations through a small allocator abstraction so applications can plug in their own memory tracking, pooling, or platform allocator.
 
+Where the standard library type supports allocator injection, kmMqtt also exposes allocator-aware wrappers under `kmMqtt::kmStd` and uses those wrappers in SDK-owned code paths. Those wrappers default to the allocator currently selected through `kmMqtt::setAllocator()`.
+
 ## Default allocator
 
 By default, kmMqtt uses `kmMqtt::DefaultAllocator`. The default allocator is owned by the SDK allocator context in `AllocatorContext.cpp`, and it is selected automatically when no custom allocator has been assigned.
@@ -49,6 +51,16 @@ The allocator context is used by the SDK allocation helpers:
 - `kmNew(Type, ...)` and `kmDelete(ptr)` use the currently installed allocator.
 - `kmNewWith(allocator, Type, ...)` and `kmDeleteWith(allocator, ptr)` use an explicit allocator reference.
 - `kmMqtt::StdAllocator<T>` adapts `IAllocator` to standard allocator-aware containers.
+
+## `kmMqtt::kmStd` types
+
+For standard-library types that support allocator injection, kmMqtt provides allocator-aware wrappers under the `kmMqtt::kmStd` namespace.
+
+- Examples include `kmMqtt::kmStd::string`, `vector`, `map`, `unordered_map`, `set`, `list`, `deque`, `queue`, and related wrappers in `include/public/kmMqtt/STL/`.
+- These wrappers default to `kmMqtt::StdAllocator<T>`, which in turn uses the allocator currently selected by `kmMqtt::setAllocator()`.
+- The goal is that SDK-owned standard-type allocations follow the same allocator context as other SDK-owned memory, where the underlying standard-library type makes that possible.
+
+Not every standard-library facility supports custom allocators. In those cases kmMqtt cannot force allocator usage through `kmMqtt::setAllocator()`, so the allocator guarantee is intentionally phrased as "where possible."
 
 ## Smart pointers
 

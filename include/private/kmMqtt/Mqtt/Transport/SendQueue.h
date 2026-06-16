@@ -15,7 +15,7 @@
 #include <kmMqtt/STL/KmThread.h>
 #include <cstdint>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -29,7 +29,7 @@ namespace kmMqtt
 			std::size_t totalBytesSent{ 0U };
 			int socketError{ NO_SOCKET_ERROR };
 			bool isRecoverable{ true };
-			std::string unrecoverableReasonStr;
+			kmStd::string unrecoverableReasonStr;
 			SendResultData lastSendResult;
 		};
 
@@ -90,8 +90,8 @@ namespace kmMqtt
 			const kmStd::chrono::milliseconds k_retryDelayMs{ 250 };
 			kmStd::chrono::steady_clock::time_point m_lastRetryTime;
 
-			std::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
-			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
+			kmStd::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
+			kmStd::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
 
 			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
 

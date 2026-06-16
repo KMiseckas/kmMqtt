@@ -42,7 +42,7 @@ namespace kmMqtt
 					LogInfo("DefaultWebsocket", "WebSocket connection closed.");
 					m_connected = false;
 					m_lastCloseCode = msg->closeInfo.code;
-					m_lastCloseReason = msg->closeInfo.reason;
+					m_lastCloseReason = msg->closeInfo.reason.c_str();
 
 					if (m_onDisconnectCallback)
 					{
@@ -51,7 +51,7 @@ namespace kmMqtt
 				}
 				else if (msg->type == ix::WebSocketMessageType::Message)
 				{
-					const std::string& data = msg->str;
+					const auto& data = msg->str;
 					if (!data.empty())
 					{
 						ByteBuffer buffer(data.size());
@@ -101,10 +101,10 @@ namespace kmMqtt
 				return false;
 			}
 
-			std::string url{ address.url() };
+			kmStd::string url{ address.url() };
 			LogInfo("DefaultWebsocket", ("Connecting to: " + url).c_str());
 
-			m_websocket->setUrl(url);
+			m_websocket->setUrl(url.c_str());
 			m_websocket->setExtraHeaders({ {"Sec-WebSocket-Protocol", "mqtt"} });
 
 			m_websocket->start();
@@ -140,8 +140,8 @@ namespace kmMqtt
 				return -1;
 			}
 
-			std::string payload(reinterpret_cast<const char*>(data.bytes()), data.size());
-			ix::WebSocketSendInfo info = m_websocket->sendBinary(payload);
+			const std::string message(reinterpret_cast<const char*>(data.bytes()), data.size());
+			ix::WebSocketSendInfo info = m_websocket->sendBinary(message);
 
 			if (info.success)
 			{

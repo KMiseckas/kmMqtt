@@ -28,7 +28,7 @@ namespace kmMqtt
 				}
 
 				ptr->~T();
-				kmMqtt::getAllocator().deallocate(ptr, sizeof(T), alignof(T)); 
+				getAllocator().deallocate(ptr, sizeof(T), alignof(T));
             }
         };
 
@@ -44,14 +44,14 @@ namespace kmMqtt
         template<typename T, typename... Args> 
         kmStd::shared_ptr<T> make_shared(Args&&... args)
 		{
-			return std::allocate_shared<T>(StdAllocator<T>{&kmMqtt::getAllocator()},
+			return std::allocate_shared<T>(StdAllocator<T>{&getAllocator()},
 													std::forward<Args>(args)...);
         }
 
         template<typename T, typename... Args>
         kmStd::unique_ptr<T> make_unique(Args&&... args)
         {
-			void* memory = kmMqtt::getAllocator().allocate(sizeof(T), alignof(T));
+			void* memory = getAllocator().allocate(sizeof(T), alignof(T));
 
             try
             {
@@ -60,7 +60,7 @@ namespace kmMqtt
             }
             catch (...)
             {
-				kmMqtt::getAllocator().deallocate(memory, sizeof(T), alignof(T)); 
+				getAllocator().deallocate(memory, sizeof(T), alignof(T));
                 throw;
             }
         }

@@ -204,7 +204,7 @@ ReqResult MqttClientImpl::publish(const char *topic, ByteBuffer &&payload,
   return ReqResult{ClientErrorCode::No_Error, packetId};
 }
 
-ReqResult MqttClientImpl::subscribe(const std::vector<Topic> &topics,
+ReqResult MqttClientImpl::subscribe(const kmStd::vector<Topic> &topics,
                                     SubscribeOptions &&options) noexcept {
   if (m_connectionStatus != ConnectionStatus::CONNECTED) {
     LogError("MqttClient", "Client not connected, cannot subscribe()!");
@@ -244,7 +244,7 @@ ReqResult MqttClientImpl::subscribe(const std::vector<Topic> &topics,
   return ReqResult{ClientErrorCode::No_Error, packetId};
 }
 
-ReqResult MqttClientImpl::unSubscribe(const std::vector<Topic> &topics,
+ReqResult MqttClientImpl::unSubscribe(const kmStd::vector<Topic> &topics,
                                       UnSubscribeOptions &&options) noexcept {
   if (m_connectionStatus != ConnectionStatus::CONNECTED) {
     LogWarning("MqttClient", "Client not connected, cannot unSubscribe()!");
@@ -551,7 +551,7 @@ bool MqttClientImpl::tryStartBrokerRedirection(
 
     if (hasServerReference) {
       if (serverRef->stringSize() != 0) {
-        std::vector<Address> addresses =
+        kmStd::vector<Address> addresses =
             Address::toAddress(serverRef->getString().c_str());
 
         if (failedConnectionReasonCode == SERVER_MOVED_VAL) {
@@ -734,7 +734,7 @@ void MqttClientImpl::handleExternalDisconnect(const Disconnect &packet) {
 }
 
 void MqttClientImpl::handleExternalDisconnect(int closeCode,
-                                              std::string reason) {
+                                              kmStd::string reason) {
   {
     LockGuard guard{m_mutex};
 
@@ -849,7 +849,7 @@ void MqttClientImpl::handleSocketDataReceivedEvent(ByteBuffer &&buffer) {
   fullBuffer.append(m_leftOverBuffer.bytes(), m_leftOverBuffer.size());
   fullBuffer.append(buffer.bytes(), buffer.size());
 
-  std::vector<ByteBuffer> packets;
+  kmStd::vector<ByteBuffer> packets;
   std::size_t leftOver{0U};
 
   if (separateMqttPacketByteBuffers(fullBuffer, packets, leftOver)) {
@@ -1230,7 +1230,7 @@ void MqttClientImpl::handleReceivedPingResponse(PingResp &&packet) {
 }
 
 void MqttClientImpl::firePublishReceivedEvent(Publish &&packet) noexcept {
-  std::string topicName{packet.getVariableHeader().topicName.getString()};
+  kmStd::string topicName{packet.getVariableHeader().topicName.getString()};
 
   const auto *properties = &packet.getVariableHeader().properties;
   const std::uint16_t *topicAlias{nullptr};

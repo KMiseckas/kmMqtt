@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <ostream>
 #include <sstream>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 OutputModel::OutputModel() noexcept
 {
@@ -29,11 +29,11 @@ void OutputModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
 	m_mqttClient = client;
 }
 
-void OutputModel::AddOutput(kmMqtt::LogLevel logLevel, const std::string category, const std::string msg)
+void OutputModel::AddOutput(kmMqtt::LogLevel logLevel, const kmMqtt::kmStd::string category, const kmMqtt::kmStd::string msg)
 {
 	kmMqtt::kmStd::lock_guard<kmMqtt::kmStd::mutex> lock(m_logMutex);
 
-	std::string logEntry;
+	kmMqtt::kmStd::string logEntry;
 
 	//Add timestamp to beginning.
 	auto now{ std::chrono::system_clock::now() };
@@ -48,7 +48,8 @@ void OutputModel::AddOutput(kmMqtt::LogLevel logLevel, const std::string categor
 	localtime_r(&time_t, &tm_buf);
 	ss << "[" << std::put_time(&tm_buf, "%H:%M:%S") << "] ";
 #endif
-	logEntry = ss.str();
+	const auto timestamp = ss.str();
+	logEntry = timestamp.c_str();
 
 	switch (logLevel)
 	{
@@ -123,7 +124,7 @@ void OutputModel::clearLogs() noexcept
 	nextLogEntry = m_logs;
 }
 
-void OutputModel::enableFileLogging(const std::string& filepath)
+void OutputModel::enableFileLogging(const kmMqtt::kmStd::string& filepath)
 {
 	kmMqtt::kmStd::lock_guard<kmMqtt::kmStd::mutex> lock(m_logMutex);
 	
@@ -132,7 +133,7 @@ void OutputModel::enableFileLogging(const std::string& filepath)
 		m_logFile.close();
 	}
 
-	m_logFile.open(filepath, std::ios::out | std::ios::app);
+	m_logFile.open(filepath.c_str(), std::ios::out | std::ios::app);
 	if (m_logFile.is_open())
 	{
 		m_fileLoggingEnabled = true;
@@ -163,7 +164,7 @@ void OutputModel::disableFileLogging()
 	}
 }
 
-void OutputModel::writeToFile(const std::string& logEntry)
+void OutputModel::writeToFile(const kmMqtt::kmStd::string& logEntry)
 {
 	if (m_logFile.is_open())
 	{

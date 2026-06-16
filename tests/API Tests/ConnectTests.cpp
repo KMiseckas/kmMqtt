@@ -9,7 +9,7 @@
 #include <kmMqtt/Mqtt/Transport/SendResultData.h>
 #include <kmMqtt/MqttClient.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 
 using namespace kmMqtt;

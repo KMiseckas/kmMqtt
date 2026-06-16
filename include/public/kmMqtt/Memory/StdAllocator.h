@@ -6,6 +6,7 @@
 #ifndef INCLUDE_KMMQTT_MEMORY_STDALLOCATOR_H
 #define INCLUDE_KMMQTT_MEMORY_STDALLOCATOR_H
 
+#include "kmMqtt/Memory/AllocatorContext.h"
 #include "kmMqtt/Interfaces/IAllocator.h"
 #include <cstddef>
 #include <limits>
@@ -30,7 +31,10 @@ namespace kmMqtt
 			using other = StdAllocator<U>;
 		};
 
-		StdAllocator() = delete;
+		StdAllocator() noexcept
+			: m_allocator{ &kmMqtt::getAllocator() }
+		{
+		}
 
 		explicit StdAllocator(IAllocator* allocator) noexcept
 			: m_allocator{ allocator }
@@ -68,7 +72,7 @@ namespace kmMqtt
 
 		std::size_t max_size() const noexcept
 		{
-			return std::numeric_limits<std::size_t>::max() / sizeof(T);
+			return (std::numeric_limits<std::size_t>::max)() / sizeof(T);
 		}
 
 		IAllocator* getAllocator() const noexcept

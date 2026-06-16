@@ -8,8 +8,8 @@
 
 #include "mqttClient/Model/ViewModel.h"
 #include <kmMqtt/Mqtt/Params/PublishOptions.h>
-#include <string>
-#include <vector>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 #include <memory>
 #include <chrono>
 
@@ -38,8 +38,8 @@ enum class SentMessageStatus
 
 struct MqttMessage
 {
-    std::string topic;
-    std::string payload;
+    kmMqtt::kmStd::string topic;
+    kmMqtt::kmStd::string payload;
     MessageType type;
     std::chrono::system_clock::time_point timestamp;
 
@@ -48,11 +48,11 @@ struct MqttMessage
 
     SentMessageStatus sentStatus{ SentMessageStatus::PENDING };
     kmMqtt::mqtt::PublishOptions sentOptions;
-    std::string lastError{ "" };
+    kmMqtt::kmStd::string lastError{ "" };
 
     MqttMessage() noexcept = default;
 
-    MqttMessage(const std::string& topic_, const std::string& payload_, kmMqtt::mqtt::Qos qos, bool retain) noexcept
+    MqttMessage(const kmMqtt::kmStd::string& topic_, const kmMqtt::kmStd::string& payload_, kmMqtt::mqtt::Qos qos, bool retain) noexcept
         : topic(topic_),
         payload(payload_),
         type(MessageType::RECEIVED),
@@ -61,7 +61,7 @@ struct MqttMessage
         receivedRetain(retain) {
     }
 
-    MqttMessage(const std::string& topic_, const std::string& payload_, const kmMqtt::mqtt::PublishOptions& options) noexcept
+    MqttMessage(const kmMqtt::kmStd::string& topic_, const kmMqtt::kmStd::string& payload_, const kmMqtt::mqtt::PublishOptions& options) noexcept
         : topic(topic_),
         payload(payload_),
         type(MessageType::SENT),
@@ -79,21 +79,21 @@ public:
 
     void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
 
-    void addReceivedMessage(const std::string& topic,
-        const std::string& payload,
+    void addReceivedMessage(const kmMqtt::kmStd::string& topic,
+        const kmMqtt::kmStd::string& payload,
         kmMqtt::mqtt::Qos qos,
         bool retain);
 
-    void addSentMessage(const std::string& topic,
-        const std::string& payload,
+    void addSentMessage(const kmMqtt::kmStd::string& topic,
+        const kmMqtt::kmStd::string& payload,
         const kmMqtt::mqtt::PublishOptions opts,
         bool isSuccessRequest,
-        const std::string& errMsg = "");
+        const kmMqtt::kmStd::string& errMsg = "");
 
     void clearAllMessages();
     void removeMessage(size_t index);
 
-    const std::vector<MqttMessage>& getAllMessages() const noexcept;
+    const kmMqtt::kmStd::vector<MqttMessage>& getAllMessages() const noexcept;
 
     size_t getReceivedCount() const noexcept;
     size_t getSentCount() const noexcept;
@@ -116,9 +116,9 @@ public:
 private:
     void setupEventHandlers();
     void onPublishReceived(const kmMqtt::mqtt::PublishEventDetails& details, const kmMqtt::mqtt::Publish& publish);
-    void updateSentMessageStatus(const std::string& topic, SentMessageStatus status, const std::string& error = "");
+    void updateSentMessageStatus(const kmMqtt::kmStd::string& topic, SentMessageStatus status, const kmMqtt::kmStd::string& error = "");
 
-    std::vector<MqttMessage> m_messages;
+    kmMqtt::kmStd::vector<MqttMessage> m_messages;
     kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };
 };
 

@@ -6,7 +6,7 @@
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 
@@ -20,7 +20,7 @@ TEST_SUITE("MqttClient Subscribe")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<Topic> topics;
+        kmMqtt::kmStd::vector<Topic> topics;
         topics.push_back({ "test/topic"});
 
         SubscribeOptions options{};
@@ -62,7 +62,7 @@ TEST_SUITE("MqttClient Subscribe")
     {
         TestClientContext testContext;
 
-        std::vector<Topic> topics;
+        kmMqtt::kmStd::vector<Topic> topics;
         topics.push_back({ "test/topic" });
         SubscribeOptions options{};
 
@@ -75,7 +75,7 @@ TEST_SUITE("MqttClient Subscribe")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<Topic> topics;
+        kmMqtt::kmStd::vector<Topic> topics;
         topics.push_back({ "topic/1", Qos::QOS_1 });
         topics.push_back({ "topic/2", Qos::QOS_2 });
 
@@ -146,7 +146,7 @@ TEST_SUITE("MqttClient Subscribe")
         TestClientContext testContext;
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::vector<Topic> topics{};
+        kmMqtt::kmStd::vector<Topic> topics{};
         SubscribeOptions options{};
 
         auto result = testContext.client->subscribe(topics, std::move(options));

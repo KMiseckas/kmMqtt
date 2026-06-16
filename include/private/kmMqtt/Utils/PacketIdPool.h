@@ -10,7 +10,7 @@
 #include "kmMqtt/STL/KmThread.h"
 
 #include <cstdint>
-#include <stack>
+#include <kmMqtt/STL/KmStack.h>
 #include <bitset>
 
 //Macro (instead of const) to allow changing in build tools. If QOS > 0 is rarely or never used, can reduce memory footprint by lowering this value.
@@ -68,7 +68,7 @@ namespace kmMqtt
 
 	private:
 		std::uint16_t m_nextId{ 1U };//0 is not a valid MQTT packet ID.
-		std::stack<std::uint16_t> m_availableIds{}; //Pool of available Ids for reuse.
+		kmStd::stack<std::uint16_t> m_availableIds{}; //Pool of available Ids for reuse.
 		std::bitset<PACKET_POOL_ID_SIZE> m_usedIds; //Tracks used Ids to prevent duplicates.
 		kmStd::mutex m_mutex;
 	};

@@ -28,7 +28,7 @@ void PublishModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
     }
 }
 
-void PublishModel::publish(const std::string& topic, const std::string& payload)
+void PublishModel::publish(const kmMqtt::kmStd::string& topic, const kmMqtt::kmStd::string& payload)
 {
     if (m_mqttClient == nullptr || topic.empty())
     {
@@ -119,7 +119,7 @@ void PublishModel::removeMessage(size_t index)
     }
 }
 
-const std::vector<PublishedMessage>& PublishModel::getPublishedMessages() const noexcept
+const kmMqtt::kmStd::vector<PublishedMessage>& PublishModel::getPublishedMessages() const noexcept
 {
     return m_publishedMessages;
 }
@@ -179,14 +179,15 @@ void PublishModel::onPublishCompleted(const kmMqtt::mqtt::PublishCompleteEventDe
             else
             {
                 message.status = PublishMessageStatus::FAILED;
-                message.lastError = "Pub Ack Reason Code: " + static_cast<int>(details.reasonCode);
+                message.lastError =
+                    "Pub Ack Reason Code: " + kmMqtt::kmStd::to_string(static_cast<int>(details.reasonCode));
             }
             break; // Only update the first SENT message (FIFO)
         }
     }
 }
 
-void PublishModel::updateMessageStatus(std::uint16_t packetId, PublishMessageStatus status, const std::string& error)
+void PublishModel::updateMessageStatus(std::uint16_t packetId, PublishMessageStatus status, const kmMqtt::kmStd::string& error)
 {
     // This method is no longer used since we're not tracking packet IDs
     // Keeping it for potential future use when packet IDs are exposed

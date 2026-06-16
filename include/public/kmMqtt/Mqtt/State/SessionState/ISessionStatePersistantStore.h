@@ -8,8 +8,8 @@
 
 #include "kmMqtt/GlobalMacros.h"
 #include "kmMqtt/Mqtt/State/SessionState/MessageContainer.h"
-#include <vector>
-#include <string>
+#include <kmMqtt/STL/KmVector.h>
+#include <kmMqtt/STL/KmString.h>
 #include <cstdint>
 
 namespace kmMqtt 
@@ -65,7 +65,7 @@ namespace kmMqtt
              * @return true if the session state was successfully read (even if no packets
              * were stored), false if an error occurred during reading.
              */
-            virtual bool readAll(const char* clientId, std::vector<const SavedData>& outData) = 0;
+            virtual bool readAll(const char* clientId, kmStd::vector<const SavedData>& outData) = 0;
 
             /**
              * @brief Removes a specific Publish packets from the session state store.

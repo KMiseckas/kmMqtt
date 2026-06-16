@@ -14,7 +14,7 @@ namespace kmMqtt
 			MqttConnectionInfo* connectionInfo,
 			PacketIdPool* packetIdPool,
 			const std::uint16_t packetId,
-			std::vector<Topic> topics,
+			kmStd::vector<Topic> topics,
 			UnSubscribeOptions&& options) noexcept :
 			IPacketComposer(connectionInfo),
 			m_packetIdPool{ packetIdPool },

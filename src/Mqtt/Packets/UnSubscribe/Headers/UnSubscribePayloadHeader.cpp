@@ -9,7 +9,7 @@ namespace kmMqtt
 {
 	namespace mqtt
 	{
-		UnSubscribePayloadHeader::UnSubscribePayloadHeader(std::vector<UTF8String>&& topics) noexcept
+		UnSubscribePayloadHeader::UnSubscribePayloadHeader(kmStd::vector<UTF8String>&& topics) noexcept
 			: topics(std::move(topics)) {
 		}
 

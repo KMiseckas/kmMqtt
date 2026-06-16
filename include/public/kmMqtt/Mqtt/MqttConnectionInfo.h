@@ -16,7 +16,7 @@
 #include "kmMqtt/Mqtt/State/PendingUnSubscription.h"
 #include <kmMqtt/Mqtt/TopicAliases.h>
 
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <cstdint>
 
 namespace kmMqtt 
@@ -47,8 +47,8 @@ namespace kmMqtt
 			std::uint32_t receiveMaximumAsClient{ RECEIVE_MAXIMUM_DEFAULT };
 			std::uint32_t receiveMaximumAsServer{ RECEIVE_MAXIMUM_DEFAULT };
 			SessionState sessionState{ "", 0 };
-			std::vector<PendingSubscription> pendingSubscriptions;
-			std::vector<PendingUnSubscription> pendingUnSubscriptions;
+			kmStd::vector<PendingSubscription> pendingSubscriptions;
+			kmStd::vector<PendingUnSubscription> pendingUnSubscriptions;
 			TopicAliases topicAliases;
 
 			void clear(bool clearSessionState = false) noexcept;

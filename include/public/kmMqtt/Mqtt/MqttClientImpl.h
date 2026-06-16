@@ -68,8 +68,8 @@ else\
 
 			ReqResult connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
 			ReqResult publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
-			ReqResult subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
-			ReqResult unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
+			ReqResult subscribe(const kmStd::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
+			ReqResult unSubscribe(const kmStd::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
 			ReqResult disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
@@ -100,7 +100,7 @@ else\
 
 			void handleInternalDisconnect(DisconnectReasonCode reason, const DisconnectArgs& args = {}) noexcept;
 			void handleExternalDisconnect(const Disconnect& packet);
-			void handleExternalDisconnect(int closeCode = -1, std::string reason = "");
+			void handleExternalDisconnect(int closeCode = -1, kmStd::string reason = "");
 			void clearState() noexcept;
 
 			void handleSocketConnectEvent(bool success);
