@@ -69,7 +69,7 @@ namespace kmMqtt
 
 		ClientErrorCode SessionState::addMessage(const std::uint16_t packetId, PublishMessageData publishMsgData) noexcept
 		{
-			TimePoint nextRetryTime{ std::chrono::steady_clock::now() + m_retryInterval };
+			TimePoint nextRetryTime{ kmStd::chrono::steady_clock::now() + m_retryInterval };
 			MessageContainerData data{ packetId, std::move(publishMsgData), std::move(nextRetryTime), m_retryInterval.count() > 0};
 
 			{
@@ -94,8 +94,8 @@ namespace kmMqtt
 
 		ClientErrorCode SessionState::addPrevStateMessage(const std::uint16_t packetId, const PublishMessageData& publishMsgData) noexcept
 		{
-			//std::chrono::steady_clock::now() to Retry ASAP when restoring previous session state messages.
-			MessageContainerData data{ packetId, publishMsgData, std::chrono::steady_clock::now(), true };
+			//Use current steady-clock time to retry ASAP when restoring previous session state messages.
+			MessageContainerData data{ packetId, publishMsgData, kmStd::chrono::steady_clock::now(), true };
 
 			//TODO: Persistant Storage - needs rethink to work async. Commented out until future implementation.
 			/*if (m_persistantStore != nullptr)
@@ -125,7 +125,7 @@ namespace kmMqtt
 					return;
 				}
 
-				iter->nextRetryTime = std::chrono::steady_clock::now() + m_retryInterval;
+				iter->nextRetryTime = kmStd::chrono::steady_clock::now() + m_retryInterval;
 
 				if (newStatus == iter->data.status)
 				{

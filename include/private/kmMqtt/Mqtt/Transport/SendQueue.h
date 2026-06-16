@@ -10,10 +10,10 @@
 #include <kmMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <kmMqtt/Interfaces/IWebSocket.h>
 #include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
+#include <kmMqtt/STL/KmChrono.h>
 #include <kmMqtt/STL/KmMemory.h>
 #include <kmMqtt/STL/KmThread.h>
 #include <cstdint>
-#include <chrono>
 #include <memory>
 #include <string>
 
@@ -87,8 +87,8 @@ namespace kmMqtt
 
 			const std::uint8_t k_maxSendBatchRetries{ 3U };
 			std::uint8_t m_sendBatchRetryCount{ 0U };
-			const std::chrono::milliseconds k_retryDelayMs{ 250 };
-			std::chrono::steady_clock::time_point m_lastRetryTime;
+			const kmStd::chrono::milliseconds k_retryDelayMs{ 250 };
+			kmStd::chrono::steady_clock::time_point m_lastRetryTime;
 
 			std::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
 			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;

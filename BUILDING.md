@@ -102,6 +102,7 @@ kmMqtt keeps its portability seams narrow on purpose. The main customization hoo
 - Logging via `ILogger` and `setLogger()`
 - Memory via `IAllocator` and `setAllocator()`
 - Thread primitives used by the SDK via `kmMqtt/STL/KmThread.h`
+- Clock and duration primitives used by the SDK via `kmMqtt/STL/KmChrono.h`
 
 See [docs/ADAPTATION.md](docs/ADAPTATION.md) for the full overview. The most build-sensitive seam is custom threading, documented below.
 
@@ -119,8 +120,6 @@ Your custom header should provide the `kmMqtt::kmStd` thread contract currently 
 - `unique_lock<Mutex>`
 - `this_thread::sleep_for(...)`
 - `make_thread(...)`
-
-Chrono types are still expected to come from `std::chrono`.
 
 #### Preferred CMake Integration
 
@@ -155,6 +154,53 @@ One way to pass the definition from the configure command line is through `CMAKE
 
 ```bash
 cmake -B build -DCMAKE_CXX_FLAGS="-DCUSTOM_THREAD_INCLUDE=\\\"platform/KmThreadPlatform.h\\\""
+```
+
+### Custom Chrono Wrapper
+
+`include/public/kmMqtt/STL/KmChrono.h` uses `std::chrono` by default. To replace it, define `CUSTOM_CHRONO_INCLUDE` to a header path that is visible on the compiler include path.
+
+Your custom header should provide the `kmMqtt::kmStd::chrono` contract currently used by the SDK:
+
+- `steady_clock`
+- `steady_clock::time_point`
+- `seconds`
+- `milliseconds`
+- `duration_cast<Duration>(...)`
+
+#### Preferred CMake Integration
+
+If kmMqtt is being added through `add_subdirectory()` or `FetchContent`, define the macro before the library is compiled:
+
+```cmake
+add_compile_definitions(
+  CUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+)
+```
+
+If you already have access to the `kmMqtt` target, you can attach it directly:
+
+```cmake
+target_compile_definitions(kmMqtt PUBLIC
+  CUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+)
+```
+
+#### Compiler / Preprocessor Form
+
+The same hook can be provided directly through compiler definitions:
+
+```text
+GCC / Clang: -DCUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+MSVC: /DCUSTOM_CHRONO_INCLUDE=\"platform/KmChronoPlatform.h\"
+```
+
+#### CMake Command-Line Form
+
+One way to pass the definition from the configure command line is through `CMAKE_CXX_FLAGS`:
+
+```bash
+cmake -B build -DCMAKE_CXX_FLAGS="-DCUSTOM_CHRONO_INCLUDE=\\\"platform/KmChronoPlatform.h\\\""
 ```
 
 ## Platform-Specific Instructions

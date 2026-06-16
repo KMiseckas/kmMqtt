@@ -16,6 +16,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 ### Added
 
 - [lib][api] Non-breaking: Added minimal `kmStd` thread aliases for project-used threading primitives and `this_thread::sleep_for` so custom thread includes only need to provide the required surface.
+- [lib][api] Non-breaking: Added `kmStd::chrono` wrapper with `CUSTOM_CHRONO_INCLUDE` support for SDK-used clock and duration primitives.
 - [tests] Updated test waits to use the `kmStd` thread sleep wrapper.
 - [examples] Updated example client locking to use the `kmStd` thread aliases.
 - [tests] Added broker-free publish event and packet move regression coverage for inline packet header ownership.
