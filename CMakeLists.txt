@@ -13,8 +13,13 @@ include(cmake/utils.cmake)
 
 project (
     "kmMqtt" 
-    VERSION 1.0.0 
+    VERSION 1.2.0 
     LANGUAGES CXX)
+
+configure_file(
+"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in"
+"${CMAKE_CURRENT_BINARY_DIR}/generated/Version.h"
+@ONLY)
 
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -31,6 +36,7 @@ file(GLOB_RECURSE source_files "src/*.cpp")
 add_library (${PROJECT_NAME} ${source_files})
 target_include_directories( ${PROJECT_NAME} PUBLIC include/public)
 target_include_directories( ${PROJECT_NAME} PRIVATE include/private)
+target_include_directories( ${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC PUBLIC_API_EXPORT)
