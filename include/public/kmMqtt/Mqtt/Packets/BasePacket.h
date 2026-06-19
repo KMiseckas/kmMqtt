@@ -15,7 +15,7 @@
 #include <kmMqtt/Mqtt/Packets/ErrorCodes.h>
 
 #include <cstdint>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <type_traits>
 #include <memory>
 #include <cassert>
@@ -85,6 +85,8 @@ namespace kmMqtt
 			ByteBuffer&& extractDataBuffer() noexcept;
 
 		protected:
+			void clearRegisteredHeaders() noexcept;
+
 			/**
 			 * @brief Calculates the remaining length for the fixed header based on other headers.
 			 * 
@@ -115,8 +117,8 @@ namespace kmMqtt
 		private:
 			FixedHeader m_fixedHeader;
 
-			std::vector<IDecodeHeader*> m_otherDecodeHeaders;
-			std::vector<const IEncodeHeader*> m_otherEncodeHeaders;
+			kmStd::vector<IDecodeHeader*> m_otherDecodeHeaders;
+			kmStd::vector<const IEncodeHeader*> m_otherEncodeHeaders;
 			ByteBuffer m_dataBuffer;
 		};
 	}

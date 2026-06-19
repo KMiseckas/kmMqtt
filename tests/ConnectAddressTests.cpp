@@ -61,7 +61,7 @@ TEST_SUITE("ConnectAddress Tests")
 
 		SUBCASE("Vectors")
 		{
-			std::string addressesTxt;
+			kmMqtt::kmStd::string addressesTxt;
 			addressesTxt.append(k_ipv4_1).append(" ")
 				.append(k_ipv6_1).append(" ")
 				.append(k_url_1);
@@ -82,7 +82,7 @@ TEST_SUITE("ConnectAddress Tests")
 
 	TEST_CASE("Connect Address")
 	{
-		std::string addressesTxt;
+		kmMqtt::kmStd::string addressesTxt;
 		addressesTxt.append(k_ipv4_1).append(" ")
 			.append(k_ipv6_1).append(" ")
 			.append(k_url_1);
@@ -105,7 +105,7 @@ TEST_SUITE("ConnectAddress Tests")
 
 	TEST_CASE("ReconnectAddress Cycle Test")
 	{
-		std::string addressesTxt;
+		kmMqtt::kmStd::string addressesTxt;
 		addressesTxt.append(k_ipv4_1).append(" ")
 			.append(k_ipv6_1).append(" ")
 			.append(k_url_1);
@@ -166,7 +166,7 @@ TEST_SUITE("ConnectAddress Tests")
 
 		SUBCASE("Adding")
 		{
-			std::vector<Address> addresses;
+			kmMqtt::kmStd::vector<Address> addresses;
 			addresses.push_back(Address::createIp6("wss", k_ipv6_1_hostname, k_ipv6_1_port, ""));
 			addresses.push_back(Address::createIp6("", k_ipv6_2_hostname, k_ipv6_2_port, ""));
 

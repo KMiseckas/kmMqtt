@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		Publish::Publish(PublishPayloadHeader&& payloadHeader, PublishVariableHeader&& variableHeader, const EncodedPublishFlags& flags) noexcept
 			:BasePacket(flags),
-			m_payloadHeader{ new PublishPayloadHeader(std::move(payloadHeader)) },
-			m_variableHeader{ new PublishVariableHeader(std::move(variableHeader)) }
+			m_payloadHeader{ std::move(payloadHeader) },
+			m_variableHeader{ std::move(variableHeader) }
 		{
 			setUpHeaders();
 		}
@@ -25,17 +25,26 @@ namespace kmMqtt
 
 		Publish::Publish(Publish&& other) noexcept
 			: BasePacket(std::move(other)),
-			m_payloadHeader(other.m_payloadHeader),
-			m_variableHeader(other.m_variableHeader)
+			m_payloadHeader(std::move(other.m_payloadHeader)),
+			m_variableHeader(std::move(other.m_variableHeader))
 		{
-			other.m_variableHeader = nullptr;
-			other.m_payloadHeader = nullptr;
+			setUpHeaders();
 		}
 
 		Publish::~Publish()
 		{
-			delete m_variableHeader;
-			delete m_payloadHeader;
+		}
+
+		Publish& Publish::operator=(Publish&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_payloadHeader = std::move(other.m_payloadHeader);
+				m_variableHeader = std::move(other.m_variableHeader);
+				setUpHeaders();
+			}
+			return *this;
 		}
 
 		PacketType Publish::getPacketType() const noexcept
@@ -45,36 +54,26 @@ namespace kmMqtt
 
 		const PublishVariableHeader& Publish::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		const PublishPayloadHeader& Publish::getPayloadHeader() const
 		{
-			return *m_payloadHeader;
+			return m_payloadHeader;
 		}
 
 		void Publish::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = new PublishVariableHeader();
-			}
+			addEncodeHeader(&m_variableHeader);
+			addEncodeHeader(&m_payloadHeader);
 
-			if (m_payloadHeader == nullptr)
-			{
-				m_payloadHeader = new PublishPayloadHeader();
-			}
-
-			addEncodeHeader(m_variableHeader);
-			addEncodeHeader(m_payloadHeader);
-
-			addDecodeHeader(m_variableHeader);
-			addDecodeHeader(m_payloadHeader);
+			addDecodeHeader(&m_variableHeader);
+			addDecodeHeader(&m_payloadHeader);
 		}
 
 		void Publish::onFixedHeaderDecoded() const
 		{
-			m_variableHeader->qos = static_cast<Qos>(getFixedHeader().flags.getFlagValue(static_cast<std::uint8_t>(PublishFlags::QOS)));
+			m_variableHeader.qos = static_cast<Qos>(getFixedHeader().flags.getFlagValue(static_cast<std::uint8_t>(PublishFlags::QOS)));
 		}
 	}
 }

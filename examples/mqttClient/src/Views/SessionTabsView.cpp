@@ -18,14 +18,14 @@ void SessionTabsView::draw()
 
 	if (ImGui::BeginTabBar("SessionTabBar", ImGuiTabBarFlags_AutoSelectNewTabs))
 	{
-		std::vector<std::uint8_t> toRemove;
+		kmMqtt::kmStd::vector<std::uint8_t> toRemove;
 
 		if (numberSessions > 0)
 		{
 			for (std::uint8_t i{ 0 }; i < numberSessions; ++i)
 			{
 				auto sessionModel = m_model->getSessionModel(i);
-				const std::string imGuiItemLabel{ sessionModel->getName() + "##" + std::to_string(i) };
+				const kmMqtt::kmStd::string imGuiItemLabel{ sessionModel->getName() + "##" + kmMqtt::kmStd::to_string(i) };
 
 				bool active = true;
 

@@ -7,7 +7,7 @@
 #define INCLUDE_MQTTCLIENT_EVENTS_DIRECTEVENT_H
 
 #include <functional>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <algorithm>
 
 namespace events
@@ -46,7 +46,7 @@ namespace events
 
     private:
         size_t m_nextID = 0;
-        std::vector<std::pair<ListenerHandle, Listener>> m_listeners;
+        kmMqtt::kmStd::vector<std::pair<ListenerHandle, Listener>> m_listeners;
     };
 }
 

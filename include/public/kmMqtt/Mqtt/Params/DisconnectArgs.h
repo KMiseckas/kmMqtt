@@ -8,9 +8,9 @@
 
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Mqtt/Enums/PayloadFormatIndicator.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <memory>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
 
 namespace kmMqtt
 {
@@ -87,9 +87,9 @@ namespace kmMqtt
 			bool willPublish{ false };
 			bool clearQueue{ true };
 			uint32_t sessionExpiryInterval{ 0U };
-			std::string disconnectReasonText;
+			kmStd::string disconnectReasonText;
 
-			std::map<std::string, std::string> userProperties;
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 	}
 }

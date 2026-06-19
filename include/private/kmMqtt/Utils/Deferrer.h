@@ -8,7 +8,8 @@
 
 #include "kmMqtt/Utils/Event.h"
 #include "kmMqtt/GlobalMacros.h"
-#include <queue>
+#include "kmMqtt/STL/KmMemory.h"
+#include <kmMqtt/STL/KmQueue.h>
 #include <mutex>
 #include <type_traits>
 #include <memory>
@@ -55,7 +56,7 @@ namespace kmMqtt
 			template<typename TFunc>
 			void defer(TFunc&& event)
 			{
-				m_events.emplace(std::make_unique<Callable<TFunc>>(std::forward<TFunc>(event)));
+				m_events.emplace(kmStd::make_unique<Callable<TFunc>>(std::forward<TFunc>(event)));
 			}
 
 			void invokeEvents() noexcept;
@@ -67,7 +68,7 @@ namespace kmMqtt
 			}
 
 		private:
-			std::queue<std::unique_ptr<ICallable>> m_events;
+			kmStd::queue<kmStd::unique_ptr<ICallable>> m_events;
 		};
 	}
 }

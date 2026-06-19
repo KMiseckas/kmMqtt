@@ -7,9 +7,9 @@
 #include "MockWebSocket.h"
 #include <chrono>
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmThread.h>
 #include <doctest.h>
-#include <string>
-#include <thread>
+#include <kmMqtt/STL/KmString.h>
 
 using namespace kmMqtt;
 using namespace kmMqtt::mqtt;
@@ -27,7 +27,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test/retry";
+        kmMqtt::kmStd::string topic = "test/retry";
         ByteBuffer payload(2);
         payload += 0x11;
         payload += 0x22;
@@ -42,14 +42,14 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         CHECK(testContext.socketPtr->sentPackets.size() == 1);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(150));
 
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
         CHECK(testContext.socketPtr->sentPackets.size() == 2);
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(testContext.socketPtr->sentPackets[1], packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -67,7 +67,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test/dup";
+        kmMqtt::kmStd::string topic = "test/dup";
         ByteBuffer payload(1);
         payload += 0xAA;
 
@@ -84,7 +84,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         CHECK(firstDupFlag == false);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -97,7 +97,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         CHECK(retryDupFlag == true);
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(retryPacket, packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -113,7 +113,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
         TestClientContext testContext{ config };
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/qos2retry";
+        kmMqtt::kmStd::string topic = "test/qos2retry";
         ByteBuffer payload(3);
         payload += 0x01;
         payload += 0x02;
@@ -135,13 +135,13 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(150));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
         CHECK(testContext.socketPtr->sentPackets.size() >= 1);
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(testContext.socketPtr->sentPackets[0], packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -161,7 +161,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         for (int i = 0; i < 3; ++i)
         {
-            std::string topic = "test/multi/" + std::to_string(i);
+            kmMqtt::kmStd::string topic = "test/multi/" + kmMqtt::kmStd::to_string(i);
             ByteBuffer payload(1);
             payload += static_cast<std::uint8_t>(i);
 
@@ -176,12 +176,12 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(120));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(120));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
         CHECK(testContext.socketPtr->sentPackets.size() == 1);
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(testContext.socketPtr->sentPackets[0], packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -199,7 +199,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test/stopretry";
+        kmMqtt::kmStd::string topic = "test/stopretry";
         ByteBuffer payload(1);
         payload += 0xFF;
 
@@ -221,7 +221,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -237,7 +237,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
         TestClientContext testContext{ config };
         CHECK(testContext.tryConnectWithResponse().noError());
 
-        std::string topic = "test/session";
+        kmMqtt::kmStd::string topic = "test/session";
         ByteBuffer payload(2);
         payload += 0xDE;
         payload += 0xAD;
@@ -248,7 +248,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
         testContext.client->publish(topic.c_str(), std::move(payload), std::move(options));
         testContext.client->tick();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -260,7 +260,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.receiveResponse(pubAckBuffer);
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(testContext.socketPtr->sentPackets[0], packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -278,7 +278,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test/qos2full";
+        kmMqtt::kmStd::string topic = "test/qos2full";
         ByteBuffer payload(1);
         payload += 0x42;
 
@@ -301,7 +301,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -317,12 +317,12 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick();
 
         CHECK(testContext.socketPtr->sentPackets.size() == 0);
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(pubRecBuffer, packets, leftOver) == true);
         REQUIRE(leftOver == 0);
@@ -340,7 +340,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test/qos0noretry";
+        kmMqtt::kmStd::string topic = "test/qos0noretry";
         ByteBuffer payload(1);
         payload += 0x01;
 
@@ -354,7 +354,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(100));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
@@ -372,7 +372,7 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         testContext.socketPtr->sentPackets.clear();
 
-        std::string topic = "test/interval";
+        kmMqtt::kmStd::string topic = "test/interval";
         ByteBuffer payload(1);
         payload += 0xBB;
 
@@ -384,19 +384,19 @@ TEST_SUITE("MqttClient Publish Retry and Session State")
 
         std::size_t initialCount = testContext.socketPtr->sentPackets.size();
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(50));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
         CHECK(testContext.socketPtr->sentPackets.size() == initialCount);
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(80));
+        kmStd::this_thread::sleep_for(std::chrono::milliseconds(80));
         testContext.client->tick(); //Process pending retries into queue for sending
         testContext.client->tick(); //Send pending retries from queue
 
         CHECK(testContext.socketPtr->sentPackets.size() > initialCount);
 
-        std::vector<ByteBuffer> packets;
+        kmMqtt::kmStd::vector<ByteBuffer> packets;
         std::size_t leftOver;
         CHECK(separateMqttPacketByteBuffers(testContext.socketPtr->sentPackets[0], packets, leftOver) == true);
         REQUIRE(leftOver == 0);

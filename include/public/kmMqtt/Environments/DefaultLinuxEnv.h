@@ -9,6 +9,7 @@
 #include "kmMqtt/GlobalMacros.h"
 #include <kmMqtt/Interfaces/IMqttEnvironment.h>
 #include <kmMqtt/Config.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <memory>
 
 namespace kmMqtt
@@ -20,7 +21,7 @@ namespace kmMqtt
 
         Config createConfig() const noexcept override;
 
-        std::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
+        kmStd::shared_ptr<IWebSocket> createWebSocket() const noexcept override;
     };
 }
 

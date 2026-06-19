@@ -11,7 +11,7 @@
 #include "kmMqtt/Interfaces/IWebSocket.h"
 
 #include <winsock2.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <functional>
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -43,7 +43,7 @@ namespace kmMqtt
 
 		inline void logInfo(const char* msg)
 		{
-			std::string logMsg{ "[WinSocket]" };
+			kmStd::string logMsg{ "[WinSocket]" };
 			logMsg.append(msg).append("\n");
 
 #ifdef _WIN32
@@ -53,9 +53,9 @@ namespace kmMqtt
 
 		inline void logError(const char* prefixMsg)
 		{
-			std::string msg{ "[WinSocket]" };
+			kmStd::string msg{ "[WinSocket]" };
 			msg.append(prefixMsg);
-			msg.append(std::to_string(WSAGetLastError())).append("\n");
+			msg.append(kmStd::to_string(WSAGetLastError())).append("\n");
 
 #ifdef _WIN32
 			OutputDebugStringA(msg.c_str());

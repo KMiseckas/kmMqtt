@@ -9,11 +9,17 @@ if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 include(cmake/options.cmake)
+include(cmake/utils.cmake)
 
 project (
     "kmMqtt" 
-    VERSION 1.0.0 
+    VERSION 1.2.0 
     LANGUAGES CXX)
+
+configure_file(
+"${CMAKE_CURRENT_SOURCE_DIR}/cmake/Version.h.in"
+"${CMAKE_CURRENT_BINARY_DIR}/generated/Version.h"
+@ONLY)
 
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -30,6 +36,7 @@ file(GLOB_RECURSE source_files "src/*.cpp")
 add_library (${PROJECT_NAME} ${source_files})
 target_include_directories( ${PROJECT_NAME} PUBLIC include/public)
 target_include_directories( ${PROJECT_NAME} PRIVATE include/private)
+target_include_directories( ${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(${PROJECT_NAME} PUBLIC PUBLIC_API_EXPORT)
@@ -130,13 +137,9 @@ if(BUILD_IXWEBSOCKET)
     )
     FetchContent_MakeAvailable(ixwebsocket)
     
-    # Disable warnings as errors for ixwebsocket to prevent third-party warnings from breaking the build
+    # Disable warnings for ixwebsocket to prevent third-party warnings from breaking the build
     if(TARGET ixwebsocket)
-        if(MSVC)
-            target_compile_options(ixwebsocket PRIVATE /WX-)
-        elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-            target_compile_options(ixwebsocket PRIVATE -Wno-error)
-        endif()
+        apply_3rd_party_libs_settings(ixwebsocket)
     endif()
 
     # Link using standard CMake targets (works with vcpkg, system, and custom OpenSSL)

@@ -31,8 +31,8 @@ void MessagesModel::setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept
     }
 }
 
-void MessagesModel::addReceivedMessage(const std::string& topic,
-    const std::string& payload,
+void MessagesModel::addReceivedMessage(const kmMqtt::kmStd::string& topic,
+    const kmMqtt::kmStd::string& payload,
     kmMqtt::mqtt::Qos qos,
     bool retain)
 {
@@ -45,11 +45,11 @@ void MessagesModel::addReceivedMessage(const std::string& topic,
     }
 }
 
-void MessagesModel::addSentMessage(const std::string& topic,
-    const std::string& payload,
+void MessagesModel::addSentMessage(const kmMqtt::kmStd::string& topic,
+    const kmMqtt::kmStd::string& payload,
     const kmMqtt::mqtt::PublishOptions opts,
     bool isSuccessRequest,
-    const std::string& errMsg)
+    const kmMqtt::kmStd::string& errMsg)
 {
     MqttMessage message(topic, payload, opts);
 
@@ -84,7 +84,7 @@ void MessagesModel::removeMessage(size_t index)
     }
 }
 
-const std::vector<MqttMessage>& MessagesModel::getAllMessages() const noexcept
+const kmMqtt::kmStd::vector<MqttMessage>& MessagesModel::getAllMessages() const noexcept
 {
     return m_messages;
 }
@@ -141,7 +141,7 @@ void MessagesModel::setupEventHandlers()
 
 void MessagesModel::onPublishReceived(const kmMqtt::mqtt::PublishEventDetails& details, const kmMqtt::mqtt::Publish& publish)
 {
-    std::string payload;
+    kmMqtt::kmStd::string payload;
     if (details.payload->size() > 0)
     {
         payload.assign(reinterpret_cast<const char*>(details.payload->bytes()), details.payload->size());
@@ -152,7 +152,7 @@ void MessagesModel::onPublishReceived(const kmMqtt::mqtt::PublishEventDetails& d
     addReceivedMessage( details.topic, payload, publish.getVariableHeader().qos, isRetained);
 }
 
-void MessagesModel::updateSentMessageStatus(const std::string& topic, SentMessageStatus status, const std::string& error)
+void MessagesModel::updateSentMessageStatus(const kmMqtt::kmStd::string& topic, SentMessageStatus status, const kmMqtt::kmStd::string& error)
 {
     // Find the most recent sent message with matching topic and update its status
     for (auto it = m_messages.rbegin(); it != m_messages.rend(); ++it)

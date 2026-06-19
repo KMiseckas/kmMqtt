@@ -5,8 +5,9 @@
 
 #include <doctest.h>
 #include <kmMqtt/Mqtt/Transport/SendQueue.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <algorithm>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 namespace
 {
@@ -49,7 +50,7 @@ namespace
 		int sendReturnValue{ -1 };
 		int lastErrorValue{ 10054 };
 		int sendCalls{ 0 };
-		std::vector<int> sendScript;
+		kmMqtt::kmStd::vector<int> sendScript;
 		std::size_t sendScriptIndex{ 0U };
 	};
 
@@ -113,10 +114,10 @@ TEST_SUITE("SendQueue")
 
 	TEST_CASE("Socket send failure with positive OS error code is not treated as bytes sent")
 	{
-		auto socket = std::make_shared<MockSendSocket>();
+		auto socket = kmMqtt::kmStd::make_shared<MockSendSocket>();
 		SendQueue queue;
 		queue.setSocket(socket);
-		queue.addToQueue(std::make_unique<MockPacketComposer>());
+		queue.addToQueue(kmMqtt::kmStd::make_unique<MockPacketComposer>());
 
 		SendBatchResult result;
 		queue.sendNextBatch(result);
@@ -131,7 +132,7 @@ TEST_SUITE("SendQueue")
 
 	TEST_CASE("Partial send metadata cleanup keeps callbacks consistent")
 	{
-		auto socket = std::make_shared<MockSendSocket>();
+		auto socket = kmMqtt::kmStd::make_shared<MockSendSocket>();
 		socket->sendScript = { 7, 7, 7, 7, 7, 3 };
 
 		SendQueue queue;
@@ -151,20 +152,20 @@ TEST_SUITE("SendQueue")
 			});
 		queue.setOnDisconnectSentCallback([&]() { ++disconnectSentCount; });
 
-		queue.addToQueue(std::make_unique<ConfigurablePacketComposer>(PacketType::PING_REQUQEST, 0U, 2U));
+		queue.addToQueue(kmMqtt::kmStd::make_unique<ConfigurablePacketComposer>(PacketType::PING_REQUQEST, 0U, 2U));
 		for (int i = 0; i < 10; ++i)
 		{
-			queue.addToQueue(std::make_unique<ConfigurablePacketComposer>(PacketType::CONNECT, 0U, 2U));
+			queue.addToQueue(kmMqtt::kmStd::make_unique<ConfigurablePacketComposer>(PacketType::CONNECT, 0U, 2U));
 		}
-		queue.addToQueue(std::make_unique<ConfigurablePacketComposer>(PacketType::DISCONNECT, 0U, 2U));
+		queue.addToQueue(kmMqtt::kmStd::make_unique<ConfigurablePacketComposer>(PacketType::DISCONNECT, 0U, 2U));
 
 		SendBatchResult firstBatchResult;
 		queue.sendNextBatch(firstBatchResult);
 		CHECK(firstBatchResult.controlPacketSent == true);
 
-		queue.addToQueue(std::make_unique<ConfigurablePacketComposer>(PacketType::PING_REQUQEST, 0U, 2U));
-		queue.addToQueue(std::make_unique<ConfigurablePacketComposer>(PacketType::PUBLISH_RECEIVED, 77U, 2U));
-		queue.addToQueue(std::make_unique<ConfigurablePacketComposer>(PacketType::CONNECT, 0U, 4U));
+		queue.addToQueue(kmMqtt::kmStd::make_unique<ConfigurablePacketComposer>(PacketType::PING_REQUQEST, 0U, 2U));
+		queue.addToQueue(kmMqtt::kmStd::make_unique<ConfigurablePacketComposer>(PacketType::PUBLISH_RECEIVED, 77U, 2U));
+		queue.addToQueue(kmMqtt::kmStd::make_unique<ConfigurablePacketComposer>(PacketType::CONNECT, 0U, 4U));
 
 		SendBatchResult secondBatchResult;
 		queue.sendNextBatch(secondBatchResult);

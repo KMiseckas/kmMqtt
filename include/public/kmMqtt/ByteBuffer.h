@@ -7,6 +7,8 @@
 #define INCLUDE_KMMQTT_BYTEBUFFER_H
 
 #include <kmMqtt/GlobalMacros.h>
+#include <kmMqtt/Memory/AllocatorContext.h>
+#include "STL/KmString.h"
 #include <stdexcept>
 #include <exception>
 #include <bitset>
@@ -76,7 +78,8 @@ namespace kmMqtt
 		{
 			if (capacity > BYTEBUFFER_SBO_MAX_SIZE)
 			{
-				m_bytes = new std::uint8_t[capacity];
+				void* memory = getAllocator().allocate(capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
+				m_bytes = static_cast<std::uint8_t*>(memory);
 			}
 		}
 
@@ -85,10 +88,10 @@ namespace kmMqtt
 #ifdef ENABLE_BYTEBUFFER_SBO
 			if (m_bytes != m_sboBytes)
 			{
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
 			}
 #else
-			delete[] m_bytes;
+			getAllocator().deallocate(m_bytes, m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
 #endif
 		}
 
@@ -97,7 +100,8 @@ namespace kmMqtt
 		{
 			if(other.m_capacity > BYTEBUFFER_SBO_MAX_SIZE)
 			{
-				m_bytes = new std::uint8_t[other.m_capacity];
+				void* memory = getAllocator().allocate(other.m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
+				m_bytes = static_cast<std::uint8_t*>(memory);
 			}
 
 			std::memcpy(m_bytes, other.m_bytes, other.m_size);
@@ -139,19 +143,21 @@ namespace kmMqtt
 
 			if(m_bytes != m_sboBytes)
 			{
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_size * sizeof(std::uint8_t), alignof(std::uint8_t));
 			}
 
 			if(other.m_capacity > BYTEBUFFER_SBO_MAX_SIZE)
 			{
-				m_bytes = new std::uint8_t[other.m_capacity];
+				void* memory = getAllocator().allocate(other.m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
+				m_bytes = static_cast<std::uint8_t*>(memory);
 			}
 			else
 			{
 				m_bytes = m_sboBytes;
 			}
 #else
-			m_bytes = new std::uint8_t[other.m_capacity];
+			void* memory = getAllocator().allocate(other.m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
+			m_bytes = static_cast<std::uint8_t*>(memory);
 #endif
 			std::memcpy(m_bytes, other.m_bytes, other.m_size);
 			return *this;
@@ -367,16 +373,17 @@ namespace kmMqtt
 				return;
 			}
 
-			std::uint8_t* newBytes = new std::uint8_t[newCapacity];
+			void* memory = getAllocator().allocate(newCapacity * sizeof(std::uint8_t), alignof(std::uint8_t));
+			std::uint8_t* newBytes = static_cast<std::uint8_t*>(memory);
 			std::memcpy(newBytes, m_bytes, m_size);
 
 #ifdef ENABLE_BYTEBUFFER_SBO
 			if (m_bytes != m_sboBytes)
 			{
-				delete[] m_bytes;
+				getAllocator().deallocate(m_bytes, m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
 			}
 #else
-			delete[] m_bytes;
+			getAllocator().deallocate(m_bytes, m_capacity * sizeof(std::uint8_t), alignof(std::uint8_t));
 #endif
 			m_bytes = newBytes;
 		}
@@ -438,13 +445,13 @@ namespace kmMqtt
 		/**
 		 * @brief Converts the buffer contents to a string of bits for debugging.
 		 */
-		std::string toString() const noexcept
+		kmStd::string toString() const noexcept
 		{
-			std::string result{ "" };
+			kmStd::string result{ "" };
 
 			for (size_t i = 0; i < m_size; ++i)
 			{
-				result += std::bitset<8>(m_bytes[i]).to_string();
+				result += std::bitset<8>(m_bytes[i]).to_string().c_str();
 				result += " ";
 			}
 

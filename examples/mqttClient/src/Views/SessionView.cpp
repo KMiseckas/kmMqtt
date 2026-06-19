@@ -394,7 +394,7 @@ void SessionView::drawConnectAdvancedArgs()
 	if (ImGui::InputText("##ExtendedAuthData", UIData.extendedAuthData, sizeof(UIData.extendedAuthData)))
 	{
 		m_model->connectArgs.extendedAuthenticationData = std::move(
-			std::make_unique<kmMqtt::mqtt::BinaryData>(
+			kmMqtt::kmStd::make_unique<kmMqtt::mqtt::BinaryData>(
 				kmMqtt::mqtt::BinaryData(
 					static_cast<std::uint16_t>(std::strlen(UIData.extendedAuthData)),
 					(const uint8_t*)UIData.extendedAuthData)));
@@ -412,7 +412,7 @@ void SessionView::drawConnectAdvancedArgs()
 	ImGui::SameLine();
 	if (ImGui::RadioButton("Yes##will", m_model->connectArgs.will != nullptr))
 	{
-		m_model->connectArgs.will = std::make_unique<kmMqtt::mqtt::Will>("");
+		m_model->connectArgs.will = kmMqtt::kmStd::make_unique<kmMqtt::mqtt::Will>("");
 		UIData.showingWillOptions = true;
 	}
 }
@@ -549,7 +549,9 @@ void SessionView::drawWillArgs()
 
 		if (!showPayloadEditor)
 		{
-			m_model->connectArgs.will->payload = std::make_unique<kmMqtt::mqtt::BinaryData>(kmMqtt::mqtt::BinaryData(std::strlen(UIData.willPayload), reinterpret_cast<const uint8_t*>(UIData.willPayload)));
+			m_model->connectArgs.will->payload =
+				kmMqtt::kmStd::make_unique<kmMqtt::mqtt::BinaryData>(kmMqtt::mqtt::BinaryData(
+					std::strlen(UIData.willPayload), reinterpret_cast<const uint8_t*>(UIData.willPayload)));
 		}
 	}
 

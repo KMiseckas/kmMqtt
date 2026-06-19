@@ -451,6 +451,23 @@ TEST_SUITE("Header Tests")
 			CHECK(header.payload.bytes()[3] == 0x22);
 			CHECK(header.payload.bytes()[4] == 0x33);
 		}
+
+		SUBCASE("Decoding copies remaining bytes, not destination capacity")
+		{
+			const std::uint8_t data[] = { 0x11, 0x22, 0x33 };
+			ByteBuffer buffer{ 3 };
+			buffer.append(data, 3);
+
+			PublishPayloadHeader header;
+			header.payload = ByteBuffer{ 32 };
+
+			auto result = header.decode(buffer);
+			CHECK(result.isSuccess());
+			CHECK(header.payload.size() == 3);
+			CHECK(header.payload.bytes()[0] == 0x11);
+			CHECK(header.payload.bytes()[1] == 0x22);
+			CHECK(header.payload.bytes()[2] == 0x33);
+		}
 	}
 
 	TEST_CASE("Publish Variable Header")
@@ -799,7 +816,7 @@ TEST_SUITE("Header Tests")
 
 		SUBCASE("Constructor with Topics")
 		{
-			std::vector<UTF8String> topics;
+			kmMqtt::kmStd::vector<UTF8String> topics;
 			topics.emplace_back("topic1");
 			topics.emplace_back("topic2");
 			topics.emplace_back("topic3");
@@ -814,7 +831,7 @@ TEST_SUITE("Header Tests")
 
 		SUBCASE("Encoding")
 		{
-			std::vector<UTF8String> topics;
+			kmMqtt::kmStd::vector<UTF8String> topics;
 			topics.emplace_back("test/topic");
 
 			UnSubscribePayloadHeader header{ std::move(topics) };
@@ -840,7 +857,7 @@ TEST_SUITE("Header Tests")
 
 		SUBCASE("Size Calculation")
 		{
-			std::vector<UTF8String> topics;
+			kmMqtt::kmStd::vector<UTF8String> topics;
 			topics.emplace_back("a");
 			topics.emplace_back("bc");
 			topics.emplace_back("def");
@@ -914,7 +931,7 @@ TEST_SUITE("Header Tests")
 
 			CHECK_FALSE(result.isSuccess());
 			CHECK(result.code == DecodeErrorCode::PROTOCOL_ERROR);
-			CHECK(std::string(result.reason).find("Packet ID cannot be zero") != std::string::npos);
+			CHECK(kmMqtt::kmStd::string(result.reason).find("Packet ID cannot be zero") != kmMqtt::kmStd::string::npos);
 		}
 	}
 }

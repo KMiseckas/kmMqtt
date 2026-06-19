@@ -7,9 +7,9 @@
 #define INCLUDE_KMMQTT_MQTT_PARAMS_PUBRELOPTIONS_H
 
 #include <kmMqtt/GlobalMacros.h>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include <memory>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
 
 namespace kmMqtt
 {
@@ -70,8 +70,8 @@ namespace kmMqtt
 				return *this;
 			}
 
-			std::string reasonString{ "" };
-			std::map<std::string, std::string> userProperties;
+			kmStd::string reasonString{ "" };
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 	}
 }

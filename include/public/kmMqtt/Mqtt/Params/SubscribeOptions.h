@@ -8,7 +8,7 @@
 
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
-#include <map>
+#include <kmMqtt/STL/KmMap.h>
 
 namespace kmMqtt
 {
@@ -65,7 +65,7 @@ namespace kmMqtt
 			}
 			 
 			VariableByteInteger subscribeIdentifier;
-			std::map<std::string, std::string> userProperties;
+			kmStd::map<kmStd::string, kmStd::string> userProperties;
 		};
 	}
 }

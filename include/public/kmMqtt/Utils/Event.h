@@ -6,8 +6,7 @@
 #pragma once
 
 #include "kmMqtt/GlobalMacros.h"
-#include <vector>
-#include <mutex>
+#include <kmMqtt/STL/KmVector.h>
 #include <functional>
 
 namespace kmMqtt
@@ -41,7 +40,7 @@ namespace kmMqtt
 
 			void remove(const Callback& callback)
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				kmStd::lock_guard<kmStd::mutex> lock(m_mutex);
 
 				for (auto iter = m_callbacks.begin(); iter != m_callbacks.end(); ++iter)
 				{
@@ -57,7 +56,7 @@ namespace kmMqtt
 
 			virtual void invoke(Args... args) noexcept
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				kmStd::lock_guard<kmStd::mutex> lock(m_mutex);
 
 				for (const auto& callback : m_callbacks)
 				{
@@ -76,8 +75,8 @@ namespace kmMqtt
 			void operator-=(const Callback& callback) { remove(callback); }
 
 		private:
-			std::vector<Callback> m_callbacks;
-			std::mutex m_mutex;
+			kmStd::vector<Callback> m_callbacks;
+			kmStd::mutex m_mutex;
 		};
 	}
 }

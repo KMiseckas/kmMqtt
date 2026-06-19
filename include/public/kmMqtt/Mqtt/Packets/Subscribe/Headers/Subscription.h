@@ -10,7 +10,7 @@
 #include "kmMqtt/Mqtt/Packets/Subscribe/Flags/SubscribeOptionsFlags.h"
 #include "kmMqtt/Mqtt/Packets/DataTypes.h"
 #include <cstdint>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 namespace kmMqtt
 {

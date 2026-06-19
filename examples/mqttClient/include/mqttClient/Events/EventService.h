@@ -7,8 +7,9 @@
 #define INCLUDE_MQTTCLIENT_EVENTS_EVENTSERVICE_H
 
 #include "mqttClient/Events/Event.h"
-#include <unordered_map>
-#include <vector>
+#include "kmMqtt/GlobalMacros.h"
+#include <kmMqtt/STL/KmUnorderedMap.h>
+#include <kmMqtt/STL/KmVector.h>
 #include <functional>
 #include <typeindex>
 #include <memory>
@@ -120,7 +121,7 @@ namespace events
 		Handle subscribe(EventCallback<TEvent> callback)
 		{
 			std::type_index typeId{ std::type_index(typeid(TEvent)) };
-			std::vector<IEventHandler*>& handlers = m_eventMap[typeId];
+			kmMqtt::kmStd::vector<IEventHandler*>& handlers = m_eventMap[typeId];
 
 			Handle handle;
 			IEventHandler* handler = new EventHandler<TEvent>(callback, handle);
@@ -142,7 +143,7 @@ namespace events
 
 			assert(m_eventMap.count(typeId) != 0);
 
-			std::vector<IEventHandler*>& handlers = m_eventMap[typeId];
+			kmMqtt::kmStd::vector<IEventHandler*>& handlers = m_eventMap[typeId];
 
 			if (handlers.empty())
 			{
@@ -187,8 +188,8 @@ namespace events
 	protected:
 		EventService() = default;
 
-		std::unordered_map<std::type_index, std::vector<IEventHandler*>> m_eventMap;
-		std::unordered_map<Handle, std::type_index, HandleHash> m_handleToEventTypeMap;
+		kmMqtt::kmStd::unordered_map<std::type_index, kmMqtt::kmStd::vector<IEventHandler*>> m_eventMap;
+		kmMqtt::kmStd::unordered_map<Handle, std::type_index, HandleHash> m_handleToEventTypeMap;
 	};
 
 	template<typename TEvent>

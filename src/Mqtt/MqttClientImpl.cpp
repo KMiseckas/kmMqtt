@@ -29,7 +29,7 @@ MqttClientImpl::MqttClientImpl(const IMqttEnvironment *const env,
     : m_clientOptions{clientOptions}, m_config(env->createConfig()),
       m_socket(env->createWebSocket()) {
   if (getLogger() == nullptr) {
-    setLogger(new DefaultLogger());
+	setLogger(kmNew(DefaultLogger));
   }
 
   assert(m_socket != nullptr);
@@ -151,7 +151,7 @@ ReqResult MqttClientImpl::connect(ConnectArgs &&args,
       return ReqResult{ClientErrorCode::Socket_Connect_Failed};
     }
 
-    m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
+    m_connectionInfo.connectionStartTime = kmStd::chrono::steady_clock::now();
   }
 
   m_mqttMainThreadCondition.notify_all();
@@ -190,7 +190,7 @@ ReqResult MqttClientImpl::publish(const char *topic, ByteBuffer &&payload,
     }
   }
 
-  m_sendQueue.addToQueue(std::make_unique<PublishComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PublishComposer>(
       &m_connectionInfo, &m_packetIdPool, packetId, topic, std::move(payload),
       std::move(options), &m_receiveMaximumTracker, false));
 
@@ -204,7 +204,7 @@ ReqResult MqttClientImpl::publish(const char *topic, ByteBuffer &&payload,
   return ReqResult{ClientErrorCode::No_Error, packetId};
 }
 
-ReqResult MqttClientImpl::subscribe(const std::vector<Topic> &topics,
+ReqResult MqttClientImpl::subscribe(const kmStd::vector<Topic> &topics,
                                     SubscribeOptions &&options) noexcept {
   if (m_connectionStatus != ConnectionStatus::CONNECTED) {
     LogError("MqttClient", "Client not connected, cannot subscribe()!");
@@ -233,7 +233,7 @@ ReqResult MqttClientImpl::subscribe(const std::vector<Topic> &topics,
         PendingSubscription{packetId, topics});
   }
 
-  m_sendQueue.addToQueue(std::make_unique<SubscribeComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<SubscribeComposer>(
       &m_connectionInfo, &m_packetIdPool, packetId, topics,
       std::move(options)));
 
@@ -244,7 +244,7 @@ ReqResult MqttClientImpl::subscribe(const std::vector<Topic> &topics,
   return ReqResult{ClientErrorCode::No_Error, packetId};
 }
 
-ReqResult MqttClientImpl::unSubscribe(const std::vector<Topic> &topics,
+ReqResult MqttClientImpl::unSubscribe(const kmStd::vector<Topic> &topics,
                                       UnSubscribeOptions &&options) noexcept {
   if (m_connectionStatus != ConnectionStatus::CONNECTED) {
     LogWarning("MqttClient", "Client not connected, cannot unSubscribe()!");
@@ -266,7 +266,7 @@ ReqResult MqttClientImpl::unSubscribe(const std::vector<Topic> &topics,
         PendingUnSubscription{packetId, topics});
   }
 
-  m_sendQueue.addToQueue(std::make_unique<UnSubscribeComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<UnSubscribeComposer>(
       &m_connectionInfo, &m_packetIdPool, packetId, topics,
       std::move(options)));
 
@@ -407,13 +407,13 @@ void MqttClientImpl::tickAsync() noexcept {
   }
 
   try {
-    m_mqttMainThread = std::thread([this]() {
+    m_mqttMainThread = kmStd::make_thread([this]() {
       while (true) {
         {
-          std::unique_lock<std::mutex> lock{m_tickMutex};
+          kmStd::unique_lock<kmStd::mutex> lock{m_tickMutex};
 
           m_mqttMainThreadCondition.wait_for(
-              lock, std::chrono::milliseconds(m_config.tickAsyncWaitForMS),
+              lock, kmStd::chrono::milliseconds(m_config.tickAsyncWaitForMS),
               [this] { return !m_isRunningAsync; });
         }
 
@@ -497,19 +497,19 @@ bool MqttClientImpl::getIsTickingAsync() const noexcept {
 
 void MqttClientImpl::pubAck(std::uint16_t packetId, PubAckReasonCode code,
                             PubAckOptions &&options) noexcept {
-  m_sendQueue.addToQueue(std::make_unique<PubAckComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubAckComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
 void MqttClientImpl::pubRec(std::uint16_t packetId, PubRecReasonCode code,
                             PubRecOptions &&options) noexcept {
-  m_sendQueue.addToQueue(std::make_unique<PubRecComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubRecComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
 void MqttClientImpl::pubRel(std::uint16_t packetId, PubRelReasonCode code,
                             PubRelOptions &&options) noexcept {
-  m_sendQueue.addToQueue(std::make_unique<PubRelComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubRelComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
@@ -518,7 +518,7 @@ void MqttClientImpl::pubComp(std::uint16_t packetId, PubCompReasonCode code,
   m_connectionInfo.sessionState.updateMessage(
       packetId, PublishMessageStatus::NeedToSendPubComp);
 
-  m_sendQueue.addToQueue(std::make_unique<PubCompComposer>(
+  m_sendQueue.addToQueue(kmStd::make_unique<PubCompComposer>(
       &m_connectionInfo, packetId, code, std::move(options)));
 }
 
@@ -551,7 +551,7 @@ bool MqttClientImpl::tryStartBrokerRedirection(
 
     if (hasServerReference) {
       if (serverRef->stringSize() != 0) {
-        std::vector<Address> addresses =
+        kmStd::vector<Address> addresses =
             Address::toAddress(serverRef->getString().c_str());
 
         if (failedConnectionReasonCode == SERVER_MOVED_VAL) {
@@ -623,7 +623,7 @@ void MqttClientImpl::reconnect() {
   LogInfo("MqttClient", "Socket attempting to connect.");
   m_socket->connect(m_connectionInfo.reconnectAddress.primaryAddress);
 
-  m_connectionInfo.connectionStartTime = std::chrono::steady_clock::now();
+  m_connectionInfo.connectionStartTime = kmStd::chrono::steady_clock::now();
 }
 
 void MqttClientImpl::handleInternalDisconnect(
@@ -644,7 +644,7 @@ void MqttClientImpl::handleInternalDisconnect(
     // queue.
     if (args.gracefulDisconnect) {
       m_gracefulDisconnectReason = reason;
-      m_sendQueue.addToQueue(std::make_unique<DisconnectComposer>(
+      m_sendQueue.addToQueue(kmStd::make_unique<DisconnectComposer>(
           &m_connectionInfo, DisconnectArgs(args), m_gracefulDisconnectReason));
       return;
     }
@@ -734,7 +734,7 @@ void MqttClientImpl::handleExternalDisconnect(const Disconnect &packet) {
 }
 
 void MqttClientImpl::handleExternalDisconnect(int closeCode,
-                                              std::string reason) {
+                                              kmStd::string reason) {
   {
     LockGuard guard{m_mutex};
 
@@ -815,7 +815,7 @@ void MqttClientImpl::handleSocketConnectEvent(bool success) {
     m_receiveQueue.setUnSubscribeAcknowledgeCallback(unSubAckCallback);
 
     m_sendQueue.addToQueue(
-        std::make_unique<ConnectComposer>(&m_connectionInfo));
+        kmStd::make_unique<ConnectComposer>(&m_connectionInfo));
 
     LogTrace(
         "MqttClient",
@@ -849,7 +849,7 @@ void MqttClientImpl::handleSocketDataReceivedEvent(ByteBuffer &&buffer) {
   fullBuffer.append(m_leftOverBuffer.bytes(), m_leftOverBuffer.size());
   fullBuffer.append(buffer.bytes(), buffer.size());
 
-  std::vector<ByteBuffer> packets;
+  kmStd::vector<ByteBuffer> packets;
   std::size_t leftOver{0U};
 
   if (separateMqttPacketByteBuffers(fullBuffer, packets, leftOver)) {
@@ -882,7 +882,7 @@ void MqttClientImpl::handleSocketErrorEvent(int error) {
 void MqttClientImpl::handlePingSentEvent() {
   // Record time ping was sent and set awaiting ping ack response back from
   // broker.
-  m_connectionInfo.lastPingReqSentTime = std::chrono::steady_clock::now();
+  m_connectionInfo.lastPingReqSentTime = kmStd::chrono::steady_clock::now();
   m_connectionInfo.awaitingPingResponse = true;
 }
 
@@ -948,8 +948,8 @@ void MqttClientImpl::handleReceivedConnectAcknowledge(ConnectAck &&packet) {
     }
 
     // Set-up ping interval
-    m_connectionInfo.pingInterval = std::chrono::duration_cast<Milliseconds>(
-        std::chrono::seconds{m_connectionInfo.serverKeepAlive});
+    m_connectionInfo.pingInterval = kmStd::chrono::duration_cast<Milliseconds>(
+        kmStd::chrono::seconds{m_connectionInfo.serverKeepAlive});
     if (m_config.pingAlways && m_connectionInfo.serverKeepAlive == 0) {
       m_connectionInfo.pingInterval =
           Milliseconds{m_config.defaultPingInterval};
@@ -1230,7 +1230,7 @@ void MqttClientImpl::handleReceivedPingResponse(PingResp &&packet) {
 }
 
 void MqttClientImpl::firePublishReceivedEvent(Publish &&packet) noexcept {
-  std::string topicName{packet.getVariableHeader().topicName.getString()};
+  kmStd::string topicName{packet.getVariableHeader().topicName.getString()};
 
   const auto *properties = &packet.getVariableHeader().properties;
   const std::uint16_t *topicAlias{nullptr};
@@ -1308,9 +1308,8 @@ void MqttClientImpl::firePublishReceivedEvent(Publish &&packet) noexcept {
   const auto qos{packet.getVariableHeader().qos};
   const auto id{packet.getVariableHeader().packetIdentifier};
 
-  DISPATCH_EVENT_TO_CONSUMER([&, tName = topicName,
-                              pload = &packet.getPayloadHeader().payload,
-                              p = std::move(packet)]() {
+  DISPATCH_EVENT_TO_CONSUMER([&, tName = topicName, p = std::move(packet)]() {
+    const auto *pload = &p.getPayloadHeader().payload;
     m_publishEvent({std::move(tName), pload}, p);
   });
 
@@ -1331,8 +1330,8 @@ void MqttClientImpl::firePublishReceivedEvent(Publish &&packet) noexcept {
 void MqttClientImpl::tickCheckTimeOut() {
   if (m_connectionStatus == ConnectionStatus::CONNECTING ||
       m_connectionStatus == ConnectionStatus::RECONNECTING) {
-    const auto elapsed{std::chrono::duration_cast<Milliseconds>(
-                           std::chrono::steady_clock::now() -
+    const auto elapsed{kmStd::chrono::duration_cast<Milliseconds>(
+                           kmStd::chrono::steady_clock::now() -
                            m_connectionInfo.connectionStartTime)
                            .count()};
 
@@ -1354,8 +1353,8 @@ void MqttClientImpl::tickCheckKeepAlive() {
 
     if (m_connectionInfo.awaitingPingResponse) {
       const auto elapsedTimeSincePingReq{
-          std::chrono::duration_cast<Milliseconds>(
-              std::chrono::steady_clock::now() -
+          kmStd::chrono::duration_cast<Milliseconds>(
+              kmStd::chrono::steady_clock::now() -
               m_connectionInfo.lastPingReqSentTime)
               .count()};
 
@@ -1375,17 +1374,17 @@ void MqttClientImpl::tickCheckKeepAlive() {
     Milliseconds elapsedTimeSinceControlPacket;
 
     if (m_config.pingAlways) {
-      elapsedTimeSinceControlPacket = std::chrono::duration_cast<Milliseconds>(
-          std::chrono::steady_clock::now() -
+      elapsedTimeSinceControlPacket = kmStd::chrono::duration_cast<Milliseconds>(
+          kmStd::chrono::steady_clock::now() -
           m_connectionInfo.lastPingReqSentTime);
     } else {
-      elapsedTimeSinceControlPacket = std::chrono::duration_cast<Milliseconds>(
-          std::chrono::steady_clock::now() -
+      elapsedTimeSinceControlPacket = kmStd::chrono::duration_cast<Milliseconds>(
+          kmStd::chrono::steady_clock::now() -
           m_connectionInfo.lastControlPacketTime);
     }
 
     if (elapsedTimeSinceControlPacket >= m_connectionInfo.pingInterval) {
-      m_sendQueue.addToQueue(std::make_unique<PingComposer>(&m_connectionInfo));
+      m_sendQueue.addToQueue(kmStd::make_unique<PingComposer>(&m_connectionInfo));
     }
   }
 }
@@ -1395,7 +1394,7 @@ void MqttClientImpl::tickSendPackets() {
   m_sendQueue.sendNextBatch(m_batchResultData);
 
   if (m_batchResultData.controlPacketSent) {
-    m_connectionInfo.lastControlPacketTime = std::chrono::steady_clock::now();
+    m_connectionInfo.lastControlPacketTime = kmStd::chrono::steady_clock::now();
   }
 
   // If result from sending action was specified as unrecoverable, then log
@@ -1431,7 +1430,7 @@ void MqttClientImpl::tickPendingPublishMessageRetries() {
   const auto &msgs{m_connectionInfo.sessionState.messages()};
 
   for (const auto &msg : msgs) {
-    if (msg.nextRetryTime < std::chrono::steady_clock::now()) {
+    if (msg.nextRetryTime < kmStd::chrono::steady_clock::now()) {
       PacketType type{msg.getRetryPacketType()};
 
       LogTrace("MqttClient",
@@ -1444,7 +1443,7 @@ void MqttClientImpl::tickPendingPublishMessageRetries() {
         ByteBuffer payloadCopy{msg.data.publishMsgData.payload.size()};
         payloadCopy.append(msg.data.publishMsgData.payload);
 
-        m_sendQueue.addToQueue(std::make_unique<PublishComposer>(
+        m_sendQueue.addToQueue(kmStd::make_unique<PublishComposer>(
             &m_connectionInfo, &m_packetIdPool, msg.data.packetID,
             msg.data.publishMsgData.topic, std::move(payloadCopy),
             std::move(options), &m_receiveMaximumTracker, true));

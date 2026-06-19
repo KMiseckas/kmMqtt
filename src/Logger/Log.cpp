@@ -7,6 +7,10 @@
 #include <kmMqtt/Logger/LoggerInstance.h>
 #include <cstdarg>
 
+#ifndef MSVC_VER
+#include <cstdio>
+#endif
+
 namespace kmMqtt
 {
 
@@ -28,11 +32,10 @@ namespace kmMqtt
 #define LOG_BUFFER_SIZE 2048
 #endif
 
-#if _WIN32 || _WIN64
+#if _MSC_VER
 #define VSNPRINTF(buffer, size, fmt, args) _vsnprintf_s(buffer, size, _TRUNCATE, fmt, args)
 #else
-#include <cstdio>
-#define VSNPRINTF(buffer, size, fmt, args) std::vsnprintf(buffer, size, fmt, args)
+#define VSNPRINTF(buffer, size, fmt, args) vsnprintf(buffer, size, fmt, args)
 #endif
 
 namespace

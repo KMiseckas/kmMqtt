@@ -7,7 +7,7 @@
 #define INCLUDE_KMMQTT_MQTT_PACKETS_PACKETUTILS_H
 
 #include <kmMqtt/Mqtt/Packets/PacketType.h>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <cstdint>
 
 namespace kmMqtt

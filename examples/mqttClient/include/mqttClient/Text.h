@@ -7,11 +7,11 @@
 #define INCLUDE_MQTTCLIENT_TEXT_H
 
 #define TEXT(id, text) static constexpr const char* const id{text};
-#define BTN_LABEL(label, postFix) std::string(label).append("##").append(postFix).c_str()
-#define TEXT_FORMAT(text, ...) std::string([&]() { \
+#define BTN_LABEL(label, postFix) kmMqtt::kmStd::string(label).append("##").append(postFix).c_str()
+#define TEXT_FORMAT(text, ...) kmMqtt::kmStd::string([&]() { \
     char buffer[1024]; \
     snprintf(buffer, sizeof(buffer), text, __VA_ARGS__); \
-    return std::string(buffer); \
+    return kmMqtt::kmStd::string(buffer); \
 }())
 
 

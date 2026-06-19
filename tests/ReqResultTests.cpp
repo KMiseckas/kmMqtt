@@ -17,7 +17,7 @@ TEST_SUITE("ReqResult Tests")
 
 		CHECK(result.noError());
 		CHECK(result.errorCode() == ClientErrorCode::No_Error);
-		CHECK(result.errorMsg() == std::string(""));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string(""));
 		CHECK(result.packetId == NO_PACKET_ID);
 		CHECK_FALSE(result.hasPacketId());
 	}
@@ -29,7 +29,7 @@ TEST_SUITE("ReqResult Tests")
 
 		CHECK_FALSE(result.noError());
 		CHECK(result.errorCode() == ClientErrorCode::Invalid_Argument);
-		CHECK(result.errorMsg() == std::string("Test error message"));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string("Test error message"));
 		CHECK(result.packetId == NO_PACKET_ID);
 		CHECK_FALSE(result.hasPacketId());
 	}
@@ -41,7 +41,7 @@ TEST_SUITE("ReqResult Tests")
 
 		CHECK_FALSE(result.noError());
 		CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
-		CHECK(result.errorMsg() == std::string("Client not connected"));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string("Client not connected"));
 		CHECK(result.packetId == 42);
 		CHECK(result.hasPacketId());
 	}
@@ -52,7 +52,7 @@ TEST_SUITE("ReqResult Tests")
 
 		CHECK_FALSE(result.noError());
 		CHECK(result.errorCode() == ClientErrorCode::Socket_Connect_Failed);
-		CHECK(result.errorMsg() == std::string("Socket connection failed"));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string("Socket connection failed"));
 		CHECK(result.packetId == NO_PACKET_ID);
 		CHECK_FALSE(result.hasPacketId());
 	}
@@ -63,7 +63,7 @@ TEST_SUITE("ReqResult Tests")
 
 		CHECK_FALSE(result.noError());
 		CHECK(result.errorCode() == ClientErrorCode::Failed_Sending_Packet);
-		CHECK(result.errorMsg() == std::string("Failed to send packet"));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string("Failed to send packet"));
 		CHECK(result.packetId == 100);
 		CHECK(result.hasPacketId());
 	}
@@ -172,26 +172,26 @@ TEST_SUITE("ReqResult Tests")
 		SUBCASE("Empty message")
 		{
 			ReqResult result(ClientErrorCode::No_Error, "");
-			CHECK(result.errorMsg() == std::string(""));
+			CHECK(result.errorMsg() == kmMqtt::kmStd::string(""));
 		}
 
 		SUBCASE("Short message")
 		{
 			ReqResult result(ClientErrorCode::Invalid_Argument, "Error");
-			CHECK(result.errorMsg() == std::string("Error"));
+			CHECK(result.errorMsg() == kmMqtt::kmStd::string("Error"));
 		}
 
 		SUBCASE("Long message")
 		{
 			const char* longMsg = "This is a very long error message that describes in detail what went wrong during the operation.";
 			ReqResult result(ClientErrorCode::Socket_Error, longMsg);
-			CHECK(result.errorMsg() == std::string(longMsg));
+			CHECK(result.errorMsg() == kmMqtt::kmStd::string(longMsg));
 		}
 
 		SUBCASE("Message with special characters")
 		{
 			ReqResult result(ClientErrorCode::MQTT_Not_Active, "Error: Connection failed (code: 0x01)");
-			CHECK(result.errorMsg() == std::string("Error: Connection failed (code: 0x01)"));
+			CHECK(result.errorMsg() == kmMqtt::kmStd::string("Error: Connection failed (code: 0x01)"));
 		}
 	}
 
@@ -203,7 +203,7 @@ TEST_SUITE("ReqResult Tests")
 		CHECK(result.hasPacketId());
 		CHECK(result.packetId == 255);
 		CHECK(result.errorCode() == ClientErrorCode::No_Error);
-		CHECK(result.errorMsg() == std::string(""));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string(""));
 	}
 
 	TEST_CASE("Error Result without Packet ID")
@@ -214,7 +214,7 @@ TEST_SUITE("ReqResult Tests")
 		CHECK_FALSE(result.hasPacketId());
 		CHECK(result.packetId == NO_PACKET_ID);
 		CHECK(result.errorCode() == ClientErrorCode::Not_Connected);
-		CHECK(result.errorMsg() == std::string("Client is not connected to broker"));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string("Client is not connected to broker"));
 	}
 
 	TEST_CASE("Error Result with Packet ID")
@@ -225,7 +225,7 @@ TEST_SUITE("ReqResult Tests")
 		CHECK(result.hasPacketId());
 		CHECK(result.packetId == 999);
 		CHECK(result.errorCode() == ClientErrorCode::Failed_Sending_Packet);
-		CHECK(result.errorMsg() == std::string("Network error"));
+		CHECK(result.errorMsg() == kmMqtt::kmStd::string("Network error"));
 	}
 
 	TEST_CASE("Copy Semantics")
@@ -237,7 +237,7 @@ TEST_SUITE("ReqResult Tests")
 			ReqResult copy(original);
 
 			CHECK(copy.errorCode() == original.errorCode());
-			CHECK(std::strcmp(copy.errorMsg(), original.errorMsg()) == 0);
+			CHECK(kmMqtt::kmStd::strcmp(copy.errorMsg(), original.errorMsg()) == 0);
 			CHECK(copy.packetId == original.packetId);
 			CHECK(copy.hasPacketId() == original.hasPacketId());
 			CHECK(copy.noError() == original.noError());
@@ -249,7 +249,7 @@ TEST_SUITE("ReqResult Tests")
 			copy = original;
 
 			CHECK(copy.errorCode() == original.errorCode());
-			CHECK(std::strcmp(copy.errorMsg(), original.errorMsg()) == 0);
+			CHECK(kmMqtt::kmStd::strcmp(copy.errorMsg(), original.errorMsg()) == 0);
 			CHECK(copy.packetId == original.packetId);
 			CHECK(copy.hasPacketId() == original.hasPacketId());
 			CHECK(copy.noError() == original.noError());
@@ -370,7 +370,7 @@ TEST_SUITE("ReqResult Tests")
 			
 			if (!result.noError()) {
 				// Error would be logged or handled
-				CHECK(result.errorMsg() != std::string(""));
+				CHECK(result.errorMsg() != kmMqtt::kmStd::string(""));
 			}
 		}
 

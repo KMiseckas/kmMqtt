@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project adheres to Semantic Versioning.
 
+## [1.2.0] - 2026-06-17
+
+### Fixed
+
+- [tests] Integration-test `makeConnectArgs` now appends per-run/per-call uniqueness to client IDs, reducing intermittent public-broker connect flakes caused by client-id collisions across concurrent CI jobs.
+- [lib] Publish events now take the payload pointer from the deferred event's moved packet instance, preserving payload access after packet headers moved from heap ownership to inline storage.
+- [lib] PUBLISH payload decoding now copies only the remaining MQTT payload bytes instead of the payload buffer capacity, preserving correct received payload sizes when `ByteBuffer` has spare capacity.
+- [lib][api] Packet classes now store concrete variable and payload headers inline instead of heap-allocating header objects, while preserving existing public accessors.
+
+### Added
+
+- [lib][api] Added minimal `kmStd` thread aliases for project-used threading primitives and `this_thread::sleep_for` so custom thread includes only need to provide the required surface.
+- [lib][api] Added `kmStd::chrono` wrapper with `CUSTOM_CHRONO_INCLUDE` support for SDK-used clock and duration primitives.
+- [tests] Updated test waits to use the `kmStd` thread sleep wrapper.
+- [examples] Updated example client locking to use the `kmStd` thread aliases.
+- [tests] Added broker-free publish event and packet move regression coverage for inline packet header ownership.
+- [lib][api] Added custom allocator foundation with per-client allocator injection through `MqttClientOptions`.
+- [lib][api][breaking]: Added `kmMqtt::std` smart-pointer wrapper aliases and helper functions in `kmMqtt/STL/Memory.h` to use SDK allocator and added tests. Some API now accepts `kmMqtt::std` smart pointers instead of std:: versions.
+- [doc] Added custom allocator documentation covering defaults, `setAllocator` injection, smart-pointer allocation behavior, allocator flow.
+- [doc] Added platform adaptation documentation for custom threading, allocator, logging, and transport seams, and expanded build guidance for `CUSTOM_THREAD_INCLUDE`.
+
 ## [1.1.1] - 2026-05-30
 
 ### Fixed

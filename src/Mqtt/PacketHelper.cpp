@@ -213,7 +213,7 @@ namespace kmMqtt
 			return PublishComp{ std::move(varHeader) };
 		}
 
-		Subscribe createSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const SubscribeOptions& options) noexcept
+		Subscribe createSubscribePacket(std::uint16_t packetId, const kmStd::vector<Topic>& topics, const SubscribeOptions& options) noexcept
 		{
 			Properties properties;
 			properties.tryAddProperty<PropertyType::SUBSCRIPTION_IDENTIFIER>(VariableByteInteger(options.subscribeIdentifier), options.subscribeIdentifier.uint32Value() != 0);
@@ -223,7 +223,7 @@ namespace kmMqtt
 				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
-			std::vector<Subscription> subscriptions;
+			kmStd::vector<Subscription> subscriptions;
 			subscriptions.reserve(topics.size());
 
 			for (const auto& t : topics)
@@ -243,7 +243,7 @@ namespace kmMqtt
 			return Subscribe{ std::move(varHeader), std::move(payloadHeader)};
 		}
 
-		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const std::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept
+		UnSubscribe createUnSubscribePacket(std::uint16_t packetId, const kmStd::vector<Topic>& topics, const UnSubscribeOptions& options) noexcept
 		{
 			Properties properties;
 			for (const auto& property : options.userProperties)
@@ -251,7 +251,7 @@ namespace kmMqtt
 				properties.tryAddProperty<PropertyType::USER_PROPERTY>(UTF8StringPair{ property.first, property.second });
 			}
 
-			std::vector<UTF8String> topicsFilter;
+			kmStd::vector<UTF8String> topicsFilter;
 			topicsFilter.reserve(topics.size());
 
 			for (const auto& t : topics)

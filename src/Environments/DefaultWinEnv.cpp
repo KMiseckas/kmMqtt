@@ -14,9 +14,9 @@ namespace kmMqtt
 		return Config{};
 	}
 
-	std::shared_ptr<IWebSocket> DefaultWinEnv::createWebSocket() const noexcept
+	kmStd::shared_ptr<IWebSocket> DefaultWinEnv::createWebSocket() const noexcept
 	{
-		return std::make_shared<DefaultWebsocket>();
+		return kmStd::make_shared<DefaultWebsocket>();
 	}
 } // namespace kmMqtt
 

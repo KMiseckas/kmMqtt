@@ -9,7 +9,6 @@
 #include <kmMqtt/MqttClientOptions.h>
 #include <kmMqtt/Interfaces/ICallbackDispatcher.h>
 #include <atomic>
-#include <thread>
 #include <chrono>
 
 using namespace kmMqtt;

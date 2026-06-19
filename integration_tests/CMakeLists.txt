@@ -93,9 +93,13 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     KMMQTT_IT_WSS3_PATH="${KMMQTT_IT_WSS3_PATH}"
 )
 
-# Suppress "enumeration value 'X' not handled in switch" warnings.
+# Include standard C++ headers (originally added to fix warnings due to specilizations of std::tuple)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    DOCTEST_CONFIG_USE_STD_HEADERS
+)
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=switch)
+	target_compile_options(${PROJECT_NAME} PRIVATE -Wno-error=switch)
 endif()
 
 target_link_options(${PROJECT_NAME} PRIVATE ${KMMQTT_SANITIZER_FLAGS})

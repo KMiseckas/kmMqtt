@@ -9,9 +9,10 @@
 #include <kmMqtt/Environments/DefaultLinuxEnv.h>
 #include <kmMqtt/Interfaces/IMqttEnvironment.h>
 #include <kmMqtt/Mqtt/Params/ConnectAddress.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 #include <kmMqtt/Config.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 TEST_SUITE("Environment Tests")
 {
@@ -24,7 +25,7 @@ TEST_SUITE("Environment Tests")
 
 		CHECK(env != nullptr);
 
-		delete env;
+		kmDelete(env);
 	}
 
 	TEST_CASE("DefaultEnvironmentFactory created environment is valid")
@@ -40,10 +41,10 @@ TEST_SUITE("Environment Tests")
 		CHECK(config.pingAlways == true);
 		CHECK(config.defaultPingInterval == 15000U);
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		CHECK(socket != nullptr);
 
-		delete env;
+		kmDelete(env);
 	}
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -63,7 +64,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultWinEnv createWebSocket returns valid socket")
 	{
 		DefaultWinEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		CHECK(socket != nullptr);
 		CHECK(socket->isConnected() == false);
@@ -72,8 +73,8 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultWinEnv createWebSocket returns unique instances")
 	{
 		DefaultWinEnv env;
-		std::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
-		std::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
 
 		CHECK(socket1 != nullptr);
 		CHECK(socket2 != nullptr);
@@ -93,7 +94,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultWinEnv websocket has correct interface methods")
 	{
 		DefaultWinEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		REQUIRE(socket != nullptr);
 
@@ -120,7 +121,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultLinuxEnv createWebSocket returns valid socket")
 	{
 		DefaultLinuxEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		CHECK(socket != nullptr);
 		CHECK(socket->isConnected() == false);
@@ -129,8 +130,8 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultLinuxEnv createWebSocket returns unique instances")
 	{
 		DefaultLinuxEnv env;
-		std::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
-		std::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket1 = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket2 = env.createWebSocket();
 
 		CHECK(socket1 != nullptr);
 		CHECK(socket2 != nullptr);
@@ -150,7 +151,7 @@ TEST_SUITE("Environment Tests")
 	TEST_CASE("DefaultLinuxEnv websocket has correct interface methods")
 	{
 		DefaultLinuxEnv env;
-		std::shared_ptr<IWebSocket> socket = env.createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env.createWebSocket();
 
 		REQUIRE(socket != nullptr);
 
@@ -171,10 +172,10 @@ TEST_SUITE("Environment Tests")
 		Config config = env->createConfig();
 		CHECK(config.connectTimeOutMS > 0);
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		CHECK(socket != nullptr);
 
-		delete env;
+		kmDelete(env);
 	}
 
 	TEST_CASE("Environment can be deleted safely")
@@ -189,7 +190,7 @@ TEST_SUITE("Environment Tests")
 		env->createWebSocket();
 
 		//Should not crash
-		delete env;
+		kmDelete(env);
 		CHECK(true);
 	}
 
@@ -200,7 +201,7 @@ TEST_SUITE("Environment Tests")
 		IMqttEnvironment* env = factory.createEnvironment();
 		REQUIRE(env != nullptr);
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		REQUIRE(socket != nullptr);
 
 		const mqtt::Address address = mqtt::Address::createURL("", "localhost", "1883", "");
@@ -212,9 +213,9 @@ TEST_SUITE("Environment Tests")
 		CHECK(socket->close() == false);
 
 		CHECK(socket->getLastCloseReason() != nullptr);
-		CHECK(std::string(socket->getLastCloseReason()).find("BUILD_IXWEBSOCKET=OFF") != std::string::npos);
+		CHECK(kmMqtt::kmStd::string(socket->getLastCloseReason()).find("BUILD_IXWEBSOCKET=OFF") != kmMqtt::kmStd::string::npos);
 
-		delete env;
+		kmDelete(env);
 	}
 #endif
 
@@ -234,8 +235,8 @@ TEST_SUITE("Environment Tests")
 		config1.connectTimeOutMS = 20000U;
 		CHECK(config2.connectTimeOutMS == 15000U);
 
-		delete env1;
-		delete env2;
+		kmDelete(env1);
+		kmDelete(env2);
 	}
 
 	TEST_CASE("Config default values are correct")
@@ -252,7 +253,7 @@ TEST_SUITE("Environment Tests")
 		CHECK(config.retryPublishIntervalMS == 10000U);
 		CHECK(config.tickAsyncWaitForMS == 50U);
 
-		delete env;
+		kmDelete(env);
 	}
 
 	TEST_CASE("WebSocket callbacks can be set")
@@ -260,7 +261,7 @@ TEST_SUITE("Environment Tests")
 		DefaultEnvironmentFactory factory;
 		IMqttEnvironment* env = factory.createEnvironment();
 
-		std::shared_ptr<IWebSocket> socket = env->createWebSocket();
+		kmStd::shared_ptr<IWebSocket> socket = env->createWebSocket();
 		REQUIRE(socket != nullptr);
 
 		bool connectCalled = false;
@@ -276,7 +277,7 @@ TEST_SUITE("Environment Tests")
 		//Should not crash
 		CHECK(true);
 
-		delete env;
+		kmDelete(env);
 	}
 
 	TEST_CASE("Config can be modified after creation")
@@ -300,6 +301,6 @@ TEST_SUITE("Environment Tests")
 		CHECK(config.retryPublishIntervalMS == 15000U);
 		CHECK(config.tickAsyncWaitForMS == 100U);
 
-		delete env;
+		kmDelete(env);
 	}
 }

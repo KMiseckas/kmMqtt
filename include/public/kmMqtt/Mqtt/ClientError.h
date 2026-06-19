@@ -8,7 +8,7 @@
 
 #include <kmMqtt/GlobalMacros.h>
 #include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
-#include <cstring>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -23,7 +23,7 @@ namespace kmMqtt
 				: errorCode{code}, errorMsg{msg}{}
 
 			ClientErrorCode errorCode{ ClientErrorCode::No_Error };
-			std::string errorMsg{ "" };
+			kmStd::string errorMsg{ "" };
 
 			constexpr bool noError() const noexcept { return errorCode == ClientErrorCode::No_Error; }
 			

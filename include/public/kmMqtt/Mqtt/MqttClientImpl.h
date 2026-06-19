@@ -35,12 +35,10 @@
 #include "kmMqtt/Utils/PacketIdPool.h" 
 #include "kmMqtt/Interfaces/IMqttEnvironment.h"
 #include "kmMqtt/Mqtt/ReceiveMaximumTracker.h"
+#include <kmMqtt/STL/KmMemory.h>
+#include <kmMqtt/STL/KmThread.h>
 
-#include <atomic>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
-#include <thread>
 
 namespace kmMqtt
 {
@@ -70,8 +68,8 @@ else\
 
 			ReqResult connect(ConnectArgs&& args, ConnectAddress&& address) noexcept;
 			ReqResult publish(const char* topic, ByteBuffer&& payload, PublishOptions&& options) noexcept;
-			ReqResult subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
-			ReqResult unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
+			ReqResult subscribe(const kmStd::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
+			ReqResult unSubscribe(const kmStd::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
 			ReqResult disconnect(DisconnectArgs&& args = {}) noexcept;
 			ClientError shutdown() noexcept;
 
@@ -102,7 +100,7 @@ else\
 
 			void handleInternalDisconnect(DisconnectReasonCode reason, const DisconnectArgs& args = {}) noexcept;
 			void handleExternalDisconnect(const Disconnect& packet);
-			void handleExternalDisconnect(int closeCode = -1, std::string reason = "");
+			void handleExternalDisconnect(int closeCode = -1, kmStd::string reason = "");
 			void clearState() noexcept;
 
 			void handleSocketConnectEvent(bool success);
@@ -146,9 +144,9 @@ else\
 			ClientError shutdownAsync() noexcept;
 			ClientError shutdownCleanup() noexcept;
 
-			std::thread m_mqttMainThread;
-			std::condition_variable m_mqttMainThreadCondition;
-			std::atomic<bool> m_isRunningAsync{ false };
+			kmStd::thread m_mqttMainThread;
+			kmStd::condition_variable m_mqttMainThreadCondition;
+			kmStd::atomic<bool> m_isRunningAsync{ false };
 
 			MqttClientOptions m_clientOptions;
 			MqttConnectionInfo m_connectionInfo;
@@ -172,14 +170,14 @@ else\
 
 			SendBatchResult m_batchResultData;
 
-			std::mutex m_mutex;
-			std::mutex m_tickMutex;
-			std::mutex m_receiverMutex;
+			kmStd::mutex m_mutex;
+			kmStd::mutex m_tickMutex;
+			kmStd::mutex m_receiverMutex;
 
 			Config m_config;
 			PacketIdPool m_packetIdPool;
 
-			std::shared_ptr<IWebSocket> m_socket{ nullptr };
+			kmStd::shared_ptr<IWebSocket> m_socket{nullptr};
 			ByteBuffer m_leftOverBuffer{ 0U };
 
 			DisconnectReasonCode m_gracefulDisconnectReason{ DisconnectReasonCode::NORMAL_DISCONNECTION };

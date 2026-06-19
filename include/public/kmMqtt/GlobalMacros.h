@@ -6,14 +6,13 @@
 #ifndef INCLUDE_KMMQTT_GLOBALMACROS_H
 #define INCLUDE_KMMQTT_GLOBALMACROS_H
 
+#include "kmMqtt/STL/KmThread.h"
+
 #include <type_traits>
-#include <mutex>
-#include <sstream>
-#include <iostream>
 
 namespace kmMqtt
 {
-    using LockGuard = std::lock_guard<std::mutex>;
+    using LockGuard = kmStd::lock_guard<kmStd::mutex>;
 
 #define MAX_PACKET_SIZE 268435455U //The maximum size of a MQTT packet as per the MQTT specification, 256 MB
 #define RECEIVE_MAXIMUM_DEFAULT 65535U

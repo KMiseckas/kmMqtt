@@ -1,0 +1,37 @@
+#pragma once
+
+#define KMQTT_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define KMQTT_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define KMQTT_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define KMQTT_VERSION_STRING "@PROJECT_VERSION@"
+
+namespace kmMqtt
+{
+    /**
+     * @brief A struct representing the version of the kmMqtt library.
+     */
+	struct Version
+	{
+		int major;
+		int minor;
+		int patch;
+	};
+
+    /**
+     * @brief Get the version of the kmMqtt library.
+     * @return A Version struct representing the version of the kmMqtt library.
+     */
+	constexpr Version getVersion()
+	{
+		return {KMQTT_VERSION_MAJOR, KMQTT_VERSION_MINOR, KMQTT_VERSION_PATCH};
+	}
+
+	/**
+	 * @brief Get the version of the kmMqtt library.
+	 * @return A string representing the version of the kmMqtt library.
+	 */
+	constexpr const char* kmMqttGetVersion()
+	{
+		return KMQTT_VERSION_STRING;
+	}
+} // namespace kmMqtt

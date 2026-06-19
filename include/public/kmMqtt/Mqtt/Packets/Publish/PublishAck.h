@@ -21,6 +21,8 @@ namespace kmMqtt
 			PublishAck(PublishAck&& other) noexcept;
 			~PublishAck() override;
 
+			PublishAck& operator=(PublishAck&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 
 			const PubAckVariableHeader& getVariableHeader() const;
@@ -29,7 +31,7 @@ namespace kmMqtt
 			void setUpHeaders() noexcept;
 			void onFixedHeaderDecoded() const override;
 
-			PubAckVariableHeader* m_variableHeader{ nullptr };
+			PubAckVariableHeader m_variableHeader;
 		};
 	}
 }

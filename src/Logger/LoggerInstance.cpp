@@ -4,6 +4,7 @@
 // See LICENSE file in the project root for full license information.
 
 #include <kmMqtt/Logger/LoggerInstance.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 namespace kmMqtt
 {
@@ -18,7 +19,7 @@ namespace kmMqtt
 	{
 		if (deleteOld && m_logger != nullptr)
 		{
-			delete m_logger;
+			kmDelete(m_logger);
 		}
 
 		m_logger = logger;

@@ -8,8 +8,10 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <cstdio>
+//#include <cstdio>
 #endif
+
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -28,7 +30,7 @@ namespace kmMqtt
 
 	void DefaultLogger::Log(const LogLevel logLvl, const char* const category, const char* const msg) const noexcept
 	{
-		std::string logOutput{ "[kmMqtt]" };
+		kmStd::string logOutput{ "[kmMqtt]" };
 
 		switch (logLvl)
 		{

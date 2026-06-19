@@ -11,8 +11,8 @@ namespace kmMqtt
 	{
 		Subscribe::Subscribe(SubscribeVariableHeader&& variableHeader, SubscribePayloadHeader&& payloadHeader) noexcept
 			: BasePacket(FixedHeaderFlags(k_SubscribeFixedHeaderFlags)),
-			m_variableHeader(new SubscribeVariableHeader(std::move(variableHeader))),
-			m_payloadHeader(new SubscribePayloadHeader(std::move(payloadHeader)))
+			  m_variableHeader(std::move(variableHeader)),
+			  m_payloadHeader(std::move(payloadHeader))
 		{
 			setUpHeaders();
 		}
@@ -25,17 +25,26 @@ namespace kmMqtt
 
 		Subscribe::Subscribe(Subscribe&& other) noexcept
 			: BasePacket{ std::move(other) },
-			m_variableHeader{ other.m_variableHeader },
-			m_payloadHeader{ other.m_payloadHeader }
+			m_variableHeader{ std::move(other.m_variableHeader) },
+			m_payloadHeader{ std::move(other.m_payloadHeader) }
 		{
-			other.m_variableHeader = nullptr;
-			other.m_payloadHeader = nullptr;
+			setUpHeaders();
 		}
 
 		Subscribe::~Subscribe()
 		{
-			delete m_payloadHeader;
-			delete m_variableHeader;
+		}
+
+		Subscribe& Subscribe::operator=(Subscribe&& other) noexcept
+		{
+			if (this != &other)
+			{
+				BasePacket::operator=(std::move(other));
+				m_variableHeader = std::move(other.m_variableHeader);
+				m_payloadHeader = std::move(other.m_payloadHeader);
+				setUpHeaders();
+			}
+			return *this;
 		}
 
 		PacketType Subscribe::getPacketType() const noexcept
@@ -45,28 +54,18 @@ namespace kmMqtt
 
 		const SubscribeVariableHeader& Subscribe::getVariableHeader() const
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		const SubscribePayloadHeader& Subscribe::getPayloadHeader() const
 		{
-			return *m_payloadHeader;
+			return m_payloadHeader;
 		}
 
 		void Subscribe::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = new SubscribeVariableHeader();
-			}
-
-			if (m_payloadHeader == nullptr)
-			{
-				m_payloadHeader = new SubscribePayloadHeader();
-			}
-
-			addEncodeHeader(m_variableHeader);
-			addEncodeHeader(m_payloadHeader);
+			addEncodeHeader(&m_variableHeader);
+			addEncodeHeader(&m_payloadHeader);
 		}
 	}
 }

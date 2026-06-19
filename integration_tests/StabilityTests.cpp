@@ -30,9 +30,8 @@
 #include <chrono>
 #include <cstring>
 #include <memory>
-#include <string>
-#include <thread>
-#include <vector>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 
 #include "BrokerConfig.h"
 #include "Helpers.h"
@@ -57,7 +56,7 @@ using namespace kmMqtt_it;
 namespace {
 
 	void gracefulConnectDisconnect(const BrokerEndpoint& ep,
-		const std::string& tag) {
+		const kmMqtt::kmStd::string& tag) {
 		MqttClient client;
 
 		std::atomic<bool> connectFired{ false };
@@ -107,7 +106,7 @@ TEST_SUITE("Integration - Full - Stability") {
 
 		for (int i = 0; i < 8; ++i) {
 			gracefulConnectDisconnect(selection.endpoint,
-				"ws_full_loop_" + std::to_string(i));
+				"ws_full_loop_" + kmMqtt::kmStd::to_string(i));
 		}
 	}
 
@@ -140,8 +139,8 @@ TEST_SUITE("Integration - Full - Stability") {
 				publisherConnected.store(d.isSuccessful && d.hasReceivedAck);
 			});
 
-		const std::string topic = makeUniqueTopic("kmMqtt/it/full/qos2");
-		const std::string payloadText = "full_qos2_payload";
+		const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/full/qos2");
+		const kmMqtt::kmStd::string payloadText = "full_qos2_payload";
 
 		subscriber.onSubscribeAckEvent().add(
 			[&](const SubscribeAckEventDetails& details, const SubscribeAck&) {
@@ -189,7 +188,7 @@ TEST_SUITE("Integration - Full - Stability") {
 			.noError());
 		REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-		std::vector<Topic> topics{
+		kmMqtt::kmStd::vector<Topic> topics{
 			Topic{topic, TopicSubscriptionOptions{Qos::QOS_2}} };
 		REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
 		REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
@@ -269,7 +268,7 @@ TEST_SUITE("Integration - Full - Stability") {
 					publishAckCount.fetch_add(1);
 			});
 
-		const std::string topic = makeUniqueTopic("kmMqtt/it/full/burst_qos1");
+		const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/full/burst_qos1");
 
 		REQUIRE(
 			subscriber
@@ -283,12 +282,12 @@ TEST_SUITE("Integration - Full - Stability") {
 			.noError());
 		REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-		std::vector<Topic> topics{ Topic{topic} };
+		kmMqtt::kmStd::vector<Topic> topics{ Topic{topic} };
 		REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
 		REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
 
 		for (int i = 0; i < kBurstCount; ++i) {
-			const std::string payloadText = "burst_qos1_" + std::to_string(i);
+			const kmMqtt::kmStd::string payloadText = "burst_qos1_" + kmMqtt::kmStd::to_string(i);
 			ByteBuffer payload(payloadText.size());
 			payload.append(reinterpret_cast<const std::uint8_t*>(payloadText.data()),
 				payloadText.size());
@@ -344,7 +343,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		// After the negotiated keepalive period the client must send PINGREQ
 		// proactively. Wait 2.5x the keepalive (7.5s) to allow at least two
 		// ping cycles and confirm the broker has not closed the session.
-		std::this_thread::sleep_for(std::chrono::seconds(8));
+		kmStd::this_thread::sleep_for(std::chrono::seconds(8));
 
 		CHECK(client.getConnectionStatus() == ConnectionStatus::CONNECTED);
 		CHECK(!disconnectFired.load());
@@ -407,7 +406,7 @@ TEST_SUITE("Integration - Full - Stability") {
 					pubCompCount.fetch_add(1);
 			});
 
-		const std::string topic = makeUniqueTopic("kmMqtt/it/full/burst_qos2");
+		const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/full/burst_qos2");
 
 		REQUIRE(
 			subscriber
@@ -421,13 +420,13 @@ TEST_SUITE("Integration - Full - Stability") {
 			.noError());
 		REQUIRE(waitFor(publisherConnected, endpoint.timeoutSec));
 
-		std::vector<Topic> topics{
+		kmMqtt::kmStd::vector<Topic> topics{
 			Topic{topic, TopicSubscriptionOptions{Qos::QOS_2}} };
 		REQUIRE(subscriber.subscribe(topics, SubscribeOptions{}).noError());
 		REQUIRE(waitForAtLeast(subAckCount, 1, endpoint.timeoutSec));
 
 		for (int i = 0; i < kBurstCount; ++i) {
-			const std::string payloadText = "burst_qos2_" + std::to_string(i);
+			const kmMqtt::kmStd::string payloadText = "burst_qos2_" + kmMqtt::kmStd::to_string(i);
 			ByteBuffer payload(payloadText.size());
 			payload.append(reinterpret_cast<const std::uint8_t*>(payloadText.data()),
 				payloadText.size());
@@ -459,7 +458,8 @@ TEST_SUITE("Integration - Full - Stability") {
 		const auto& endpoint = selection.endpoint;
 
 		DefaultEnvironmentFactory envFactory;
-		std::unique_ptr<IMqttEnvironment> env(envFactory.createEnvironment());
+		auto deleter = [&](IMqttEnvironment* env) { envFactory.deleteEnvironment(env); };
+		kmMqtt::kmStd::unique_ptr<IMqttEnvironment, decltype(deleter)> env(envFactory.createEnvironment(), std::move(deleter));
 
 		MqttClientOptions opts;
 		opts.tickMode(TickMode::SYNC);
@@ -495,7 +495,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		while (!connectFired.load() &&
 			std::chrono::steady_clock::now() < connectDeadline) {
 			client.tick();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			kmStd::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 		REQUIRE_MESSAGE(connectFired.load(),
 			"Timed out waiting for CONNACK in SYNC tick mode "
@@ -505,8 +505,8 @@ TEST_SUITE("Integration - Full - Stability") {
 		CHECK(client.getConnectionStatus() == ConnectionStatus::CONNECTED);
 
 		// QoS 0 publish — fire and forget; just verify no error.
-		const std::string topic = makeUniqueTopic("kmMqtt/it/full/sync");
-		const std::string payloadText = "sync_tick_payload";
+		const kmMqtt::kmStd::string topic = makeUniqueTopic("kmMqtt/it/full/sync");
+		const kmMqtt::kmStd::string payloadText = "sync_tick_payload";
 		ByteBuffer payload(payloadText.size());
 		payload.append(reinterpret_cast<const std::uint8_t*>(payloadText.data()),
 			payloadText.size());
@@ -520,7 +520,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		// Tick briefly to give the library a chance to send the packet.
 		for (int i = 0; i < 20; ++i) {
 			client.tick();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			kmStd::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 
 		// Graceful disconnect.
@@ -531,7 +531,7 @@ TEST_SUITE("Integration - Full - Stability") {
 		while (!disconnectFired.load() &&
 			std::chrono::steady_clock::now() < disconnectDeadline) {
 			client.tick();
-			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			kmStd::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
 		REQUIRE_MESSAGE(disconnectFired.load(),
 			"Timed out waiting for disconnect event in SYNC tick "

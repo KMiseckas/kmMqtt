@@ -9,7 +9,7 @@
 #include <kmMqtt/Mqtt/Params/Topic.h>
 #include <kmMqtt/Mqtt/Packets/Subscribe/Codes/SubAckReasonCode.h>
 
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 #include <cassert>
 
 namespace kmMqtt 
@@ -29,7 +29,7 @@ namespace kmMqtt
 				return m_allSubscribedSuccesfully;
 			}
 
-			void setTopicReasons(const std::vector<SubAckReasonCode> reasonCodes)
+			void setTopicReasons(const kmStd::vector<SubAckReasonCode> reasonCodes)
 			{
 				assert(reasonCodes.size() == m_topicReasonList.size() && "Reason codes size must match topic list size.");
 
@@ -50,7 +50,7 @@ namespace kmMqtt
 				}
 			}
 
-			void setTopics(std::vector<Topic> topics)
+			void setTopics(kmStd::vector<Topic> topics)
 			{
 				m_topicReasonList.clear();
 				m_topicReasonList.reserve(topics.size());
@@ -60,13 +60,13 @@ namespace kmMqtt
 				}
 			}
 
-			const std::vector<SubAckTopicReason>& getTopicReasons() const
+			const kmStd::vector<SubAckTopicReason>& getTopicReasons() const
 			{
 				return m_topicReasonList;
 			}
 
 		private:
-			std::vector<SubAckTopicReason> m_topicReasonList;
+			kmStd::vector<SubAckTopicReason> m_topicReasonList;
 			bool m_allSubscribedSuccesfully{ false };
 		};
 	}

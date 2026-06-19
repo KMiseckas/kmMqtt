@@ -191,7 +191,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_1));
 		SubscribeOptions options;
 
@@ -208,7 +208,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("topic/1", TopicSubscriptionOptions(Qos::QOS_0));
 		topics.emplace_back("topic/2", TopicSubscriptionOptions(Qos::QOS_1));
 		topics.emplace_back("topic/3", TopicSubscriptionOptions(Qos::QOS_2));
@@ -226,7 +226,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_1));
 		SubscribeOptions options;
 
@@ -244,7 +244,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic", TopicSubscriptionOptions(Qos::QOS_0));
 		SubscribeOptions options;
 		options.subscribeIdentifier = VariableByteInteger::tryCreateFromValue(42);
@@ -261,7 +261,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic");
 		UnSubscribeOptions options;
 
@@ -278,7 +278,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("topic/1");
 		topics.emplace_back("topic/2");
 		topics.emplace_back("topic/3");
@@ -296,7 +296,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.emplace_back("test/topic");
 		UnSubscribeOptions options;
 
@@ -314,7 +314,7 @@ TEST_SUITE("PacketComposer Tests")
 		MqttConnectionInfo connectionInfo;
 		PacketIdPool packetIdPool;
 		std::uint16_t packetId = packetIdPool.getId();
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		UnSubscribeOptions options;
 
 		UnSubscribeComposer composer(&connectionInfo, &packetIdPool, packetId, std::move(topics), std::move(options));

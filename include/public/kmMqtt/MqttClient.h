@@ -102,7 +102,7 @@ namespace kmMqtt
 			 * 
 			 * @return ReqResult indicating the result of the subscribe attempt.
 			 */
-			ReqResult subscribe(const std::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
+			ReqResult subscribe(const kmStd::vector<Topic>& topics, SubscribeOptions&& options) noexcept;
 
 			/**
 			 * @brief Unsubscribe from the specified topics with the given unsubscribe options.
@@ -112,7 +112,7 @@ namespace kmMqtt
 			 * 
 			 * @return ReqResult indicating the result of the unsubscribe attempt.
 			 */
-			ReqResult unSubscribe(const std::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
+			ReqResult unSubscribe(const kmStd::vector<Topic>& topics, UnSubscribeOptions&& options) noexcept;
 
 			/**
 			 * @brief Disconnects from the MQTT broker using the provided disconnect arguments.
@@ -233,7 +233,7 @@ namespace kmMqtt
 			bool getIsTickAsync() const noexcept;
 
 		private:
-			std::unique_ptr<MqttClientImpl> m_impl{ nullptr };
+			kmStd::unique_ptr<MqttClientImpl> m_impl{nullptr};
 		};
 	}
 }

@@ -10,12 +10,13 @@
 #include <kmMqtt/Mqtt/Packets/PropertyType.h>
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include <kmMqtt/Mqtt/Packets/ErrorCodes.h>
+#include <kmMqtt/Memory/AllocatorUtils.h>
 
 #include <memory>
-#include <unordered_map>
+#include <kmMqtt/STL/KmUnorderedMap.h>
 #include <type_traits>
 #include <cassert>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 namespace kmMqtt
 {
@@ -131,7 +132,7 @@ namespace kmMqtt
 			}
 
 			template<typename TPropertyDataType>
-			bool tryGetProperty(PropertyType type, std::vector<const TPropertyDataType*>& outVals) const
+			bool tryGetProperty(PropertyType type, kmStd::vector<const TPropertyDataType*>& outVals) const
 			{
 				assert(k_propertyTypeAllowDuplicatesZeroIndexed[k_propertyTypeZeroedId[static_cast<std::uint8_t>(type)]]);
 
@@ -210,9 +211,9 @@ namespace kmMqtt
 					LogError("Properties", "Decoding properties would cause buffer overflow. Buffer Size: %d, Properties Decode End: %d", buffer.size(), endBufferCursor);
 					return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET,
 						"Decoding properties would cause buffer overflow, buffer size: " +
-						std::to_string(static_cast<std::size_t>(buffer.size())) +
+						kmStd::to_string(static_cast<std::size_t>(buffer.size())) +
 						", Properties Decode End: " +
-						std::to_string(static_cast<std::size_t>(endBufferCursor)) };
+						kmStd::to_string(static_cast<std::size_t>(endBufferCursor)) };
 				}
 
 				//Decode properties one by one
@@ -233,14 +234,14 @@ namespace kmMqtt
 					catch (const std::exception& e)
 					{
 						LogError("Properties", "Failed to decode property from buffer. Exception: %s", e.what());
-						return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET, "Failed to decode property from buffer: " + std::string(e.what()) };
+						return DecodeResult{ DecodeErrorCode::MALFORMED_PACKET, "Failed to decode property from buffer: " + kmStd::string(e.what()) };
 					}
 
 					if (!tryAddProperty(type, data))
 					{
 						propertyDestructors::destruct(data, type);
 						LogError("Properties", "Failed to add property to properties list due to it already existing.");
-						return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Duplicate property not allowed for property type: " + std::to_string(static_cast<std::uint8_t>(type)) };
+						return DecodeResult{ DecodeErrorCode::PROTOCOL_ERROR, "Duplicate property not allowed for property type: " + kmStd::to_string(static_cast<std::uint8_t>(type)) };
 					}
 				}
 
@@ -291,7 +292,7 @@ namespace kmMqtt
 					}
 				}
 
-				m_properties.insert(std::make_pair(T, new DataT(value)));
+				m_properties.insert(std::make_pair(T, kmNewArgs(DataT, value)));
 				m_propertiesSizeInBytes += 1 + sizeof(value);
 
 				return true;
@@ -326,7 +327,7 @@ namespace kmMqtt
 				}
 
 				m_propertiesSizeInBytes += 1 + static_cast<std::uint32_t>(value.encodingSize());
-				m_properties.insert(std::make_pair(T, new DataT(std::move(value))));
+				m_properties.insert(std::make_pair(T, kmNewArgs(DataT, std::move(value))));
 
 				return true;
 			}
@@ -350,7 +351,7 @@ namespace kmMqtt
 				return true;
 			}
 
-			std::unordered_multimap<PropertyType, void*> m_properties;
+			kmStd::unordered_multimap<PropertyType, void*> m_properties;
 			std::uint32_t m_propertiesSizeInBytes{ 0U };
 		};
 	}

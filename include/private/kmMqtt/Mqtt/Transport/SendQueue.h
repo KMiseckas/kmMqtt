@@ -10,10 +10,12 @@
 #include <kmMqtt/Mqtt/Transport/IPacketComposer.h>
 #include <kmMqtt/Interfaces/IWebSocket.h>
 #include <kmMqtt/Mqtt/Enums/ClientErrorCode.h>
+#include <kmMqtt/STL/KmChrono.h>
+#include <kmMqtt/STL/KmMemory.h>
+#include <kmMqtt/STL/KmThread.h>
 #include <cstdint>
-#include <chrono>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -27,11 +29,11 @@ namespace kmMqtt
 			std::size_t totalBytesSent{ 0U };
 			int socketError{ NO_SOCKET_ERROR };
 			bool isRecoverable{ true };
-			std::string unrecoverableReasonStr;
+			kmStd::string unrecoverableReasonStr;
 			SendResultData lastSendResult;
 		};
 
-		using PacketSendJobPtr = std::unique_ptr<IPacketComposer>;
+		using PacketSendJobPtr = kmStd::unique_ptr<IPacketComposer>;
 
 		struct ReceiveMaximumTracker;
 
@@ -56,7 +58,7 @@ namespace kmMqtt
 			SendQueue() noexcept;
 			virtual ~SendQueue();
 
-			void setSocket(std::shared_ptr<IWebSocket> socket) noexcept;
+			void setSocket(kmStd::shared_ptr<IWebSocket> socket) noexcept;
 			void setReceiveMaximumTracker(ReceiveMaximumTracker* const tracker) noexcept;
 			void addToQueue(PacketSendJobPtr packetSendJob);
 			void sendNextBatch(SendBatchResult& outResult);
@@ -72,7 +74,7 @@ namespace kmMqtt
 			bool trySendBatch(SendBatchResult& outResult, SendResultData& outLastSendResult);
 			ClientErrorCode sendData(const ByteBuffer& data, std::size_t& outBytesSent, int& outSocketError);
 
-			std::shared_ptr<IWebSocket> m_socket;
+			kmStd::shared_ptr<IWebSocket> m_socket;
 			std::function<void()> m_onPingSentCallback;
 			std::function<void(std::uint16_t)> m_onPubCompSentCallback;
 			std::function<void(std::uint16_t)> m_onPubRelSentCallback;
@@ -85,15 +87,15 @@ namespace kmMqtt
 
 			const std::uint8_t k_maxSendBatchRetries{ 3U };
 			std::uint8_t m_sendBatchRetryCount{ 0U };
-			const std::chrono::milliseconds k_retryDelayMs{ 250 };
-			std::chrono::steady_clock::time_point m_lastRetryTime;
+			const kmStd::chrono::milliseconds k_retryDelayMs{ 250 };
+			kmStd::chrono::steady_clock::time_point m_lastRetryTime;
 
-			std::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
-			std::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
+			kmStd::vector<PacketSendJobPtr> m_nextPacketComposersBatch;
+			kmStd::vector<PacketSectionMetadata> m_packetsMetadataInBuffer;
 
 			ReceiveMaximumTracker* m_receiveMaximumTrackerPtr{ nullptr };
 
-			std::mutex m_mutex;
+			kmStd::mutex m_mutex;
 			bool m_startGracefulClear{ false };
 		};
 	}

@@ -25,14 +25,11 @@ namespace kmMqtt
 			: BasePacket(std::move(other)),
 			m_variableHeader(std::move(other.m_variableHeader))
 		{
-			other.m_variableHeader = nullptr;
-
 			setUpHeaders();
 		}
 
 		ConnectAck::~ConnectAck()
 		{
-			delete m_variableHeader;
 		}
 
 		ConnectAck& ConnectAck::operator=(ConnectAck&& other) noexcept
@@ -40,9 +37,8 @@ namespace kmMqtt
 			if (this != &other)
 			{
 				BasePacket::operator=(std::move(other));
-				delete m_variableHeader;
 				m_variableHeader = std::move(other.m_variableHeader);
-				other.m_variableHeader = nullptr;
+				setUpHeaders();
 			}
 			return *this;
 		}
@@ -54,17 +50,12 @@ namespace kmMqtt
 
 		const ConnectAckVariableHeader& ConnectAck::getVariableHeader() const noexcept
 		{
-			return *m_variableHeader;
+			return m_variableHeader;
 		}
 
 		void ConnectAck::setUpHeaders() noexcept
 		{
-			if (m_variableHeader == nullptr)
-			{
-				m_variableHeader = new ConnectAckVariableHeader();
-			}
-
-			addDecodeHeader(m_variableHeader);
+			addDecodeHeader(&m_variableHeader);
 		}
 	}
 }

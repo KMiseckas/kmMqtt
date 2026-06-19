@@ -9,7 +9,7 @@
 #include <kmMqtt/Mqtt/Transport/SendResultData.h>
 #include <kmMqtt/MqttClient.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 
 
 using namespace kmMqtt;
@@ -374,10 +374,9 @@ TEST_SUITE("MqttClient Connect") {
   TEST_CASE("Connect with Will message") {
     TestClientContext testContext;
     auto args = TestClientContext::getDefaultConnectArgs();
-    args.will = std::make_unique<kmMqtt::mqtt::Will>("will/topic");
+	args.will = kmStd::make_unique<kmMqtt::mqtt::Will>("will/topic");
     static constexpr uint8_t data[] = {1, 2, 3};
-    args.will->payload =
-        std::make_unique<kmMqtt::mqtt::BinaryData>(sizeof(data), data);
+    args.will->payload = kmStd::make_unique<kmMqtt::mqtt::BinaryData>(static_cast<uint16_t>(sizeof(data)), data);
     args.will->willQos = kmMqtt::mqtt::Qos::QOS_1;
     args.will->retainWillMessage = true;
     testContext.tryConnect(kmMqtt::mqtt::ClientErrorCode::No_Error,

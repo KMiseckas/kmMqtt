@@ -6,7 +6,7 @@
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
 #include <memory>
-#include <string>
+#include <kmMqtt/STL/KmString.h>
 #include "MockWebSocket.h"
 #include "Helpers.h"
 

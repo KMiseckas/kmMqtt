@@ -22,7 +22,7 @@ namespace kmMqtt
 				MqttConnectionInfo* connectionInfo,
 				PacketIdPool* packetIdPool,
 				const std::uint16_t packetId,
-				std::vector<Topic> topics,
+				kmStd::vector<Topic> topics,
 				SubscribeOptions&& subscribeOptions) noexcept;
 
 			ComposeResult compose() noexcept override;
@@ -31,7 +31,7 @@ namespace kmMqtt
 		private:
 			PacketIdPool* m_packetIdPool{ nullptr };
 			std::uint16_t m_packetId{ 0 };
-			std::vector<Topic> m_topics;
+			kmStd::vector<Topic> m_topics;
 			SubscribeOptions m_subscribeOptions;
 		};
 	}

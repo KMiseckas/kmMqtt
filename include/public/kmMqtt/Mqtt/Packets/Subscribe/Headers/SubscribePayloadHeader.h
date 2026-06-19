@@ -10,7 +10,7 @@
 #include <kmMqtt/Mqtt/Packets/DataTypes.h>
 #include "kmMqtt/Mqtt/Packets/Subscribe/Headers/Subscription.h"
 #include <cstdint>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 namespace kmMqtt
 {
@@ -19,12 +19,12 @@ namespace kmMqtt
 		struct SubscribePayloadHeader : IEncodeHeader
 		{
 			SubscribePayloadHeader() noexcept = default;
-			SubscribePayloadHeader(std::vector<Subscription>&& subscriptions) noexcept;
+			SubscribePayloadHeader(kmStd::vector<Subscription>&& subscriptions) noexcept;
 
 			void encode(ByteBuffer& buffer) const override;
 			std::size_t getEncodedBytesSize() const noexcept override;
 
-			std::vector<Subscription> subscriptions;
+			kmStd::vector<Subscription> subscriptions;
 		};
 	}
 }

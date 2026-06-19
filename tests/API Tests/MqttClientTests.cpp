@@ -5,9 +5,9 @@
 
 #include <doctest.h>
 #include <kmMqtt/MqttClient.h>
+#include <kmMqtt/STL/KmMemory.h>
 #include <memory>
-#include <string>
-#include <thread>
+#include <kmMqtt/STL/KmString.h>
 #include <chrono>
 #include "MockWebSocket.h"
 #include "Helpers.h"
@@ -275,7 +275,7 @@ TEST_SUITE("MqttClient API Tests")
 	TEST_CASE("Subscribe - Not Connected Returns Error")
 	{
 		TestClientContext testContext;
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/topic", Qos::QOS_0));
 		
 		SubscribeOptions options;
@@ -288,7 +288,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> emptyTopics;
+		kmMqtt::kmStd::vector<Topic> emptyTopics;
 		SubscribeOptions options;
 		
 		auto result = testContext.client->subscribe(emptyTopics, std::move(options));
@@ -300,7 +300,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/topic", Qos::QOS_1));
 		
 		SubscribeOptions options;
@@ -316,7 +316,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("topic/1", Qos::QOS_0));
 		topics.push_back(Topic("topic/2", Qos::QOS_1));
 		topics.push_back(Topic("topic/3", Qos::QOS_2));
@@ -331,7 +331,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/sub", Qos::QOS_1));
 		
 		SubscribeOptions options;
@@ -344,7 +344,7 @@ TEST_SUITE("MqttClient API Tests")
 	TEST_CASE("UnSubscribe - Not Connected Returns Error")
 	{
 		TestClientContext testContext;
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/topic", Qos::QOS_0));
 		
 		UnSubscribeOptions options;
@@ -357,7 +357,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> emptyTopics;
+		kmMqtt::kmStd::vector<Topic> emptyTopics;
 		UnSubscribeOptions options;
 		
 		auto result = testContext.client->unSubscribe(emptyTopics, std::move(options));
@@ -369,7 +369,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/unsub", Qos::QOS_0));
 		
 		UnSubscribeOptions options;
@@ -385,7 +385,7 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		testContext.tryConnectWithResponse();
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("unsub/1", Qos::QOS_0));
 		topics.push_back(Topic("unsub/2", Qos::QOS_1));
 		
@@ -498,7 +498,7 @@ TEST_SUITE("MqttClient API Tests")
 		auto pubErr = testContext.client->publish("test/lifecycle", std::move(payload), std::move(pubOptions));
 		CHECK(pubErr.noError());
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/sub/lifecycle", Qos::QOS_1));
 		SubscribeOptions subOptions;
 		auto subErr = testContext.client->subscribe(topics, std::move(subOptions));
@@ -522,7 +522,7 @@ TEST_SUITE("MqttClient API Tests")
 			receivedPacketId = details.packetId;
 		});
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/suback", Qos::QOS_1));
 		SubscribeOptions options;
 		testContext.client->subscribe(topics, std::move(options));
@@ -553,7 +553,7 @@ TEST_SUITE("MqttClient API Tests")
 			unsubAckFired = true;
 		});
 		
-		std::vector<Topic> topics;
+		kmMqtt::kmStd::vector<Topic> topics;
 		topics.push_back(Topic("test/unsuback", Qos::QOS_0));
 		UnSubscribeOptions options;
 		testContext.client->unSubscribe(topics, std::move(options));
@@ -578,7 +578,7 @@ TEST_SUITE("MqttClient API Tests")
 		testContext.tryConnectWithResponse();
 		
 		bool publishEventFired = false;
-		std::string receivedTopic;
+		kmMqtt::kmStd::string receivedTopic;
 		
 		testContext.client->onPublishEvent().add([&](const PublishEventDetails& details, const Publish&)
 		{
@@ -617,7 +617,7 @@ TEST_SUITE("MqttClient API Tests")
 		PublishOptions pubOpts1;
 		CHECK(testContext.client->publish("test/1", std::move(payload1), std::move(pubOpts1)).noError());
 		
-		std::vector<Topic> topics1;
+		kmMqtt::kmStd::vector<Topic> topics1;
 		topics1.push_back(Topic("sub/1", Qos::QOS_0));
 		SubscribeOptions subOpts1;
 		CHECK(testContext.client->subscribe(topics1, std::move(subOpts1)).noError());
@@ -626,7 +626,7 @@ TEST_SUITE("MqttClient API Tests")
 		PublishOptions pubOpts2;
 		CHECK(testContext.client->publish("test/2", std::move(payload2), std::move(pubOpts2)).noError());
 		
-		std::vector<Topic> topics2;
+		kmMqtt::kmStd::vector<Topic> topics2;
 		topics2.push_back(Topic("unsub/1", Qos::QOS_0));
 		UnSubscribeOptions unsubOpts;
 		CHECK(testContext.client->unSubscribe(topics2, std::move(unsubOpts)).noError());
@@ -659,8 +659,8 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		
 		ConnectArgs args("TestClient");
-		args.will = std::make_unique<Will>("will/topic");
-		args.will->payload = std::make_unique<BinaryData>();
+		args.will = kmStd::make_unique<Will>("will/topic");
+		args.will->payload = kmStd::make_unique<BinaryData>();
 		
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
@@ -674,8 +674,8 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		
 		ConnectArgs args("TestClient");
-		args.will = std::make_unique<Will>("will/topic");
-		args.will->correlationData = std::make_unique<BinaryData>();
+		args.will = kmStd::make_unique<Will>("will/topic");
+		args.will->correlationData = kmStd::make_unique<BinaryData>();
 		
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("", "localhost", "1883", "");
@@ -689,9 +689,9 @@ TEST_SUITE("MqttClient API Tests")
 		TestClientContext testContext;
 		
 		ConnectArgs args("TestClient");
-		args.will = std::make_unique<Will>("");
+		args.will = kmStd::make_unique<Will>("");
 		const std::uint8_t data[] = {0x01};
-		args.will->payload = std::make_unique<BinaryData>(1, data);
+		args.will->payload = kmStd::make_unique<BinaryData>(1, data);
 		
 		ConnectAddress address;
 		address.primaryAddress = Address::createURL("", "localhost", "1883", "");

@@ -9,8 +9,8 @@
 #include <kmMqtt/Mqtt/State/SessionState/ISessionStatePersistantStore.h>
 #include <kmMqtt/Mqtt/State/SessionState/MessageContainer.h>
 #include <kmMqtt/Mqtt/State/SessionState/MessageContainerData.h>
-#include <string>
-#include <vector>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 
 using namespace kmMqtt;
 using namespace kmMqtt::mqtt;
@@ -19,41 +19,41 @@ namespace
 {
     struct DummyPersistantStore : ISessionStatePersistantStore 
     {
-        std::vector<std::string> log;
+        kmMqtt::kmStd::vector<kmMqtt::kmStd::string> log;
 
 		bool initialize(const char* clientId) override
         {
-            log.push_back("initialize:" + std::string(clientId));
+            log.push_back("initialize:" + kmMqtt::kmStd::string(clientId));
             return true;
         }
 
         bool write(const char* clientId, std::uint32_t expiry, const SavedData& data) override
         {
-            log.push_back("write:" + std::string(clientId));
+            log.push_back("write:" + kmMqtt::kmStd::string(clientId));
             return true;
         }
 
         bool updateMessage(const char* clientId, std::uint16_t packetId, PublishMessageStatus newStatus, bool bringToEnd) override
         {
-            log.push_back("update:" + std::string(clientId));
+            log.push_back("update:" + kmMqtt::kmStd::string(clientId));
             return true;
         }
 
         bool removeMessage(const char* clientId, std::uint16_t packetId) override
         {
-            log.push_back("remove:" + std::string(clientId));
+            log.push_back("remove:" + kmMqtt::kmStd::string(clientId));
             return true;
         }
 
         bool removeFromStore(const char* clientId) override 
         {
-            log.push_back("clear:" + std::string(clientId));
+            log.push_back("clear:" + kmMqtt::kmStd::string(clientId));
             return true;
         }
 
-        bool readAll(const char* clientId, std::vector<const SavedData>& outData) override
+        bool readAll(const char* clientId, kmMqtt::kmStd::vector<const SavedData>& outData) override
         {
-            log.push_back("readAll:" + std::string(clientId));
+            log.push_back("readAll:" + kmMqtt::kmStd::string(clientId));
             return true;
         }
 
@@ -64,7 +64,7 @@ namespace
         }
     };
 
-    PublishMessageData createTestPublishMessageData(const std::string& topic = "test/topic", Qos qos = Qos::QOS_1)
+    PublishMessageData createTestPublishMessageData(const kmMqtt::kmStd::string& topic = "test/topic", Qos qos = Qos::QOS_1)
     {
         ByteBuffer payload(100);
         const std::uint8_t data[] = {0x01, 0x02, 0x03, 0x04};
@@ -124,7 +124,7 @@ TEST_SUITE("SessionState Tests")
 
         state.updateMessage(10, PublishMessageStatus::WaitingForPubRel);
 
-        std::vector<std::uint16_t> order;
+        kmMqtt::kmStd::vector<std::uint16_t> order;
         for (const auto& msg : state.messages())
         {
             order.push_back(msg.data.packetID);
@@ -304,7 +304,7 @@ TEST_SUITE("MessageContainer Tests")
 
         for (std::uint16_t i = 1; i <= 10; ++i)
         {
-            auto msgData = createTestPublishMessageData("test/topic/" + std::to_string(i));
+            auto msgData = createTestPublishMessageData("test/topic/" + kmMqtt::kmStd::to_string(i));
             TimePoint retryTime = std::chrono::steady_clock::now();
             MessageContainerData data(i, std::move(msgData), retryTime);
             container.push(std::move(data));
@@ -403,7 +403,7 @@ TEST_SUITE("MessageContainer Tests")
 
         for (std::uint16_t i = 1; i <= 5; ++i)
         {
-            auto msgData = createTestPublishMessageData("test/" + std::to_string(i));
+            auto msgData = createTestPublishMessageData("test/" + kmMqtt::kmStd::to_string(i));
             TimePoint retryTime = std::chrono::steady_clock::now();
             MessageContainerData data(i, std::move(msgData), retryTime);
             container.push(std::move(data));
@@ -427,7 +427,7 @@ TEST_SUITE("MessageContainer Tests")
 
         for (std::uint16_t i = 1; i <= 5; ++i)
         {
-            auto msgData = createTestPublishMessageData("test/" + std::to_string(i));
+            auto msgData = createTestPublishMessageData("test/" + kmMqtt::kmStd::to_string(i));
             TimePoint retryTime = std::chrono::steady_clock::now();
             MessageContainerData data(i * 10, std::move(msgData), retryTime);
             container.push(std::move(data));
@@ -435,7 +435,7 @@ TEST_SUITE("MessageContainer Tests")
 
         container.moveToEnd(10);
 
-        std::vector<std::uint16_t> order;
+        kmMqtt::kmStd::vector<std::uint16_t> order;
         for (const auto& msg : container)
         {
             order.push_back(msg.data.packetID);
@@ -479,7 +479,7 @@ TEST_SUITE("MessageContainer Tests")
 
         container.moveToEnd(3);
 
-        std::vector<std::uint16_t> order;
+        kmMqtt::kmStd::vector<std::uint16_t> order;
         for (const auto& msg : container)
         {
             order.push_back(msg.data.packetID);
@@ -532,13 +532,13 @@ TEST_SUITE("MessageContainer Tests")
 
         for (std::uint16_t i = 1; i <= 5; ++i)
         {
-            auto msgData = createTestPublishMessageData("test/" + std::to_string(i));
+            auto msgData = createTestPublishMessageData("test/" + kmMqtt::kmStd::to_string(i));
             TimePoint retryTime = std::chrono::steady_clock::now();
             MessageContainerData data(i * 100, std::move(msgData), retryTime);
             container.push(std::move(data));
         }
 
-        std::vector<std::uint16_t> packetIds;
+        kmMqtt::kmStd::vector<std::uint16_t> packetIds;
         for (auto it = container.begin(); it != container.end(); ++it)
         {
             packetIds.push_back(it->data.packetID);
@@ -581,13 +581,13 @@ TEST_SUITE("MessageContainer Tests")
 
         for (std::uint16_t i = 1; i <= 4; ++i)
         {
-            auto msgData = createTestPublishMessageData("topic" + std::to_string(i));
+            auto msgData = createTestPublishMessageData("topic" + kmMqtt::kmStd::to_string(i));
             TimePoint retryTime = std::chrono::steady_clock::now();
             MessageContainerData data(i + 1000, std::move(msgData), retryTime);
             container.push(std::move(data));
         }
 
-        std::vector<std::string> topics;
+        kmMqtt::kmStd::vector<kmMqtt::kmStd::string> topics;
         for (const auto& msg : container)
         {
             topics.push_back(msg.data.publishMsgData.topic);
@@ -606,7 +606,7 @@ TEST_SUITE("MessageContainer Tests")
 
         for (std::uint16_t i = 1; i <= 5; ++i)
         {
-            auto msgData = createTestPublishMessageData("test/" + std::to_string(i));
+            auto msgData = createTestPublishMessageData("test/" + kmMqtt::kmStd::to_string(i));
             TimePoint retryTime = std::chrono::steady_clock::now();
             MessageContainerData data(i, std::move(msgData), retryTime);
             container.push(std::move(data));
@@ -624,7 +624,7 @@ TEST_SUITE("MessageContainer Tests")
 
         container.moveToEnd(1);
 
-        std::vector<std::uint16_t> order;
+        kmMqtt::kmStd::vector<std::uint16_t> order;
         for (const auto& msg : container)
         {
             order.push_back(msg.data.packetID);

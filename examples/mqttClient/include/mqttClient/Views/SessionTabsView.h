@@ -9,7 +9,7 @@
 #include "mqttClient/Views/View.h"
 #include <mqttClient/Model/SessionTabsModel.h>
 #include <mqttClient/Views/SessionView.h>
-#include <vector>
+#include <kmMqtt/STL/KmVector.h>
 
 class SessionTabsView : public View<SessionTabsModel>
 {

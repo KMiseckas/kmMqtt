@@ -9,16 +9,16 @@
 #include "mqttClient/Model/ViewModel.h"
 #include <kmMqtt/MqttClient.h>
 #include <kmMqtt/Interfaces/ILogger.h>
+#include <kmMqtt/STL/KmThread.h>
 
-#include <string>
-#include <vector>
+#include <kmMqtt/STL/KmString.h>
+#include <kmMqtt/STL/KmVector.h>
 #include <fstream>
-#include <mutex>
 
 struct OutputMsgMetadata
 {
 	kmMqtt::LogLevel logLevel;
-	std::string logEntry{ "" };
+	kmMqtt::kmStd::string logEntry{ "" };
 };
 
 class OutputModel : public ViewModel
@@ -28,11 +28,11 @@ public:
 	~OutputModel() override;
 
 	void setMqttClient(kmMqtt::mqtt::MqttClient* client) noexcept;
-	void AddOutput(kmMqtt::LogLevel logLevel, const std::string category, const std::string msg);
+	void AddOutput(kmMqtt::LogLevel logLevel, const kmMqtt::kmStd::string category, const kmMqtt::kmStd::string msg);
 	const OutputMsgMetadata* const GetAllLogs() const noexcept;
 	void clearLogs() noexcept;
 	
-	void enableFileLogging(const std::string& filepath);
+	void enableFileLogging(const kmMqtt::kmStd::string& filepath);
 	void disableFileLogging();
 	inline bool isFileLoggingEnabled() const noexcept { return m_fileLoggingEnabled; }
 
@@ -45,13 +45,13 @@ public:
 	} uiData;
 
 private:
-	void writeToFile(const std::string& logEntry);
+	void writeToFile(const kmMqtt::kmStd::string& logEntry);
 
 	OutputMsgMetadata m_logs[1024];
 	OutputMsgMetadata* nextLogEntry{ m_logs };
 	std::size_t logCount{ 0 };
 	std::ofstream m_logFile;
-	std::mutex m_logMutex;
+	kmMqtt::kmStd::mutex m_logMutex;
 	bool m_fileLoggingEnabled = false;
 
 	kmMqtt::mqtt::MqttClient* m_mqttClient{ nullptr };

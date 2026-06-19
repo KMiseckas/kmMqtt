@@ -9,8 +9,8 @@
 #include <kmMqtt/Mqtt/Packets/BasePacket.h>
 #include <kmMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribeVariableHeader.h>
 #include <kmMqtt/Mqtt/Packets/UnSubscribe/Headers/UnSubscribePayloadHeader.h>
-#include <vector>
-#include <string>
+#include <kmMqtt/STL/KmVector.h>
+#include <kmMqtt/STL/KmString.h>
 
 namespace kmMqtt
 {
@@ -29,6 +29,8 @@ namespace kmMqtt
 			UnSubscribe(UnSubscribe&& other) noexcept;
 			~UnSubscribe() override;
 
+			UnSubscribe& operator=(UnSubscribe&& other) noexcept;
+
 			PacketType getPacketType() const noexcept override;
 			const UnSubscribeVariableHeader& getVariableHeader() const;
 			const UnSubscribePayloadHeader& getPayloadHeader() const;
@@ -36,8 +38,8 @@ namespace kmMqtt
 		private:
 			void setUpHeaders() noexcept;
 
-			UnSubscribeVariableHeader* m_variableHeader{ nullptr };
-			UnSubscribePayloadHeader* m_payloadHeader{ nullptr };
+			UnSubscribeVariableHeader m_variableHeader;
+			UnSubscribePayloadHeader m_payloadHeader;
 		};
 	}
 }

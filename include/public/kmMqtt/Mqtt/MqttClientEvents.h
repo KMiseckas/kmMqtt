@@ -69,7 +69,7 @@ namespace kmMqtt
 
 		struct PublishEventDetails
 		{
-			std::string topic{ "" };
+			kmStd::string topic{ "" };
 			const ByteBuffer* payload{ nullptr };
 		};
 
